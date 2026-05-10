@@ -1,0 +1,92 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme {
+  --font-display: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Courier Prime", "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--echo-bg);
+  font-family: var(--font-display);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: var(--echo-focus);
+  color: var(--echo-ink);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.mist-layer {
+  pointer-events: none;
+  position: absolute;
+  inset: -20%;
+  opacity: 0.65;
+  filter: blur(28px);
+  background:
+    radial-gradient(circle at 22% 35%, rgba(211, 197, 170, 0.2), transparent 28%),
+    radial-gradient(circle at 70% 48%, rgba(186, 200, 220, 0.12), transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(251, 185, 128, 0.1), transparent 26%);
+  animation: mist-drift 18s ease-in-out infinite alternate;
+}
+
+.mist-layer-b {
+  opacity: 0.45;
+  transform: rotate(12deg);
+  animation-duration: 24s;
+  animation-delay: -6s;
+}
+
+.fade-line {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fade-rise 900ms ease-out forwards;
+}
+
+@keyframes mist-drift {
+  from {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.04);
+  }
+}
+
+@keyframes fade-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

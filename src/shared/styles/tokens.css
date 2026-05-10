@@ -1,0 +1,19 @@
+:root {
+  color-scheme: dark;
+  --echo-bg: #06151e;
+  --echo-panel: #12212a;
+  --echo-panel-raised: #1d2c35;
+  --echo-paper: #d3c5aa;
+  --echo-paper-soft: #f0e1c5;
+  --echo-ink: #243141;
+  --echo-text: #d5e5f1;
+  --echo-muted: #aeb8bf;
+  --echo-line: #44474c;
+  --echo-sepia: #8e6e45;
+  --echo-stamp: #7f1d1d;
+  --echo-shadow: #021018;
+  --echo-focus: #fbb980;
+  --echo-radius: 2px;
+  --echo-duration-fast: 150ms;
+  --echo-duration-normal: 240ms;
+}
