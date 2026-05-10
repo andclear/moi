@@ -1,12 +1,15 @@
 # 《回音 / Echo》数据模型文档
 
-本文档记录项目数据模型的演进。阶段 0 仅建立文档入口，正式本地数据结构会在阶段 2 实现。
+本文档记录项目数据模型的演进。阶段 2 已建立本地 IndexedDB 数据底座。
 
-## 阶段 0 范围
+## 阶段 2 范围
 
-- 保留 `src/db` 目录作为 Dexie 数据层入口。
-- 保留 `src/schemas` 目录作为 Zod schema 入口。
-- 暂不创建运行时数据表，避免在业务模型冻结前引入迁移负担。
+- `src/db/db.ts` 定义 Dexie 数据库实例。
+- `src/db/schema.ts` 定义 IndexedDB 表结构和索引。
+- `src/db/types.ts` 定义核心业务数据类型。
+- `src/db/repositories` 提供所有本地持久化入口，页面不得直接操作 Dexie 表。
+- `src/db/services` 提供自动保存和历史快照恢复服务。
+- `src/schemas` 提供 Zod 运行时校验。
 
 ## 后续模型方向
 
@@ -19,3 +22,13 @@
 - `TrialRun`：终审测试结果。
 - `HistorySnapshot`：历史快照。
 - `ExportRecord`：导出记录。
+
+## 本地表
+
+- `settings`：API 设置和界面偏好。
+- `activations`：本地激活状态缓存。
+- `adminSettings`：后台管理前端状态缓存，不保存管理员密钥。
+- `projects`：当前角色项目、Markdown 档案、当前步骤和阶段结果。
+- `histories`：从任意节点恢复所需的历史快照。
+- `generations`：AI 生成任务、输入摘要、输出、Token 和耗时。
+- `exports`：导出版本、JSON 摘要和 PNG 写入信息。

@@ -7,12 +7,13 @@ import {
   ScrollText,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
-import { useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 
 import { useFlowStore, type FlowStepId } from "@/features/flow/flowStore";
 import { StepProgress } from "@/features/flow/StepProgress";
 import type { FlowStep } from "@/features/flow/flowTypes";
+import { projectService } from "@/db/services/projectService";
 import { Button } from "@/shared/components/ui/button";
 import { WorkspaceLayout } from "@/shared/layout/WorkspaceLayout";
 
@@ -80,7 +81,21 @@ export function WorkspacePage() {
 }
 
 function PostStep() {
+  const navigate = useNavigate();
+  const [brief, setBrief] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
+
+  async function handleStartProfile() {
+    setIsSaving(true);
+    try {
+      const project = await projectService.createFromInitialBrief(brief);
+      markStepCompleted("post");
+      navigate(`/workspace/${project.id}/profile`);
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-4 py-20">
@@ -100,14 +115,16 @@ function PostStep() {
           </label>
           <textarea
             id="case-brief"
+            value={brief}
+            onChange={(event) => setBrief(event.target.value)}
             className="min-h-56 w-full resize-y border-0 border-b-2 border-[var(--echo-ink)] bg-transparent p-0 font-mono text-lg leading-9 outline-none placeholder:text-[rgba(36,49,65,0.45)] focus:border-[var(--echo-stamp)]"
             placeholder="比如：TA 总在雨夜出现，话很少，像在等一封永远不会抵达的信。"
           />
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Button type="button" onClick={() => markStepCompleted("post")}>
+          <Button type="button" onClick={handleStartProfile} disabled={isSaving}>
             <FileSearch aria-hidden="true" size={18} />
-            开始辨认轮廓
+            {isSaving ? "正在保存" : "开始辨认轮廓"}
           </Button>
           <p className="font-mono text-xs leading-5 text-[rgba(36,49,65,0.68)]">
             当前阶段只建立页面结构，真实 AI 生成会在阶段 4 后接入。

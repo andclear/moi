@@ -46,3 +46,16 @@ test("寻人启事阶段不显示流程，后续阶段显示左侧流程", async
   await expect(page.getByText("档案流程")).toBeVisible();
   await expect(page.getByRole("heading", { name: "辨认轮廓" })).toBeVisible();
 });
+
+test("创建项目后档案库可以读取本地项目", async ({ page }) => {
+  const brief = "TA 总在雨夜出现，话很少。";
+
+  await page.goto("/workspace/current/post");
+  await page.getByRole("textbox", { name: "最初的回音" }).fill(brief);
+  await page.getByRole("button", { name: "开始辨认轮廓" }).click();
+
+  await expect(page).toHaveURL(/\/workspace\/project_/);
+  await page.getByRole("link", { name: /回音匣|档案库/ }).click();
+
+  await expect(page.getByRole("link", { name: /TA 总在雨夜出现/ })).toBeVisible();
+});
