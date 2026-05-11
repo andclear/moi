@@ -110,7 +110,9 @@ describe("Dexie repositories", () => {
   it("createProjectDraft 提供完整默认结构", () => {
     const project = createProjectDraft({ title: "默认项目" });
 
-    expect(project.dossier.markdown).toContain("## TA 的本心");
+    expect(project.dossier.markdown).toContain("## 核心人格");
+    expect(project.dossier.markdown).toContain("## 世界观");
+    expect(project.dossier.blocks).not.toHaveLength(0);
     expect(project.worldEntries).toEqual([]);
     expect(project.currentStep).toBe("post");
   });

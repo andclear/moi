@@ -1,40 +1,18 @@
 import type { FlowStepId } from "@/features/flow/flowStore";
 import type { DossierDocument, Project } from "@/db/types";
+import {
+  buildDossierBlockMeta,
+  createDefaultDossierMarkdown,
+} from "@/features/dossier/dossierSections";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
 export function createEmptyDossier(now = nowIso()): DossierDocument {
+  const markdown = createDefaultDossierMarkdown();
+
   return {
-    markdown: [
-      "## TA 的本心",
-      "",
-      "尚未听见",
-      "",
-      "## 外貌特征",
-      "",
-      "尚未听见",
-      "",
-      "## 背景故事",
-      "",
-      "尚未听见",
-      "",
-      "## 核心矛盾",
-      "",
-      "尚未听见",
-      "",
-      "## 说话风格",
-      "",
-      "尚未听见",
-      "",
-      "## TA 所在的世界",
-      "",
-      "尚未听见",
-      "",
-      "## 开场白",
-      "",
-      "尚未听见",
-    ].join("\n"),
-    blocks: [],
+    markdown,
+    blocks: buildDossierBlockMeta(markdown, [], "ai_inferred", now),
     updatedAt: now,
   };
 }
@@ -48,6 +26,7 @@ export function createProjectDraft(input?: {
 }): Project {
   const now = input?.now ?? nowIso();
   const dossier = createEmptyDossier(now);
+  const markdown = input?.dossierMarkdown ?? dossier.markdown;
 
   return {
     id: input?.id ?? createId("project"),
@@ -55,7 +34,8 @@ export function createProjectDraft(input?: {
     currentStep: input?.currentStep ?? "post",
     dossier: {
       ...dossier,
-      markdown: input?.dossierMarkdown ?? dossier.markdown,
+      markdown,
+      blocks: buildDossierBlockMeta(markdown, dossier.blocks, "ai_inferred", now),
     },
     worldEntries: [],
     greetingVariants: [],

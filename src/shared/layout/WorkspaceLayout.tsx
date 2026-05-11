@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Server, UserRoundCog, X } from "lucide-react";
 import type { PropsWithChildren } from "react";
 
+import { ApiStatusBadge } from "@/features/activation/ApiStatusBadge";
 import { ApiStatusPanel } from "@/features/activation/ApiStatusPanel";
 import { DossierPanel } from "@/features/dossier/DossierPanel";
 import { useUiStore } from "@/features/ui/uiStore";
@@ -12,7 +13,8 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
 
   return (
     <div className="relative min-h-[calc(100vh-9rem)] overflow-hidden border border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] shadow-[inset_0_0_0_1px_rgba(211,197,170,0.06)]">
-      <div className="absolute right-4 top-4 z-20 flex gap-2">
+      <div className="absolute right-4 top-4 z-20 flex flex-wrap justify-end gap-2">
+        <ApiStatusBadge />
         <Button
           type="button"
           size="icon"

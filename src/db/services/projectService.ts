@@ -1,43 +1,10 @@
 import type { EchoDatabase } from "@/db/db";
 import { echoDb } from "@/db/db";
 import { createProjectRepository } from "@/db/repositories/projectRepository";
+import { createDefaultDossierMarkdown } from "@/features/dossier/dossierSections";
 
 function createInitialDossierMarkdown(brief: string) {
-  const normalizedBrief = brief.trim() || "尚未听见";
-
-  return [
-    "## 最初的回音",
-    "",
-    normalizedBrief,
-    "",
-    "## TA 的本心",
-    "",
-    "尚未听见",
-    "",
-    "## 外貌特征",
-    "",
-    "尚未听见",
-    "",
-    "## 背景故事",
-    "",
-    "尚未听见",
-    "",
-    "## 核心矛盾",
-    "",
-    "尚未听见",
-    "",
-    "## 说话风格",
-    "",
-    "尚未听见",
-    "",
-    "## TA 所在的世界",
-    "",
-    "尚未听见",
-    "",
-    "## 开场白",
-    "",
-    "尚未听见",
-  ].join("\n");
+  return createDefaultDossierMarkdown(brief.trim() || "尚未听见");
 }
 
 function createTitleFromBrief(brief: string) {
