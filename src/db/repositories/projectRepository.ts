@@ -41,6 +41,11 @@ export function createProjectRepository(db: EchoDatabase = echoDb) {
       return this.update(id, { currentStep });
     },
 
+    async getCurrent() {
+      const activeProjects = await this.listActive();
+      return activeProjects[0];
+    },
+
     async updateDossier(id: string, markdown: string, blocks?: DossierBlockMeta[]) {
       const project = await db.projects.get(id);
       if (!project) {

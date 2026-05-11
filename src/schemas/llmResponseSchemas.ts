@@ -25,3 +25,21 @@ export const structuredLlmResponseSchema = z.object({
   data: z.record(z.string(), z.unknown()),
   warnings: z.array(z.string()).default([]),
 });
+
+export const profileDraftResponseSchema = z.object({
+  title: z.string().min(1),
+  dossierMarkdown: z.string().min(1),
+});
+
+export const profileChoiceResponseSchema = z.object({
+  choices: z
+    .array(
+      z.object({
+        title: z.string().min(1),
+        content: z.string().min(1),
+        detail: z.string().optional(),
+        dossierAddition: z.string().min(1),
+      }),
+    )
+    .length(3),
+});

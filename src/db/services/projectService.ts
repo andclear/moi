@@ -1,6 +1,7 @@
 import type { EchoDatabase } from "@/db/db";
 import { echoDb } from "@/db/db";
 import { createProjectRepository } from "@/db/repositories/projectRepository";
+import type { ProfileSession, Project } from "@/db/types";
 import { createDefaultDossierMarkdown } from "@/features/dossier/dossierSections";
 
 function createInitialDossierMarkdown(brief: string) {
@@ -36,6 +37,22 @@ export function createProjectService(db: EchoDatabase = echoDb) {
 
     async listActiveProjects() {
       return projects.listActive();
+    },
+
+    async resolveProject(projectId?: string) {
+      if (projectId && projectId !== "current") {
+        return projects.getById(projectId);
+      }
+
+      return projects.getCurrent();
+    },
+
+    async updateProfileSession(projectId: string, profileSession: ProfileSession) {
+      return projects.update(projectId, { profileSession });
+    },
+
+    async updateProject(projectId: string, patch: Partial<Omit<Project, "id" | "createdAt">>) {
+      return projects.update(projectId, patch);
     },
   };
 }

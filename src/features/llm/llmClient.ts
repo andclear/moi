@@ -1,12 +1,16 @@
 import { activationRepository } from "@/db/repositories/activationRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
+import type { ProfileStageId } from "@/db/types";
+import { buildProfileDraftMessages, buildProfileStageMessages } from "@/prompts/profilePrompts";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
+import { parseLlmJson } from "@/features/llm/jsonResponse";
 import { LlmError, type LlmRequest, type LlmResponse } from "@/features/llm/llmTypes";
 import {
   createGenerationRecord,
   markGenerationFailed,
   markGenerationSucceeded,
 } from "@/features/llm/usageTracker";
+import { profileChoiceResponseSchema, profileDraftResponseSchema } from "@/schemas/llmResponseSchemas";
 
 async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
   const activation = await activationRepository.getCurrent();
@@ -69,4 +73,50 @@ export async function callLlm(request: LlmRequest) {
     await markGenerationFailed(task, error);
     throw error;
   }
+}
+
+export async function generateProfileDraft(input: {
+  projectId: string;
+  brief: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "profile",
+    messages: buildProfileDraftMessages(input.brief),
+    inputSummary: input.brief.slice(0, 160),
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, profileDraftResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateProfileStage(input: {
+  projectId: string;
+  stageId: ProfileStageId;
+  dossierMarkdown: string;
+  previousChoices: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "profile",
+    messages: buildProfileStageMessages({
+      stageId: input.stageId,
+      dossierMarkdown: input.dossierMarkdown,
+      previousChoices: input.previousChoices,
+    }),
+    inputSummary: `侧写子步骤：${input.stageId}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, profileChoiceResponseSchema),
+    response: result.response,
+  };
 }

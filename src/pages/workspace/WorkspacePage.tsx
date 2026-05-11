@@ -7,14 +7,14 @@ import {
   ScrollText,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useEffect } from "react";
+import { useParams } from "react-router";
 
 import { useFlowStore, type FlowStepId } from "@/features/flow/flowStore";
 import { StepProgress } from "@/features/flow/StepProgress";
 import type { FlowStep } from "@/features/flow/flowTypes";
-import { projectService } from "@/db/services/projectService";
-import { Button } from "@/shared/components/ui/button";
+import { StepPost } from "@/pages/workspace/StepPost";
+import { StepProfile } from "@/pages/workspace/StepProfile";
 import { WorkspaceLayout } from "@/shared/layout/WorkspaceLayout";
 
 const steps: FlowStep[] = [
@@ -72,66 +72,17 @@ export function WorkspacePage() {
             transition={{ duration: 0.22 }}
             className="min-h-[calc(100vh-9rem)]"
           >
-            {currentStepId === "post" ? <PostStep /> : <FutureStep stepId={currentStepId} />}
+            {currentStepId === "post" ? (
+              <StepPost />
+            ) : currentStepId === "profile" ? (
+              <StepProfile />
+            ) : (
+              <FutureStep stepId={currentStepId} />
+            )}
           </motion.section>
         </AnimatePresence>
       </div>
     </WorkspaceLayout>
-  );
-}
-
-function PostStep() {
-  const navigate = useNavigate();
-  const [brief, setBrief] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
-
-  async function handleStartProfile() {
-    setIsSaving(true);
-    try {
-      const project = await projectService.createFromInitialBrief(brief);
-      markStepCompleted("post");
-      navigate(`/workspace/${project.id}/profile`);
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  return (
-    <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-4 py-20">
-      <article className="w-full max-w-3xl border-2 border-[var(--echo-line)] bg-[var(--echo-paper)] p-5 text-[var(--echo-ink)] shadow-[10px_10px_0_var(--echo-shadow)] sm:p-8">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
-          张贴寻人启事
-        </p>
-        <h1 className="mt-5 font-display text-4xl font-black tracking-normal sm:text-5xl">
-          你记得 TA 的哪一部分？
-        </h1>
-        <p className="mt-5 max-w-2xl font-mono text-base leading-7">
-          不必急着说清 TA 是谁。写下一点气息、一句话、一个场景、一段你无法忘记的矛盾，或那个始终没有散去的瞬间。
-        </p>
-        <div className="mt-8">
-          <label htmlFor="case-brief" className="sr-only">
-            最初的回音
-          </label>
-          <textarea
-            id="case-brief"
-            value={brief}
-            onChange={(event) => setBrief(event.target.value)}
-            className="min-h-56 w-full resize-y border-0 border-b-2 border-[var(--echo-ink)] bg-transparent p-0 font-mono text-lg leading-9 outline-none placeholder:text-[rgba(36,49,65,0.45)] focus:border-[var(--echo-stamp)]"
-            placeholder="比如：TA 总在雨夜出现，话很少，像在等一封永远不会抵达的信。"
-          />
-        </div>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Button type="button" onClick={handleStartProfile} disabled={isSaving}>
-            <FileSearch aria-hidden="true" size={18} />
-            {isSaving ? "正在保存" : "开始辨认轮廓"}
-          </Button>
-          <p className="font-mono text-xs leading-5 text-[rgba(36,49,65,0.68)]">
-            当前阶段只建立页面结构，真实 AI 生成会在阶段 4 后接入。
-          </p>
-        </div>
-      </article>
-    </div>
   );
 }
 

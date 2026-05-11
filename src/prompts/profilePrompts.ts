@@ -1,0 +1,84 @@
+import type { ProfileStageId } from "@/db/types";
+import type { LlmMessage } from "@/features/llm/llmTypes";
+
+const dossierHeadings = [
+  "最初的回音",
+  "核心人格",
+  "外貌特征",
+  "背景故事",
+  "核心矛盾",
+  "说话风格",
+  "世界观",
+  "开场白",
+];
+
+export function buildProfileDraftMessages(brief: string): LlmMessage[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "你是《回音》的角色侧写师。用户不是来创建角色，而是在寻找一个已经存在的 TA。",
+        "你的任务是把用户的自然语言描述整理成一份诗意、克制、可继续推演的角色档案。",
+        "必须使用简体中文。不得输出 Markdown 代码块。只输出 JSON。",
+        "角色最终可能导出为中文 YAML/JSON，所以字段内容必须保持中文表达，并在叙事字段中使用 {{user}} 和 {{char}}。",
+        "不要把人物写成平面标签；必须包含内在矛盾、具体感官锚点和可延展的关系张力。",
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: [
+        "请根据下面的最初回音生成初始角色档案。",
+        "返回格式：",
+        '{"title":"18字以内的档案标题","dossierMarkdown":"完整 Markdown 档案"}',
+        `Markdown 必须按这些二级标题组织：${dossierHeadings.map((item) => `## ${item}`).join("、")}`,
+        "每个标题下写 1-3 句，不确定处可以保留“仍在雾中”，但不要空白。",
+        "",
+        `最初回音：${brief}`,
+      ].join("\n"),
+    },
+  ];
+}
+
+const stageInstructions: Record<ProfileStageId, string> = {
+  silhouette:
+    "生成三道不同的轮廓。每道轮廓要包含一个行为模式、一句像是 TA 在心里说的话，以及会写入档案的侧写增量。",
+  exclusion:
+    "生成三个看似相近但不该成为 TA 的假想档案。每项要指出应被排除的偏差，以及它的对立面如何更接近 TA。",
+  fragment:
+    "生成三个极短叙事碎片。每个碎片要像一瞬间被找回的记忆，并说明它暴露出的行为逻辑。",
+  diary:
+    "生成三种被墨迹遮住的日记真相。每项要揭示一个核心秘密、创伤或未说出口的愿望，并可写入核心矛盾。",
+};
+
+export function buildProfileStageMessages(input: {
+  stageId: ProfileStageId;
+  dossierMarkdown: string;
+  previousChoices: string;
+}): LlmMessage[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "你是《回音》的角色侧写师。你的语气应浪漫、克制、敏锐，避免刑侦压迫感。",
+        "所有内容使用简体中文。不要输出 Markdown 代码块。只输出 JSON。",
+        "每个候选都必须有内在冲突、具体感官细节，并尊重已确认档案。",
+        "如果文本涉及用户或角色，请使用 {{user}} 和 {{char}}，不要在叙事字段里反复使用真实姓名。",
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: [
+        stageInstructions[input.stageId],
+        "返回格式：",
+        '{"choices":[{"title":"候选标题","content":"用户可见主文本","detail":"补充说明","dossierAddition":"选择后写入角色档案的一段中文 Markdown 内容"}]}',
+        "choices 必须正好 3 个。",
+        "",
+        "当前角色档案：",
+        input.dossierMarkdown,
+        "",
+        "已经确认的选择：",
+        input.previousChoices || "暂无",
+      ].join("\n"),
+    },
+  ];
+}

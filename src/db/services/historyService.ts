@@ -17,6 +17,7 @@ export function createHistoryService(db: EchoDatabase = echoDb) {
       worldEntries: structuredClone(snapshot.worldEntries),
       greetingVariants: structuredClone(snapshot.greetingVariants),
       trialRuns: structuredClone(snapshot.trialRuns),
+      profileSession: snapshot.profileSession ? structuredClone(snapshot.profileSession) : project.profileSession,
       updatedAt: now,
     };
   }

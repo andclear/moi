@@ -59,6 +59,29 @@ export interface TrialRun {
   createdAt: string;
 }
 
+export type ProfileStageId = "silhouette" | "exclusion" | "fragment" | "diary";
+
+export interface ProfileChoice {
+  id: string;
+  title: string;
+  content: string;
+  detail?: string;
+  dossierAddition: string;
+}
+
+export interface ProfileStageState {
+  stageId: ProfileStageId;
+  choices: ProfileChoice[];
+  selectedChoiceId?: string;
+  generationId?: string;
+  completedAt?: string;
+}
+
+export interface ProfileSession {
+  currentStageId: ProfileStageId;
+  stages: Record<ProfileStageId, ProfileStageState>;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -67,6 +90,7 @@ export interface Project {
   worldEntries: WorldEntry[];
   greetingVariants: GreetingVariant[];
   trialRuns: TrialRun[];
+  profileSession?: ProfileSession;
   createdAt: string;
   updatedAt: string;
   archivedAt?: string;
@@ -81,6 +105,7 @@ export interface HistorySnapshot {
   worldEntries: WorldEntry[];
   greetingVariants: GreetingVariant[];
   trialRuns: TrialRun[];
+  profileSession?: ProfileSession;
   generationIds: string[];
   createdAt: string;
 }

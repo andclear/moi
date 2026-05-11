@@ -22,6 +22,9 @@ export function createHistoryRepository(db: EchoDatabase = echoDb) {
         worldEntries: structuredClone(input.project.worldEntries),
         greetingVariants: structuredClone(input.project.greetingVariants),
         trialRuns: structuredClone(input.project.trialRuns),
+        profileSession: input.project.profileSession
+          ? structuredClone(input.project.profileSession)
+          : undefined,
         generationIds: input.generationIds ?? [],
         createdAt: nowIso(),
       };
