@@ -6,8 +6,7 @@ import { autoSaveService } from "@/db/services/autoSaveService";
 import { nowIso } from "@/shared/lib/date";
 import {
   buildDossierBlockMeta,
-  mergeAiDossierWithLocks,
-  setDossierSectionLock,
+  mergeAiDossierMarkdown,
 } from "@/features/dossier/dossierSections";
 
 export type DossierSaveStatus = "idle" | "loading" | "saving" | "saved" | "error";
@@ -21,7 +20,6 @@ interface DossierState {
   loadProject: (projectId: string) => Promise<void>;
   hydrateFromProject: (project: Project) => void;
   updateMarkdown: (markdown: string) => Promise<void>;
-  toggleSectionLock: (section: string) => Promise<void>;
   applyAiMarkdown: (markdown: string, generationId?: string) => Promise<void>;
   reset: () => void;
 }
@@ -97,35 +95,13 @@ export const useDossierStore = create<DossierState>((set, get) => ({
     }
   },
 
-  async toggleSectionLock(section) {
-    const { projectId, markdown, blocks } = get();
-    const existing = blocks.find((block) => block.section === section);
-    const nextBlocks = setDossierSectionLock(blocks, section, !existing?.locked, nowIso());
-
-    set({ blocks: nextBlocks, saveStatus: "saving", errorMessage: null });
-    if (!projectId) {
-      set({ saveStatus: "saved" });
-      return;
-    }
-
-    try {
-      await saveDossier(projectId, markdown, nextBlocks);
-      set({ saveStatus: "saved" });
-    } catch (error) {
-      set({
-        saveStatus: "error",
-        errorMessage: error instanceof Error ? error.message : "锁定状态保存失败。",
-      });
-    }
-  },
-
   async applyAiMarkdown(markdown, generationId) {
     const { projectId, markdown: currentMarkdown, blocks } = get();
     if (!projectId) {
       return;
     }
 
-    const mergedMarkdown = mergeAiDossierWithLocks(currentMarkdown, blocks, markdown);
+    const { markdown: mergedMarkdown } = mergeAiDossierMarkdown(currentMarkdown, markdown);
     const nextBlocks = buildDossierBlockMeta(
       mergedMarkdown,
       blocks,

@@ -9,12 +9,10 @@ export function DossierPanel() {
   const { projectId } = useParams();
   const {
     markdown,
-    blocks,
     saveStatus,
     errorMessage,
     loadProject,
     updateMarkdown,
-    toggleSectionLock,
   } = useDossierStore();
 
   useEffect(() => {
@@ -62,9 +60,7 @@ export function DossierPanel() {
       {projectId ? (
         <DossierEditor
           markdown={markdown}
-          blocks={blocks}
           onChange={(nextMarkdown) => void updateMarkdown(nextMarkdown)}
-          onToggleLock={(section) => void toggleSectionLock(section)}
         />
       ) : (
         <div className="p-5">

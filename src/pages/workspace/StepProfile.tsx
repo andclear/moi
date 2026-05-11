@@ -15,7 +15,6 @@ import { useDossierStore } from "@/features/dossier/dossierStore";
 import {
   buildDossierBlockMeta,
   parseDossierSections,
-  setDossierSectionLock,
 } from "@/features/dossier/dossierSections";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { useGenerationStore } from "@/features/generation/generationStore";
@@ -207,16 +206,13 @@ export function StepProfile() {
       targetSection,
       choice.dossierAddition,
     );
-    let nextBlocks: DossierBlockMeta[] = buildDossierBlockMeta(
+    const nextBlocks: DossierBlockMeta[] = buildDossierBlockMeta(
       nextMarkdown,
       project.dossier.blocks,
       "user_confirmed",
       now,
       currentStage.generationId,
     );
-    if (currentStageId === "diary") {
-      nextBlocks = setDossierSectionLock(nextBlocks, "核心矛盾", true, now);
-    }
 
     const nextStageId = getNextProfileStage(currentStageId);
     const nextSession: ProfileSession = {
@@ -371,7 +367,7 @@ export function StepProfile() {
                   onCancel={() => cancel(generationKey)}
                 />
                 <p className="font-mono text-xs leading-5 text-[var(--echo-muted)]">
-                  选择后会写入 TA 的回音；日记阶段会自动锁定核心矛盾。
+                  选择后会写入 TA 的回音，逐步让核心人格更清楚。
                 </p>
               </div>
             )}

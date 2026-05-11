@@ -12,6 +12,8 @@ const dossierHeadings = [
   "开场白",
 ];
 
+const profileCoreHeadings = ["核心人格", "外貌特征", "背景故事", "核心矛盾", "说话风格"];
+
 export function buildProfileDraftMessages(brief: string): LlmMessage[] {
   return [
     {
@@ -31,7 +33,9 @@ export function buildProfileDraftMessages(brief: string): LlmMessage[] {
         "返回格式：",
         '{"title":"18字以内的档案标题","dossierMarkdown":"完整 Markdown 档案"}',
         `Markdown 必须按这些二级标题组织：${dossierHeadings.map((item) => `## ${item}`).join("、")}`,
-        "每个标题下写 1-3 句，不确定处可以保留“仍在雾中”，但不要空白。",
+        `当前仍处于“辨认轮廓”阶段，只展开这些段落：${profileCoreHeadings.map((item) => `## ${item}`).join("、")}。`,
+        "## 世界观 与 ## 开场白 必须暂时写“尚未听见”，不要提前生成世界设定或开场白。",
+        "已展开段落每段写 1-3 句，不确定处可以保留“仍在雾中”，但不要空白。",
         "",
         `最初回音：${brief}`,
       ].join("\n"),
@@ -41,13 +45,13 @@ export function buildProfileDraftMessages(brief: string): LlmMessage[] {
 
 const stageInstructions: Record<ProfileStageId, string> = {
   silhouette:
-    "生成三道不同的轮廓。每道轮廓要包含一个行为模式、一句像是 TA 在心里说的话，以及会写入档案的侧写增量。",
+    "生成三道不同的轮廓。每道轮廓要聚焦 TA 的核心人格：一个行为模式、一句像是 TA 在心里说的话，以及会写入“核心人格”的侧写增量。",
   exclusion:
-    "生成三个看似相近但不该成为 TA 的假想档案。每项要指出应被排除的偏差，以及它的对立面如何更接近 TA。",
+    "生成三个看似相近但不该成为 TA 的假想档案。每项要指出应被排除的人格偏差，以及它的对立面如何更接近 TA。",
   fragment:
-    "生成三个极短叙事碎片。每个碎片要像一瞬间被找回的记忆，并说明它暴露出的行为逻辑。",
+    "生成三个极短叙事碎片。每个碎片要像一瞬间被找回的记忆，并说明它暴露出的行为逻辑；内容只服务于“背景故事”，不要扩写世界观。",
   diary:
-    "生成三种被墨迹遮住的日记真相。每项要揭示一个核心秘密、创伤或未说出口的愿望，并可写入核心矛盾。",
+    "生成三种被墨迹遮住的日记真相。每项要揭示一个核心秘密、创伤或未说出口的愿望，并只写入“核心矛盾”。",
 };
 
 export function buildProfileStageMessages(input: {
@@ -72,6 +76,8 @@ export function buildProfileStageMessages(input: {
         "返回格式：",
         '{"choices":[{"title":"候选标题","content":"用户可见主文本","detail":"补充说明","dossierAddition":"选择后写入角色档案的一段中文 Markdown 内容"}]}',
         "choices 必须正好 3 个。",
+        "dossierAddition 只写当前阶段要补入的角色核心内容，不要包含 Markdown 标题。",
+        "不要生成或补写世界观、开场白、导出格式，也不要把角色写成完整角色卡。",
         "",
         "当前角色档案：",
         input.dossierMarkdown,

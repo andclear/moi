@@ -106,19 +106,7 @@ export function buildDossierBlockMeta(
   });
 }
 
-export function setDossierSectionLock(
-  blocks: DossierBlockMeta[],
-  section: string,
-  locked: boolean,
-  updatedAt: string,
-) {
-  return blocks.map((block) =>
-    block.section === section ? { ...block, locked, updatedAt } : block,
-  );
-}
-
 export function mergeAiDossierMarkdown(currentMarkdown: string, aiMarkdown: string) {
-  const lockedSections = new Set<string>();
   const currentBlocks = parseDossierSections(currentMarkdown);
   const aiBlocks = parseDossierSections(aiMarkdown);
   const currentBySection = new Map(currentBlocks.map((block) => [block.section, block]));
@@ -130,33 +118,9 @@ export function mergeAiDossierMarkdown(currentMarkdown: string, aiMarkdown: stri
       .map((section) => {
         const current = currentBySection.get(section);
         const ai = aiBySection.get(section);
-        const selected = lockedSections.has(section) ? current : (ai ?? current);
+        const selected = ai ?? current;
         return `## ${section}\n\n${selected?.content?.trim() || "尚未听见"}`;
       })
       .join("\n\n"),
   };
-}
-
-export function mergeAiDossierWithLocks(
-  currentMarkdown: string,
-  currentBlocksMeta: DossierBlockMeta[],
-  aiMarkdown: string,
-) {
-  const lockedSections = new Set(
-    currentBlocksMeta.filter((block) => block.locked).map((block) => block.section),
-  );
-  const currentBlocks = parseDossierSections(currentMarkdown);
-  const aiBlocks = parseDossierSections(aiMarkdown);
-  const currentBySection = new Map(currentBlocks.map((block) => [block.section, block]));
-  const aiBySection = new Map(aiBlocks.map((block) => [block.section, block]));
-  const orderedSections = [...new Set([...currentBlocks, ...aiBlocks].map((block) => block.section))];
-
-  return orderedSections
-    .map((section) => {
-      const current = currentBySection.get(section);
-      const ai = aiBySection.get(section);
-      const selected = lockedSections.has(section) ? current : (ai ?? current);
-      return `## ${section}\n\n${selected?.content?.trim() || "尚未听见"}`;
-    })
-    .join("\n\n");
 }

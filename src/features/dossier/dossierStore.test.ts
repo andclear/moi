@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildDossierBlockMeta,
   createDefaultDossierMarkdown,
-  mergeAiDossierWithLocks,
+  mergeAiDossierMarkdown,
 } from "@/features/dossier/dossierSections";
 import { nowIso } from "@/shared/lib/date";
 
@@ -28,16 +28,12 @@ describe("dossierSections", () => {
     );
   });
 
-  it("锁定段落不会被 AI 更新覆盖", () => {
+  it("合并 AI 档案时保留原有段落顺序并使用新内容", () => {
     const initial = "## 核心人格\n\n用户确认的本心\n\n## 世界观\n\n旧世界";
-    const blocks = buildDossierBlockMeta(initial, [], "user_confirmed", nowIso()).map((block) =>
-      block.section === "核心人格" ? { ...block, locked: true } : block,
-    );
     const ai = "## 核心人格\n\nAI 想改写的本心\n\n## 世界观\n\n新世界";
-    const merged = mergeAiDossierWithLocks(initial, blocks, ai);
+    const merged = mergeAiDossierMarkdown(initial, ai);
 
-    expect(merged).toContain("用户确认的本心");
-    expect(merged).not.toContain("AI 想改写的本心");
-    expect(merged).toContain("新世界");
+    expect(merged.markdown).toContain("AI 想改写的本心");
+    expect(merged.markdown).toContain("新世界");
   });
 });
