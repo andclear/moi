@@ -13,26 +13,28 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
 
   return (
     <div className="relative min-h-[calc(100vh-9rem)] overflow-hidden border border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] shadow-[inset_0_0_0_1px_rgba(211,197,170,0.06)]">
-      <div className="absolute right-4 top-4 z-20 flex flex-wrap justify-end gap-2">
-        <ApiStatusBadge />
-        <Button
-          type="button"
-          size="icon"
-          variant="secondary"
-          aria-label="查看 API 状态"
-          onClick={() => openPanel("api")}
-        >
-          <Server aria-hidden="true" size={18} />
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="secondary"
-          aria-label="打开 TA 的回音"
-          onClick={() => openPanel("dossier")}
-        >
-          <UserRoundCog aria-hidden="true" size={18} />
-        </Button>
+      <div className="border-b border-[var(--echo-line)] bg-[rgba(2,16,24,0.28)] px-4 py-3">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ApiStatusBadge />
+          <Button
+            type="button"
+            size="icon"
+            variant="secondary"
+            aria-label="查看 API 状态"
+            onClick={() => openPanel("api")}
+          >
+            <Server aria-hidden="true" size={18} />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="secondary"
+            aria-label="打开 TA 的回音"
+            onClick={() => openPanel("dossier")}
+          >
+            <UserRoundCog aria-hidden="true" size={18} />
+          </Button>
+        </div>
       </div>
       <div className="min-h-[calc(100vh-9rem)]">
         {children}
@@ -58,18 +60,18 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
               >
                 <div className="flex h-full flex-col bg-[rgba(18,33,42,0.98)]">
                   <div className="flex justify-end border-b border-[var(--echo-line)] p-3">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={closePanel}
-                    aria-label="关闭侧边抽屉"
-                  >
-                    <X aria-hidden="true" size={18} />
-                  </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={closePanel}
+                      aria-label="关闭侧边抽屉"
+                    >
+                      <X aria-hidden="true" size={18} />
+                    </Button>
+                  </div>
+                  {activePanel === "api" ? <ApiStatusPanel /> : <DossierPanel />}
                 </div>
-                {activePanel === "api" ? <ApiStatusPanel /> : <DossierPanel />}
-              </div>
               </motion.div>
             </>
           )}
