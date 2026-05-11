@@ -54,6 +54,14 @@ export function createProjectService(db: EchoDatabase = echoDb) {
     async updateProject(projectId: string, patch: Partial<Omit<Project, "id" | "createdAt">>) {
       return projects.update(projectId, patch);
     },
+
+    async copyProject(projectId: string, title?: string) {
+      return projects.copy(projectId, title);
+    },
+
+    async deleteProject(projectId: string) {
+      return projects.delete(projectId);
+    },
   };
 }
 

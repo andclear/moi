@@ -15,6 +15,7 @@ import { StepProgress } from "@/features/flow/StepProgress";
 import type { FlowStep } from "@/features/flow/flowTypes";
 import { StepPost } from "@/pages/workspace/StepPost";
 import { StepProfile } from "@/pages/workspace/StepProfile";
+import { StepExport } from "@/pages/workspace/StepExport";
 import { StepGreeting } from "@/pages/workspace/StepGreeting";
 import { StepTrial } from "@/pages/workspace/StepTrial";
 import { StepWorld } from "@/pages/workspace/StepWorld";
@@ -85,6 +86,8 @@ export function WorkspacePage() {
               <StepGreeting />
             ) : currentStepId === "trial" ? (
               <StepTrial />
+            ) : currentStepId === "export" ? (
+              <StepExport />
             ) : (
               <FutureStep stepId={currentStepId} />
             )}

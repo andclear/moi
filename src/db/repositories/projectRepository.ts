@@ -4,6 +4,7 @@ import { createProjectDraft } from "@/db/defaults";
 import type { DossierBlockMeta, Project } from "@/db/types";
 import type { FlowStepId } from "@/features/flow/flowStore";
 import { nowIso } from "@/shared/lib/date";
+import { createId } from "@/shared/lib/ids";
 
 export interface CreateProjectInput {
   title?: string;
@@ -39,6 +40,59 @@ export function createProjectRepository(db: EchoDatabase = echoDb) {
 
     async updateCurrentStep(id: string, currentStep: FlowStepId) {
       return this.update(id, { currentStep });
+    },
+
+    async copy(id: string, title?: string) {
+      const project = await db.projects.get(id);
+      if (!project) {
+        throw new Error("无法复制不存在的档案。");
+      }
+
+      const now = nowIso();
+      const nextProject: Project = {
+        ...structuredClone(project),
+        id: createId("project"),
+        title: title ?? `${project.title} 副本`,
+        createdAt: now,
+        updatedAt: now,
+        archivedAt: undefined,
+        worldEntries: project.worldEntries.map((entry) => ({
+          ...entry,
+          id: createId("world"),
+          projectId: "",
+          createdAt: now,
+          updatedAt: now,
+        })),
+        greetingVariants: project.greetingVariants.map((variant) => ({
+          ...variant,
+          id: createId("greeting"),
+          projectId: "",
+          createdAt: now,
+          updatedAt: now,
+        })),
+        trialRuns: project.trialRuns.map((trial) => ({
+          ...trial,
+          id: createId("trial"),
+          projectId: "",
+          createdAt: now,
+        })),
+      };
+
+      nextProject.worldEntries = nextProject.worldEntries.map((entry) => ({
+        ...entry,
+        projectId: nextProject.id,
+      }));
+      nextProject.greetingVariants = nextProject.greetingVariants.map((variant) => ({
+        ...variant,
+        projectId: nextProject.id,
+      }));
+      nextProject.trialRuns = nextProject.trialRuns.map((trial) => ({
+        ...trial,
+        projectId: nextProject.id,
+      }));
+
+      await db.projects.add(nextProject);
+      return nextProject;
     },
 
     async getCurrent() {

@@ -87,4 +87,34 @@ describe("historyService", () => {
     expect(restored.greetingVariants).toHaveLength(1);
     expect(restored.trialRuns).toHaveLength(1);
   });
+
+  it("可以从历史节点复制新版本且不覆盖原项目", async () => {
+    const projects = createProjectRepository(db);
+    const history = createHistoryService(db);
+    const project = await projects.create({ title: "原始回音" });
+    await projects.update(project.id, {
+      currentStep: "world",
+      worldEntries: [
+        {
+          id: "world_origin",
+          projectId: project.id,
+          title: "钟楼",
+          content: "铜钟已经裂开。",
+          keywords: ["钟楼"],
+          enabled: true,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+        },
+      ],
+    });
+    const snapshot = await history.createSnapshot(project.id, "钟楼出现");
+
+    const copied = await history.copySnapshot(snapshot.id);
+    const original = await projects.getById(project.id);
+
+    expect(copied.id).not.toBe(project.id);
+    expect(copied.title).toContain("历史版本");
+    expect(copied.worldEntries[0].projectId).toBe(copied.id);
+    expect(original?.id).toBe(project.id);
+  });
 });

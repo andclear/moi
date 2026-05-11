@@ -1,27 +1,110 @@
-import { FileArchive, Plus } from "lucide-react";
+import { Copy, FileArchive, History, PencilLine, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
+import { exportRepository } from "@/db/repositories/exportRepository";
 import { projectService } from "@/db/services/projectService";
-import type { Project } from "@/db/types";
+import { historyService } from "@/db/services/historyService";
+import type { ExportRecord, HistorySnapshot, Project } from "@/db/types";
+import { buildCharacterCard, formatCharacterCardJson } from "@/features/export/characterCardBuilder";
+import { downloadText } from "@/features/export/exportStore";
+import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { HistoryTimeline } from "@/shared/components/HistoryTimeline";
 import { Button } from "@/shared/components/ui/button";
 
+interface ProjectLibraryItem {
+  project: Project;
+  exports: ExportRecord[];
+  histories: HistorySnapshot[];
+}
+
 export function LibraryPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const navigate = useNavigate();
+  const [items, setItems] = useState<ProjectLibraryItem[]>([]);
+  const [expandedProjectId, setExpandedProjectId] = useState<string>();
+  const [deleteTarget, setDeleteTarget] = useState<Project>();
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let mounted = true;
 
-    projectService.listActiveProjects().then((items) => {
+    loadItems().catch((loadError: unknown) => {
       if (mounted) {
-        setProjects(items);
+        setError(loadError instanceof Error ? loadError.message : "读取档案库失败。");
       }
     });
 
     return () => {
       mounted = false;
     };
+
+    async function loadItems() {
+      const projects = await projectService.listActiveProjects();
+      const nextItems = await Promise.all(
+        projects.map(async (project) => ({
+          project,
+          exports: await exportRepository.listByProject(project.id),
+          histories: await historyService.listProjectSnapshots(project.id),
+        })),
+      );
+      if (mounted) {
+        setItems(nextItems);
+      }
+    }
   }, []);
+
+  async function reload() {
+    const projects = await projectService.listActiveProjects();
+    setItems(
+      await Promise.all(
+        projects.map(async (project) => ({
+          project,
+          exports: await exportRepository.listByProject(project.id),
+          histories: await historyService.listProjectSnapshots(project.id),
+        })),
+      ),
+    );
+  }
+
+  async function handleCopy(project: Project) {
+    const copied = await projectService.copyProject(project.id);
+    await reload();
+    void navigate(`/workspace/${copied.id}/${copied.currentStep}`);
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) {
+      return;
+    }
+    await projectService.deleteProject(deleteTarget.id);
+    setDeleteTarget(undefined);
+    await reload();
+  }
+
+  async function handleRestore(historyId: string) {
+    const restored = await historyService.restoreSnapshot(historyId);
+    await reload();
+    void navigate(`/workspace/${restored.id}/${restored.currentStep}`);
+  }
+
+  async function handleCopyHistory(historyId: string) {
+    const copied = await historyService.copySnapshot(historyId);
+    await reload();
+    void navigate(`/workspace/${copied.id}/${copied.currentStep}`);
+  }
+
+  async function handleReexport(project: Project) {
+    const card = buildCharacterCard({ project, versionLabel: "library-reexport" });
+    const formattedJson = formatCharacterCardJson(card);
+    await exportRepository.create({
+      projectId: project.id,
+      format: "json",
+      versionLabel: "library-reexport",
+      jsonPreview: formattedJson.slice(0, 5000),
+    });
+    downloadText(formattedJson, `${project.title.replace(/[\\/:*?"<>|]/g, "_") || "echo-character"}.json`);
+    await reload();
+  }
 
   return (
     <section className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-6">
@@ -41,21 +124,90 @@ export function LibraryPage() {
           </Link>
         </Button>
       </div>
-      {projects.length > 0 ? (
-        <div className="mt-8 grid gap-3">
-          {projects.map((project) => (
-            <Link
+      {error && (
+        <p className="mt-5 border border-[var(--echo-stamp)] bg-[rgba(120,40,34,0.16)] p-3 font-mono text-sm text-[var(--echo-paper)]">
+          {error}
+        </p>
+      )}
+      {items.length > 0 ? (
+        <div className="mt-8 grid gap-4">
+          {items.map(({ project, exports, histories }) => (
+            <article
               key={project.id}
-              to={`/workspace/${project.id}/${project.currentStep}`}
-              className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.34)] p-4 transition-colors hover:border-[var(--echo-paper)]"
+              className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.34)] p-4"
             >
-              <p className="font-display text-xl font-black text-[var(--echo-paper)]">
-                {project.title}
-              </p>
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--echo-muted)]">
-                当前阶段：{project.currentStep}
-              </p>
-            </Link>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="font-display text-xl font-black text-[var(--echo-paper)]">
+                    {project.title}
+                  </p>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--echo-muted)]">
+                    当前阶段：{project.currentStep} · 更新于 {new Date(project.updatedAt).toLocaleString()}
+                  </p>
+                  <p className="mt-2 font-mono text-sm text-[var(--echo-muted)]">
+                    导出状态：{exports[0] ? `${exports[0].format.toUpperCase()} · ${new Date(exports[0].createdAt).toLocaleString()}` : "尚未导出"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm">
+                    <Link to={`/workspace/${project.id}/${project.currentStep}`}>
+                      <PencilLine aria-hidden="true" size={15} />
+                      继续
+                    </Link>
+                  </Button>
+                  <Button type="button" size="sm" variant="secondary" onClick={() => void handleCopy(project)}>
+                    <Copy aria-hidden="true" size={15} />
+                    复制
+                  </Button>
+                  <Button type="button" size="sm" variant="secondary" onClick={() => void handleReexport(project)}>
+                    <RefreshCw aria-hidden="true" size={15} />
+                    重新导出
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setDeleteTarget(project)}>
+                    <Trash2 aria-hidden="true" size={15} />
+                    删除
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-4 border-t border-[var(--echo-line)] pt-4">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    setExpandedProjectId(expandedProjectId === project.id ? undefined : project.id)
+                  }
+                >
+                  <History aria-hidden="true" size={15} />
+                  {expandedProjectId === project.id ? "收起历史" : "查看历史"}
+                </Button>
+                {expandedProjectId === project.id && (
+                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                    <HistoryTimeline histories={histories} onRestore={(id) => void handleRestore(id)} />
+                    <div className="space-y-3">
+                      {histories.length ? (
+                        histories.map((history) => (
+                          <Button
+                            key={history.id}
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => void handleCopyHistory(history.id)}
+                          >
+                            从“{history.title}”复制新版本
+                          </Button>
+                        ))
+                      ) : (
+                        <p className="font-mono text-sm text-[var(--echo-muted)]">
+                          这个档案还没有可复制的历史节点。
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </article>
           ))}
         </div>
       ) : (
@@ -63,10 +215,18 @@ export function LibraryPage() {
           <FileArchive aria-hidden="true" size={40} className="text-[var(--echo-muted)]" />
           <p className="mt-4 font-bold text-[var(--echo-paper)]">还没有被寻回的 TA</p>
           <p className="mt-2 max-w-md text-sm leading-6 text-[var(--echo-muted)]">
-            阶段 2 会接入 Dexie 本地数据库，创建、复制、删除和重新导出档案都会从这里开始。
+            从一张寻人启事开始，等 TA 被你慢慢认出来。
           </p>
         </div>
       )}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="确认删除这个回音？"
+        description="删除后会清理这个档案关联的历史、生成记录和导出记录，无法从本地恢复。"
+        confirmLabel="删除"
+        onConfirm={() => void handleDelete()}
+        onCancel={() => setDeleteTarget(undefined)}
+      />
     </section>
   );
 }

@@ -33,8 +33,13 @@ describe("Dexie repositories", () => {
     const saved = await projects.updateDossier(project.id, "## TA 的本心\n\n沉默而温柔。");
     expect(saved?.dossier.markdown).toContain("沉默而温柔");
 
+    const copied = await projects.copy(project.id);
+    expect(copied.id).not.toBe(project.id);
+    expect(copied.title).toContain("副本");
+
     await projects.delete(project.id);
     expect(await projects.getById(project.id)).toBeUndefined();
+    expect(await projects.getById(copied.id)).toBeDefined();
   });
 
   it("settingsRepository 支持保存和读取 API 设置", async () => {
