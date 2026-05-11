@@ -1,11 +1,14 @@
-import { Eye, FilePenLine } from "lucide-react";
+import { CheckCircle2, Clock3, Eye, FilePenLine, Save, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
+import type { DossierSaveStatus } from "@/features/dossier/dossierStore";
 import { Button } from "@/shared/components/ui/button";
 
 interface DossierEditorProps {
   markdown: string;
+  saveStatus: DossierSaveStatus;
   onChange: (markdown: string) => void;
+  onSave: (markdown: string) => void;
 }
 
 function renderInlineMarkdown(text: string) {
@@ -51,9 +54,28 @@ function MarkdownPreview({ markdown }: { markdown: string }) {
 
 export function DossierEditor({
   markdown,
+  saveStatus,
   onChange,
+  onSave,
 }: DossierEditorProps) {
   const [mode, setMode] = useState<"edit" | "preview">("edit");
+  const SaveIcon =
+    saveStatus === "saving"
+      ? Clock3
+      : saveStatus === "saved"
+        ? CheckCircle2
+        : saveStatus === "error"
+          ? TriangleAlert
+          : Save;
+  const saveLabel =
+    saveStatus === "saving"
+      ? "正在保存"
+      : saveStatus === "saved"
+        ? "已保存"
+        : saveStatus === "error"
+          ? "重新保存"
+          : "保存";
+  const isSaving = saveStatus === "saving" || saveStatus === "loading";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -78,6 +100,17 @@ export function DossierEditor({
             预览
           </Button>
         </div>
+        <Button
+          type="button"
+          size="sm"
+          variant={saveStatus === "saved" ? "secondary" : "primary"}
+          onClick={() => onSave(markdown)}
+          disabled={isSaving}
+          aria-label="保存 TA 的回音"
+        >
+          <SaveIcon aria-hidden="true" size={16} />
+          {saveLabel}
+        </Button>
       </div>
 
       <div className="min-h-0 flex-[1_1_auto] overflow-auto p-4">
