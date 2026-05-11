@@ -1,4 +1,4 @@
-import type { ModelChannelSettings } from "@/server/admin/adminTypes";
+import type { ModelChannelSettings, PublicModelChannelStatus } from "@/server/admin/adminTypes";
 import { createPostgresClient } from "@/server/db/postgres";
 import { getEnv } from "@/server/runtime/env";
 
@@ -17,7 +17,7 @@ export async function getModelChannelSettings(
 
   if (!row) {
     return {
-      presetEnabled: true,
+      presetEnabled: false,
       model: getEnv("PRESET_MODEL") ?? "preset-model",
       updatedAt: new Date().toISOString(),
       updatedBy: "system",
@@ -48,4 +48,14 @@ export async function saveModelChannelSettings(
   `;
 
   return getModelChannelSettings(sql);
+}
+
+export async function getPublicModelChannelStatus(
+  sql = createPostgresClient(),
+): Promise<PublicModelChannelStatus> {
+  const settings = await getModelChannelSettings(sql);
+  return {
+    presetEnabled: settings.presetEnabled,
+    model: settings.presetEnabled ? settings.model : undefined,
+  };
 }

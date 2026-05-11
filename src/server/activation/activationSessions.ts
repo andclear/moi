@@ -2,20 +2,27 @@ import { createPostgresClient } from "@/server/db/postgres";
 import { getEnv } from "@/server/runtime/env";
 import { createId } from "@/shared/lib/ids";
 import { hashActivationSecret } from "@/server/activation/activationCodes";
+import { getModelChannelSettings } from "@/server/admin/modelChannel";
 
 export async function activateCode(code: string, sql = createPostgresClient()) {
+  const channel = await getModelChannelSettings(sql);
+  if (!channel.presetEnabled) {
+    throw new Error("预置模型渠道暂未开启。");
+  }
+
   const codeHash = await hashActivationSecret(code);
   const sessionToken = createId("session");
   const sessionHash = await hashActivationSecret(sessionToken);
   const sessionId = createId("activation_session");
-  const availableModel = getEnv("PRESET_MODEL") ?? "preset-model";
+  const availableModel = channel.model || getEnv("PRESET_MODEL") || "preset-model";
 
   const rows = await sql`
     with selected_code as (
-      select id, usage_limit
+      select id, usage_limit, duration_hours
       from activation_codes
       where code_hash = ${codeHash}
         and status = 'unused'
+        and deleted_at is null
       for update
     ),
     inserted_session as (
@@ -30,7 +37,7 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
         ${sessionId},
         selected_code.id,
         ${sessionHash},
-        now() + interval '72 hours',
+        now() + make_interval(hours => selected_code.duration_hours),
         selected_code.usage_limit
       from selected_code
       returning id, expires_at, usage_limit, usage_count

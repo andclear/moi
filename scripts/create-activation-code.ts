@@ -1,18 +1,48 @@
-import { createActivationCodeRecord } from "../src/server/activation/activationCodes";
-import { createId } from "../src/shared/lib/ids";
+import { createActivationCodeBatch } from "../src/server/activation/activationCodes";
 
-function readUsageLimit() {
-  const raw = process.argv.find((item) => item.startsWith("--usage-limit="))?.split("=")[1];
-  const parsed = Number(raw ?? 100);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 100;
+function readPositiveInteger(name: string, fallback: number, max: number) {
+  const raw = process.argv.find((item) => item.startsWith(`--${name}=`))?.split("=")[1];
+  const parsed = Number(raw ?? fallback);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return Math.min(Math.floor(parsed), max);
+}
+
+function createPlainActivationCode() {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  const suffix = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+  return `LPB-${suffix}`;
 }
 
 async function main() {
-  const code = createId("echo_code").replace(/_/g, "-");
-  const usageLimit = readUsageLimit();
-  const record = await createActivationCodeRecord({ code, usageLimit });
+  const quantity = readPositiveInteger("quantity", 1, 200);
+  const usageLimit = readPositiveInteger("usage-limit", 100, 100000);
+  const durationHours = readPositiveInteger("duration-hours", 72, 24 * 365);
+  const customCodes = process.argv
+    .filter((item) => item.startsWith("--code="))
+    .map((item) => item.slice("--code=".length).trim())
+    .filter((item, index, list) => item && list.indexOf(item) === index);
+  const codes =
+    customCodes.length > 0
+      ? customCodes
+      : Array.from({ length: quantity }, createPlainActivationCode);
+  const records = await createActivationCodeBatch({ codes, usageLimit, durationHours });
 
-  console.log(JSON.stringify({ ...record, code, usageLimit }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        codes: records.map((record, index) => ({ ...record, code: codes[index] })),
+        quantity,
+        usageLimit,
+        durationHours,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 void main().catch((error) => {

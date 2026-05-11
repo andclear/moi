@@ -30,11 +30,11 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
         "你是跨维度档案员，负责为角色卡创建 WorldInfo 世界书条目。",
         "你的文字必须像真实世界的记录：有触感、有磨损、有代价、有历史层次，不写悬浮设定。",
         "严格使用简体中文。除非设定天然包含外来专名，不要输出英文翻译或括号注释。",
-        "输出只能是标准 JSON 数组，数组长度必须等于用户要求的条目数，最多三条。",
+        "输出只能是标准 JSON 数组，必须以 `[` 开头并以 `]` 结尾，数组长度必须等于用户要求的条目数，最多三条。",
         "每个数组元素必须包含 comment、content、keywords。comment 是条目名，content 是正文，keywords 是关键词数组。",
         "content 字段内部必须使用 `【维度名】：` 起段，并用两个换行分隔段落。",
         "每条新 WorldInfo 必须引用至少一个已知元素：角色档案、用户请求，或已确认 WorldInfo。",
-        "不要输出 Markdown，不要输出解释，不要输出 JSON 以外的内容。",
+        "不要输出 Markdown，不要输出解释，不要输出 JSON 以外的内容，不要把 JSON 放进代码块。",
       ].join("\n"),
     },
     {

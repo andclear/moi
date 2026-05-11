@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { ApiSettings } from "@/db/types";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
+import { useModelChannelStore } from "@/features/activation/modelChannelStore";
 
 export type ApiAvailability =
   | { available: false; reason: string; mode: "none" | "custom" | "preset" }
@@ -72,6 +73,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         model: settings.model,
         mode: "custom",
       };
+    }
+
+    const channel = useModelChannelStore.getState().channel;
+    if (!channel.presetEnabled) {
+      return { available: false, reason: "尚未连接模型", mode: "none" };
     }
 
     return {

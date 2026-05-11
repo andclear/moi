@@ -2,6 +2,7 @@ import { KeyRound, Save, Server, ToggleLeft, ToggleRight } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 import { useActivationStore } from "@/features/activation/activationStore";
+import { useModelChannelStore } from "@/features/activation/modelChannelStore";
 import { defaultApiSettings, useSettingsStore } from "@/features/settings/settingsStore";
 import { Button } from "@/shared/components/ui/button";
 
@@ -14,13 +15,15 @@ export function SettingsPage() {
     load: loadActivation,
     activate,
   } = useActivationStore();
+  const { channel, load: loadModelChannel } = useModelChannelStore();
   const [form, setForm] = useState(defaultApiSettings);
   const [activationCode, setActivationCode] = useState("");
 
   useEffect(() => {
     void load();
     void loadActivation();
-  }, [load, loadActivation]);
+    void loadModelChannel();
+  }, [load, loadActivation, loadModelChannel]);
 
   useEffect(() => {
     if (apiSettings) {
@@ -34,6 +37,12 @@ export function SettingsPage() {
       });
     }
   }, [apiSettings]);
+
+  useEffect(() => {
+    if (!channel.presetEnabled && form.mode === "preset") {
+      setForm((current) => ({ ...current, mode: "none", model: "" }));
+    }
+  }, [channel.presetEnabled, form.mode]);
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,7 +88,7 @@ export function SettingsPage() {
             >
               <option value="none">暂不连接</option>
               <option value="custom">自配 OpenAI 兼容接口</option>
-              <option value="preset">预置调用模式</option>
+              {channel.presetEnabled && <option value="preset">预置调用模式</option>}
             </select>
           </label>
 
@@ -155,7 +164,9 @@ export function SettingsPage() {
             )}
           </button>
 
-          {errorMessage && <p className="font-mono text-sm text-[var(--echo-stamp)]">{errorMessage}</p>}
+          {errorMessage && (
+            <p className="font-mono text-sm text-[var(--echo-stamp)]">{errorMessage}</p>
+          )}
           <div className="flex items-center gap-3">
             <Button type="submit" disabled={status === "saving"}>
               <Save aria-hidden="true" size={18} />
@@ -168,43 +179,50 @@ export function SettingsPage() {
         </form>
       </article>
 
-      <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-paper)] p-6 text-[var(--echo-ink)]">
-        <KeyRound aria-hidden="true" size={24} />
-        <h2 className="mt-4 font-display text-2xl font-black">预置调用激活</h2>
-        <p className="mt-4 font-mono text-sm leading-6">
-          激活码只会发送给服务端校验。真实模型密钥保留在服务端环境变量中，不写入浏览器。
-        </p>
+      {channel.presetEnabled && (
+        <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-paper)] p-6 text-[var(--echo-ink)]">
+          <KeyRound aria-hidden="true" size={24} />
+          <h2 className="mt-4 font-display text-2xl font-black">预置调用激活</h2>
+          <p className="mt-4 font-mono text-sm leading-6">
+            激活码只会发送给服务端校验。真实模型密钥保留在服务端环境变量中，不写入浏览器。
+          </p>
 
-        <form className="mt-6 grid gap-4" onSubmit={handleActivate}>
-          <label className="grid gap-2 font-mono text-sm">
-            激活码
-            <input
-              value={activationCode}
-              onChange={(event) => setActivationCode(event.target.value)}
-              className="h-11 border-2 border-[var(--echo-ink)] bg-transparent px-3 outline-none focus:border-[var(--echo-stamp)]"
-              placeholder="输入收到的激活码"
-            />
-          </label>
-          {activationError && (
-            <p className="font-mono text-sm text-[var(--echo-stamp)]">{activationError}</p>
-          )}
-          <Button type="submit" disabled={activationStatus === "activating" || !activationCode.trim()}>
-            <KeyRound aria-hidden="true" size={18} />
-            {activationStatus === "activating" ? "正在激活" : "激活预置调用"}
-          </Button>
-        </form>
+          <form className="mt-6 grid gap-4" onSubmit={handleActivate}>
+            <label className="grid gap-2 font-mono text-sm">
+              激活码
+              <input
+                value={activationCode}
+                onChange={(event) => setActivationCode(event.target.value)}
+                className="h-11 border-2 border-[var(--echo-ink)] bg-transparent px-3 outline-none focus:border-[var(--echo-stamp)]"
+                placeholder="输入收到的激活码"
+              />
+            </label>
+            {activationError && (
+              <p className="font-mono text-sm text-[var(--echo-stamp)]">{activationError}</p>
+            )}
+            <Button
+              type="submit"
+              disabled={activationStatus === "activating" || !activationCode.trim()}
+            >
+              <KeyRound aria-hidden="true" size={18} />
+              {activationStatus === "activating" ? "正在激活" : "激活预置调用"}
+            </Button>
+          </form>
 
-        <div className="mt-6 border-2 border-[var(--echo-ink)] p-4 font-mono text-sm leading-7">
-          <p>状态：{activation?.status === "active" ? "已激活" : "未激活"}</p>
-          {activation?.availableModel && <p>模型：{activation.availableModel}</p>}
-          {activation?.expiresAt && <p>到期：{new Date(activation.expiresAt).toLocaleString()}</p>}
-          {activation?.usageLimit && (
-            <p>
-              调用：{activation.usageCount}/{activation.usageLimit}
-            </p>
-          )}
-        </div>
-      </article>
+          <div className="mt-6 border-2 border-[var(--echo-ink)] p-4 font-mono text-sm leading-7">
+            <p>状态：{activation?.status === "active" ? "已激活" : "未激活"}</p>
+            {activation?.availableModel && <p>模型：{activation.availableModel}</p>}
+            {activation?.expiresAt && (
+              <p>到期：{new Date(activation.expiresAt).toLocaleString()}</p>
+            )}
+            {activation?.usageLimit && (
+              <p>
+                调用：{activation.usageCount}/{activation.usageLimit}
+              </p>
+            )}
+          </div>
+        </article>
+      )}
     </section>
   );
 }

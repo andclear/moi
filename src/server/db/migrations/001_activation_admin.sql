@@ -6,8 +6,10 @@ create table if not exists activation_codes (
   activated_at timestamptz,
   expires_at timestamptz,
   activation_session_id text,
+  duration_hours integer not null default 72,
   usage_limit integer not null default 100,
-  usage_count integer not null default 0
+  usage_count integer not null default 0,
+  deleted_at timestamptz
 );
 
 create table if not exists activation_sessions (
@@ -31,8 +33,15 @@ create table if not exists admin_audit_logs (
 
 create table if not exists model_channel_settings (
   id text primary key,
-  preset_enabled boolean not null default true,
+  preset_enabled boolean not null default false,
   model text not null,
   updated_at timestamptz not null default now(),
   updated_by text not null
 );
+
+alter table activation_codes
+  add column if not exists duration_hours integer not null default 72,
+  add column if not exists deleted_at timestamptz;
+
+alter table model_channel_settings
+  alter column preset_enabled set default false;

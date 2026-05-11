@@ -18,3 +18,8 @@ export interface ModelChannelSettings {
   updatedAt: string;
   updatedBy: string;
 }
+
+export interface PublicModelChannelStatus {
+  presetEnabled: boolean;
+  model?: string;
+}

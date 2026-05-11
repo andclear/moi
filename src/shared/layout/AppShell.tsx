@@ -1,6 +1,8 @@
 import { BookOpen, FileArchive, Settings } from "lucide-react";
+import { useEffect } from "react";
 import { NavLink, Outlet } from "react-router";
 
+import { useModelChannelStore } from "@/features/activation/modelChannelStore";
 import { PageTransition } from "@/shared/layout/PageTransition";
 import { cn } from "@/shared/lib/utils";
 
@@ -11,6 +13,12 @@ const navItems = [
 ];
 
 export function AppShell() {
+  const loadModelChannel = useModelChannelStore((state) => state.load);
+
+  useEffect(() => {
+    void loadModelChannel();
+  }, [loadModelChannel]);
+
   return (
     <div className="min-h-screen bg-[var(--echo-bg)] text-[var(--echo-text)]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(211,197,170,0.08),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.04)_0,transparent_38%)]" />

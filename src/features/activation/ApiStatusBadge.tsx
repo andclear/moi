@@ -2,20 +2,30 @@ import { CircleAlert, CircleCheck } from "lucide-react";
 import { useEffect } from "react";
 
 import { useActivationStore } from "@/features/activation/activationStore";
+import { useModelChannelStore } from "@/features/activation/modelChannelStore";
 import { useSettingsStore } from "@/features/settings/settingsStore";
 
 export function ApiStatusBadge() {
   const { apiSettings, load: loadSettings, getAvailability } = useSettingsStore();
   const { activation, load: loadActivation, status: activationStatus } = useActivationStore();
+  const { channel, load: loadModelChannel } = useModelChannelStore();
 
   useEffect(() => {
     void loadSettings();
     void loadActivation();
-  }, [loadSettings, loadActivation]);
+    void loadModelChannel();
+  }, [loadSettings, loadActivation, loadModelChannel]);
 
-  const availability = getAvailability();
+  const rawAvailability = getAvailability();
+  const availability =
+    rawAvailability.mode === "preset" && !channel.presetEnabled
+      ? ({ available: false, reason: "尚未连接模型", mode: "none" } as const)
+      : rawAvailability;
   const hasActivePreset =
-    activationStatus === "active" && activation?.status === "active" && activation.expiresAt;
+    channel.presetEnabled &&
+    activationStatus === "active" &&
+    activation?.status === "active" &&
+    activation.expiresAt;
   const isAvailable = availability.available || Boolean(hasActivePreset);
   const label = isAvailable
     ? availability.available
@@ -28,7 +38,9 @@ export function ApiStatusBadge() {
       ? activation?.availableModel
       : apiSettings?.mode === "custom"
         ? "请补全设置"
-        : "需要配置或激活";
+        : channel.presetEnabled
+          ? "需要配置或激活"
+          : "需要配置";
   const Icon = isAvailable ? CircleCheck : CircleAlert;
 
   return (
