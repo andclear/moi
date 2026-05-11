@@ -62,7 +62,7 @@ export function DossierPanel() {
           markdown={markdown}
           saveStatus={saveStatus}
           onChange={(nextMarkdown) => void updateMarkdown(nextMarkdown)}
-          onSave={(nextMarkdown) => void updateMarkdown(nextMarkdown)}
+          onSave={updateMarkdown}
         />
       ) : (
         <div className="p-5">

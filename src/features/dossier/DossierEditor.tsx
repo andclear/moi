@@ -8,7 +8,7 @@ interface DossierEditorProps {
   markdown: string;
   saveStatus: DossierSaveStatus;
   onChange: (markdown: string) => void;
-  onSave: (markdown: string) => void;
+  onSave: (markdown: string) => Promise<void>;
 }
 
 function renderInlineMarkdown(text: string) {
@@ -59,23 +59,41 @@ export function DossierEditor({
   onSave,
 }: DossierEditorProps) {
   const [mode, setMode] = useState<"edit" | "preview">("edit");
+  const [hasManualChanges, setHasManualChanges] = useState(false);
+  const [isManualSaving, setIsManualSaving] = useState(false);
+  const isSaveError = saveStatus === "error";
   const SaveIcon =
-    saveStatus === "saving"
+    isManualSaving
       ? Clock3
-      : saveStatus === "saved"
-        ? CheckCircle2
-        : saveStatus === "error"
+      : isSaveError
           ? TriangleAlert
-          : Save;
+          : hasManualChanges
+            ? Save
+            : CheckCircle2;
   const saveLabel =
-    saveStatus === "saving"
+    isManualSaving
       ? "正在保存"
-      : saveStatus === "saved"
-        ? "已保存"
-        : saveStatus === "error"
+      : isSaveError
           ? "重新保存"
-          : "保存";
-  const isSaving = saveStatus === "saving" || saveStatus === "loading";
+          : hasManualChanges
+            ? "保存"
+            : "已保存";
+  const isSaveDisabled = isManualSaving || saveStatus === "loading";
+
+  function handleChange(nextMarkdown: string) {
+    setHasManualChanges(true);
+    onChange(nextMarkdown);
+  }
+
+  async function handleSave() {
+    setIsManualSaving(true);
+    try {
+      await onSave(markdown);
+      setHasManualChanges(false);
+    } finally {
+      setIsManualSaving(false);
+    }
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -103,9 +121,9 @@ export function DossierEditor({
         <Button
           type="button"
           size="sm"
-          variant={saveStatus === "saved" ? "secondary" : "primary"}
-          onClick={() => onSave(markdown)}
-          disabled={isSaving}
+          variant={hasManualChanges || isSaveError ? "primary" : "secondary"}
+          onClick={() => void handleSave()}
+          disabled={isSaveDisabled}
           aria-label="保存 TA 的回音"
         >
           <SaveIcon aria-hidden="true" size={16} />
@@ -117,7 +135,7 @@ export function DossierEditor({
         {mode === "edit" ? (
           <textarea
             value={markdown}
-            onChange={(event) => onChange(event.target.value)}
+            onChange={(event) => handleChange(event.target.value)}
             className="h-full min-h-[46rem] w-full resize-y border border-[var(--echo-line)] bg-[rgba(2,16,24,0.46)] p-4 font-mono text-sm leading-7 text-[var(--echo-paper)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
             spellCheck={false}
             aria-label="编辑 TA 的回音 Markdown"
