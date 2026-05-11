@@ -43,3 +43,37 @@ export const profileChoiceResponseSchema = z.object({
     )
     .length(3),
 });
+
+export const worldEntryResponseSchema = z
+  .array(
+    z.object({
+      comment: z.string().min(1),
+      content: z.string().min(1),
+      keywords: z.array(z.string().min(1)).default([]),
+    }),
+  )
+  .min(1)
+  .max(3);
+
+export const greetingVariantResponseSchema = z
+  .array(
+    z.object({
+      title: z.string().min(1),
+      content: z.string().min(1),
+      atmosphere: z.string().optional(),
+    }),
+  )
+  .min(1)
+  .max(3);
+
+export const trialQuestionnaireResponseSchema = z.object({
+  title: z.string().min(1),
+  questionnaireMarkdown: z.string().min(1),
+});
+
+export const trialAnswerResponseSchema = z.object({
+  resultMarkdown: z.string().min(1),
+  formalReplies: z.array(z.string().min(1)).min(1),
+  innerMonologues: z.array(z.string().min(1)).min(1),
+  riskNotes: z.array(z.string().min(1)).default([]),
+});

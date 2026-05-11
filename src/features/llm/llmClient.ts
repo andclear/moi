@@ -1,7 +1,14 @@
 import { activationRepository } from "@/db/repositories/activationRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
-import type { ProfileStageId } from "@/db/types";
+import type { GreetingVariant, ProfileStageId, TrialRun, WorldEntry } from "@/db/types";
+import type {
+  GreetingPersonType,
+  GreetingRoleTone,
+} from "@/features/greeting/greetingStore";
 import { buildProfileDraftMessages, buildProfileStageMessages } from "@/prompts/profilePrompts";
+import { buildGreetingMessages } from "@/prompts/greetingPrompts";
+import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
+import { buildWorldEntryMessages } from "@/prompts/worldPrompts";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
 import { parseLlmJson } from "@/features/llm/jsonResponse";
 import { LlmError, type LlmRequest, type LlmResponse } from "@/features/llm/llmTypes";
@@ -10,7 +17,15 @@ import {
   markGenerationFailed,
   markGenerationSucceeded,
 } from "@/features/llm/usageTracker";
-import { profileChoiceResponseSchema, profileDraftResponseSchema } from "@/schemas/llmResponseSchemas";
+import type { TrialMode } from "@/features/trial/trialStore";
+import {
+  greetingVariantResponseSchema,
+  profileChoiceResponseSchema,
+  profileDraftResponseSchema,
+  trialAnswerResponseSchema,
+  trialQuestionnaireResponseSchema,
+  worldEntryResponseSchema,
+} from "@/schemas/llmResponseSchemas";
 
 async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
   const activation = await activationRepository.getCurrent();
@@ -117,6 +132,102 @@ export async function generateProfileStage(input: {
   return {
     taskId: result.taskId,
     data: parseLlmJson(result.response.content, profileChoiceResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateWorldEntries(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  confirmedEntries: WorldEntry[];
+  userRequest: string;
+  entryCount: number;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "world",
+    messages: buildWorldEntryMessages(input),
+    inputSummary: `生成 ${input.entryCount} 条 WorldInfo：${input.userRequest.slice(0, 80)}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, worldEntryResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateGreetingVariants(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  confirmedEntries: WorldEntry[];
+  userRole: GreetingRoleTone;
+  wordCount: number;
+  personType: GreetingPersonType;
+  mustInclude: string;
+  heatLevel: number;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "greeting",
+    messages: buildGreetingMessages(input),
+    inputSummary: `生成开场白：${input.userRole} / ${input.personType} / ${input.wordCount}字`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, greetingVariantResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateTrialQuestionnaire(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  confirmedEntries: WorldEntry[];
+  selectedGreeting?: GreetingVariant;
+  mode: TrialMode;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "trial_questionnaire",
+    messages: buildTrialQuestionnaireMessages(input),
+    inputSummary: `终审问卷：${input.mode}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, trialQuestionnaireResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateTrialAnswer(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  confirmedEntries: WorldEntry[];
+  selectedGreeting?: GreetingVariant;
+  mode: TrialRun["mode"];
+  questionnaireMarkdown: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "trial_answer",
+    messages: buildTrialAnswerMessages(input),
+    inputSummary: `终审回答：${input.mode}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, trialAnswerResponseSchema),
     response: result.response,
   };
 }

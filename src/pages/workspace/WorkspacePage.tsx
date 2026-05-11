@@ -15,6 +15,9 @@ import { StepProgress } from "@/features/flow/StepProgress";
 import type { FlowStep } from "@/features/flow/flowTypes";
 import { StepPost } from "@/pages/workspace/StepPost";
 import { StepProfile } from "@/pages/workspace/StepProfile";
+import { StepGreeting } from "@/pages/workspace/StepGreeting";
+import { StepTrial } from "@/pages/workspace/StepTrial";
+import { StepWorld } from "@/pages/workspace/StepWorld";
 import { WorkspaceLayout } from "@/shared/layout/WorkspaceLayout";
 
 const steps: FlowStep[] = [
@@ -76,6 +79,12 @@ export function WorkspacePage() {
               <StepPost />
             ) : currentStepId === "profile" ? (
               <StepProfile />
+            ) : currentStepId === "world" ? (
+              <StepWorld />
+            ) : currentStepId === "greeting" ? (
+              <StepGreeting />
+            ) : currentStepId === "trial" ? (
+              <StepTrial />
             ) : (
               <FutureStep stepId={currentStepId} />
             )}
