@@ -76,7 +76,27 @@ export function createProjectRepository(db: EchoDatabase = echoDb) {
           projectId: "",
           createdAt: now,
         })),
+        beautifications: (project.beautifications ?? []).map((asset) => ({
+          ...asset,
+          id: createId("beauty"),
+          projectId: "",
+          createdAt: now,
+          updatedAt: now,
+        })),
+        companions: (project.companions ?? []).map((node) => ({
+          ...node,
+          id: createId("npc"),
+          projectId: "",
+          createdAt: now,
+          updatedAt: now,
+        })),
+        companionRelations: [],
       };
+
+      const companionIdMap = new Map<string, string>();
+      project.companions?.forEach((node, index) => {
+        companionIdMap.set(node.id, nextProject.companions[index]?.id ?? node.id);
+      });
 
       nextProject.worldEntries = nextProject.worldEntries.map((entry) => ({
         ...entry,
@@ -89,6 +109,23 @@ export function createProjectRepository(db: EchoDatabase = echoDb) {
       nextProject.trialRuns = nextProject.trialRuns.map((trial) => ({
         ...trial,
         projectId: nextProject.id,
+      }));
+      nextProject.beautifications = nextProject.beautifications.map((asset) => ({
+        ...asset,
+        projectId: nextProject.id,
+      }));
+      nextProject.companions = nextProject.companions.map((node) => ({
+        ...node,
+        projectId: nextProject.id,
+      }));
+      nextProject.companionRelations = (project.companionRelations ?? []).map((relation) => ({
+        ...relation,
+        id: createId("relation"),
+        projectId: nextProject.id,
+        fromNodeId: companionIdMap.get(relation.fromNodeId) ?? relation.fromNodeId,
+        toNodeId: companionIdMap.get(relation.toNodeId) ?? relation.toNodeId,
+        createdAt: now,
+        updatedAt: now,
       }));
 
       await db.projects.add(nextProject);

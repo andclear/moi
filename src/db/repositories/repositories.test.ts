@@ -119,6 +119,9 @@ describe("Dexie repositories", () => {
     expect(project.dossier.markdown).toContain("## 世界观");
     expect(project.dossier.blocks).not.toHaveLength(0);
     expect(project.worldEntries).toEqual([]);
+    expect(project.beautifications).toEqual([]);
+    expect(project.companions).toEqual([]);
+    expect(project.companionRelations).toEqual([]);
     expect(project.currentStep).toBe("post");
   });
 });

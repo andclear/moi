@@ -1,4 +1,13 @@
-import type { DossierBlockMeta, GreetingVariant, Project, TrialRun, WorldEntry } from "@/db/types";
+import type {
+  BeautificationAsset,
+  CompanionNode,
+  CompanionRelation,
+  DossierBlockMeta,
+  GreetingVariant,
+  Project,
+  TrialRun,
+  WorldEntry,
+} from "@/db/types";
 import type { CharacterCard } from "@/schemas/characterCardSchema";
 import { characterCardSchema } from "@/schemas/characterCardSchema";
 import { parseDossierSections } from "@/features/dossier/dossierSections";
@@ -74,6 +83,81 @@ function buildWorldEntry(entry: WorldEntry, index: number) {
   };
 }
 
+function buildSyntheticWorldEntry(input: {
+  title: string;
+  content: string;
+  keywords: string[];
+  index: number;
+  category: "beautification" | "companion";
+}) {
+  return {
+    ...buildWorldEntry(
+      {
+        id: `${input.category}_${input.index}`,
+        projectId: "",
+        title: input.title,
+        content: input.content,
+        keywords: input.keywords,
+        enabled: true,
+        createdAt: new Date(0).toISOString(),
+        updatedAt: new Date(0).toISOString(),
+      },
+      input.index,
+    ),
+    extensions: {
+      ...buildWorldEntry(
+        {
+          id: `${input.category}_${input.index}`,
+          projectId: "",
+          title: input.title,
+          content: input.content,
+          keywords: input.keywords,
+          enabled: true,
+          createdAt: new Date(0).toISOString(),
+          updatedAt: new Date(0).toISOString(),
+        },
+        input.index,
+      ).extensions,
+      echo_category: input.category,
+    },
+  };
+}
+
+function buildRegexScript(asset: BeautificationAsset) {
+  return {
+    id: asset.id,
+    scriptName: asset.title,
+    findRegex: asset.regex,
+    replaceString: asset.html,
+    disabled: !asset.enabled,
+    placement: [2],
+    markdownOnly: false,
+    promptOnly: false,
+    runOnEdit: true,
+    minDepth: null,
+    maxDepth: null,
+    trimStrings: [],
+    substituteRegex: 0,
+  };
+}
+
+function buildCompanionWorldInfo(node: CompanionNode, relations: CompanionRelation[]) {
+  const relationLines = relations
+    .filter((relation) => relation.fromNodeId === node.id || relation.toNodeId === node.id)
+    .map((relation) => `- ${relation.label}：${relation.description}`);
+
+  return [
+    `【配角】：${node.name}`,
+    `身份：${node.role}`,
+    `性格：${node.personality}`,
+    `与主角的关系：${node.relationToMain}`,
+    `存在痕迹：${node.summary}`,
+    relationLines.length ? `关系边：\n${relationLines.join("\n")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function buildCreatorNotes(input: {
   note?: string;
   versionLabel?: string;
@@ -106,6 +190,9 @@ function buildEchoExtension(project: Project, dossierMetadata: DossierBlockMeta[
       updated_at: block.updatedAt,
     })),
     trial_runs: project.trialRuns,
+    beautifications: project.beautifications ?? [],
+    companions: project.companions ?? [],
+    companion_relations: project.companionRelations ?? [],
     exported_at: exportedAt,
   };
 }
@@ -132,6 +219,28 @@ export function buildCharacterCard({
     .filter((item) => item.content.trim() && item.id !== greeting?.id)
     .map((item) => item.content.trim());
   const worldEntries = project.worldEntries.filter((entry) => entry.enabled);
+  const beautifications = (project.beautifications ?? []).filter((asset) => asset.enabled);
+  const beautificationWorldEntries = beautifications
+    .filter((asset) => asset.worldInfo)
+    .map((asset, index) =>
+      buildSyntheticWorldEntry({
+        title: asset.worldInfo?.key ?? asset.title,
+        content: asset.worldInfo?.content ?? "",
+        keywords: [asset.worldInfo?.key ?? asset.title],
+        index: worldEntries.length + index,
+        category: "beautification",
+      }),
+    );
+  const confirmedCompanions = (project.companions ?? []).filter((node) => node.status === "confirmed");
+  const companionWorldEntries = confirmedCompanions.map((node, index) =>
+    buildSyntheticWorldEntry({
+      title: `配角关系：${node.name}`,
+      content: buildCompanionWorldInfo(node, project.companionRelations ?? []),
+      keywords: [node.name, node.role].filter(Boolean),
+      index: worldEntries.length + beautificationWorldEntries.length + index,
+      category: "companion",
+    }),
+  );
   const card = {
     name: title,
     description,
@@ -169,7 +278,11 @@ export function buildCharacterCard({
         token_budget: 2048,
         recursive_scanning: true,
         extensions: {},
-        entries: worldEntries.map(buildWorldEntry),
+        entries: [
+          ...worldEntries.map(buildWorldEntry),
+          ...beautificationWorldEntries,
+          ...companionWorldEntries,
+        ],
       },
       extensions: {
         talkativeness: "0.5",
@@ -180,7 +293,7 @@ export function buildCharacterCard({
           depth: 4,
           role: "system" as const,
         },
-        regex_scripts: [],
+        regex_scripts: beautifications.map(buildRegexScript),
         echo: buildEchoExtension(project, project.dossier.blocks, exportedAt),
       },
       group_only_greetings: [],

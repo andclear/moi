@@ -10,7 +10,16 @@ export const generationUsageSchema = z.object({
 export const generationTaskSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
-  type: z.enum(["profile", "world", "greeting", "trial_questionnaire", "trial_answer", "export"]),
+  type: z.enum([
+    "profile",
+    "world",
+    "greeting",
+    "trial_questionnaire",
+    "trial_answer",
+    "beautification",
+    "companion",
+    "export",
+  ]),
   status: z.enum(["pending", "running", "succeeded", "failed", "cancelled"]),
   inputSummary: z.string(),
   output: z.unknown().optional(),
@@ -76,4 +85,40 @@ export const trialAnswerResponseSchema = z.object({
   formalReplies: z.array(z.string().min(1)).min(1),
   innerMonologues: z.array(z.string().min(1)).min(1),
   riskNotes: z.array(z.string().min(1)).default([]),
+});
+
+export const beautificationResponseSchema = z.object({
+  worldinfo: z
+    .object({
+      key: z.string().min(1),
+      content: z.string().min(1),
+    })
+    .nullable(),
+  regex: z.string().min(1),
+  html: z.string().min(1),
+  original_text: z.string().default(""),
+  formatted_original_text: z.string().min(1),
+});
+
+export const companionResponseSchema = z.object({
+  silhouettes: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        role: z.string().min(1),
+        summary: z.string().min(1),
+        personality: z.string().min(1),
+        relationToMain: z.string().min(1),
+      }),
+    )
+    .length(3),
+  exclusions: z
+    .array(
+      z.object({
+        title: z.string().min(1),
+        reason: z.string().min(1),
+      }),
+    )
+    .length(2),
+  fragment: z.string().min(1),
 });

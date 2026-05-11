@@ -5,8 +5,11 @@ import { Link, useParams } from "react-router";
 import { exportRepository } from "@/db/repositories/exportRepository";
 import { projectService } from "@/db/services/projectService";
 import type { ExportRecord, Project } from "@/db/types";
+import { BeautificationLab } from "@/features/beautification/BeautificationLab";
+import { CompanionNetwork } from "@/features/companions/CompanionNetwork";
 import { useExportStore } from "@/features/export/exportStore";
 import { useFlowStore } from "@/features/flow/flowStore";
+import { ProfileReportPanel } from "@/features/report/ProfileReportPanel";
 import { Button } from "@/shared/components/ui/button";
 
 export function StepExport() {
@@ -53,6 +56,8 @@ export function StepExport() {
   );
   const confirmedWorldCount = project?.worldEntries.filter((entry) => entry.enabled).length ?? 0;
   const latestTrial = project?.trialRuns[0];
+  const enabledBeautificationCount = project?.beautifications?.filter((asset) => asset.enabled).length ?? 0;
+  const confirmedCompanionCount = project?.companions?.filter((node) => node.status === "confirmed").length ?? 0;
   const isBuilding = status === "building";
 
   async function handleJsonExport() {
@@ -196,6 +201,14 @@ export function StepExport() {
                 <dt className="font-bold text-[var(--echo-paper)]">终审</dt>
                 <dd>{latestTrial ? new Date(latestTrial.createdAt).toLocaleString() : "尚未通过"}</dd>
               </div>
+              <div>
+                <dt className="font-bold text-[var(--echo-paper)]">美化</dt>
+                <dd>{enabledBeautificationCount} 套会写入 JSON</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-[var(--echo-paper)]">关系网</dt>
+                <dd>{confirmedCompanionCount} 位旁人已确认</dd>
+              </div>
             </dl>
           </section>
 
@@ -222,6 +235,14 @@ export function StepExport() {
           </section>
         </aside>
       </div>
+
+      {project && (
+        <div className="mt-6 space-y-6">
+          <BeautificationLab project={project} onProjectChange={setProject} />
+          <CompanionNetwork project={project} onProjectChange={setProject} />
+          <ProfileReportPanel project={project} />
+        </div>
+      )}
     </section>
   );
 }

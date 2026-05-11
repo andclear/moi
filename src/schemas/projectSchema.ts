@@ -50,6 +50,53 @@ export const trialRunSchema = z.object({
   createdAt: z.string().datetime(),
 });
 
+export const beautificationAssetSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  title: z.string().min(1),
+  originalText: z.string(),
+  userRequest: z.string(),
+  strategy: z.enum(["simple", "complex"]),
+  worldInfo: z
+    .object({
+      key: z.string().min(1),
+      content: z.string().min(1),
+    })
+    .nullable()
+    .optional(),
+  regex: z.string(),
+  html: z.string(),
+  formattedOriginalText: z.string(),
+  enabled: z.boolean(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const companionNodeSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  name: z.string().min(1),
+  role: z.string(),
+  summary: z.string(),
+  personality: z.string(),
+  relationToMain: z.string(),
+  status: z.enum(["candidate", "confirmed"]),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const companionRelationSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  fromNodeId: z.string().min(1),
+  toNodeId: z.string().min(1),
+  label: z.string(),
+  description: z.string(),
+  strength: z.number().min(0).max(1),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
 export const projectSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -58,6 +105,10 @@ export const projectSchema = z.object({
   worldEntries: z.array(worldEntrySchema),
   greetingVariants: z.array(greetingVariantSchema),
   trialRuns: z.array(trialRunSchema),
+  beautifications: z.array(beautificationAssetSchema).default([]),
+  companions: z.array(companionNodeSchema).default([]),
+  companionRelations: z.array(companionRelationSchema).default([]),
+  profileSession: z.unknown().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   archivedAt: z.string().datetime().optional(),
@@ -72,6 +123,10 @@ export const historySnapshotSchema = z.object({
   worldEntries: z.array(worldEntrySchema),
   greetingVariants: z.array(greetingVariantSchema),
   trialRuns: z.array(trialRunSchema),
+  beautifications: z.array(beautificationAssetSchema).default([]),
+  companions: z.array(companionNodeSchema).default([]),
+  companionRelations: z.array(companionRelationSchema).default([]),
+  profileSession: z.unknown().optional(),
   generationIds: z.array(z.string()),
   createdAt: z.string().datetime(),
 });

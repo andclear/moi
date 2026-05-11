@@ -40,6 +40,9 @@ export function createProjectDraft(input?: {
     worldEntries: [],
     greetingVariants: [],
     trialRuns: [],
+    beautifications: [],
+    companions: [],
+    companionRelations: [],
     createdAt: now,
     updatedAt: now,
   };

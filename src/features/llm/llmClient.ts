@@ -7,6 +7,8 @@ import type {
 } from "@/features/greeting/greetingStore";
 import { buildProfileDraftMessages, buildProfileStageMessages } from "@/prompts/profilePrompts";
 import { buildGreetingMessages } from "@/prompts/greetingPrompts";
+import { buildBeautificationMessages } from "@/prompts/beautificationPrompts";
+import { buildCompanionMessages } from "@/prompts/companionPrompts";
 import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
 import { buildWorldEntryMessages } from "@/prompts/worldPrompts";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
@@ -20,6 +22,8 @@ import {
 import type { TrialMode } from "@/features/trial/trialStore";
 import {
   greetingVariantResponseSchema,
+  beautificationResponseSchema,
+  companionResponseSchema,
   profileChoiceResponseSchema,
   profileDraftResponseSchema,
   trialAnswerResponseSchema,
@@ -61,6 +65,50 @@ async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
       ...payload.usage,
       durationMs: payload.usage?.durationMs ?? Math.round(performance.now() - startedAt),
     },
+  };
+}
+
+export async function generateBeautificationAsset(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  originalText: string;
+  userRequest: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "beautification",
+    messages: buildBeautificationMessages(input),
+    inputSummary: `生成美化与正则：${input.userRequest.slice(0, 80) || input.originalText.slice(0, 80)}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, beautificationResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateCompanionCandidates(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  confirmedEntries: WorldEntry[];
+  userRequest: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "companion",
+    messages: buildCompanionMessages(input),
+    inputSummary: `寻找配角：${input.userRequest.slice(0, 100)}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, companionResponseSchema),
+    response: result.response,
   };
 }
 

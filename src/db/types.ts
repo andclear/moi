@@ -8,6 +8,8 @@ export type GenerationType =
   | "greeting"
   | "trial_questionnaire"
   | "trial_answer"
+  | "beautification"
+  | "companion"
   | "export";
 export type ExportFormat = "json" | "png";
 
@@ -59,6 +61,50 @@ export interface TrialRun {
   createdAt: string;
 }
 
+export interface BeautificationAsset {
+  id: string;
+  projectId: string;
+  title: string;
+  originalText: string;
+  userRequest: string;
+  strategy: "simple" | "complex";
+  worldInfo?: {
+    key: string;
+    content: string;
+  } | null;
+  regex: string;
+  html: string;
+  formattedOriginalText: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanionNode {
+  id: string;
+  projectId: string;
+  name: string;
+  role: string;
+  summary: string;
+  personality: string;
+  relationToMain: string;
+  status: "candidate" | "confirmed";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanionRelation {
+  id: string;
+  projectId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  label: string;
+  description: string;
+  strength: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type ProfileStageId = "silhouette" | "exclusion" | "fragment" | "diary";
 
 export interface ProfileChoice {
@@ -90,6 +136,9 @@ export interface Project {
   worldEntries: WorldEntry[];
   greetingVariants: GreetingVariant[];
   trialRuns: TrialRun[];
+  beautifications: BeautificationAsset[];
+  companions: CompanionNode[];
+  companionRelations: CompanionRelation[];
   profileSession?: ProfileSession;
   createdAt: string;
   updatedAt: string;
@@ -105,6 +154,9 @@ export interface HistorySnapshot {
   worldEntries: WorldEntry[];
   greetingVariants: GreetingVariant[];
   trialRuns: TrialRun[];
+  beautifications: BeautificationAsset[];
+  companions: CompanionNode[];
+  companionRelations: CompanionRelation[];
   profileSession?: ProfileSession;
   generationIds: string[];
   createdAt: string;

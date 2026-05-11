@@ -18,6 +18,9 @@ export function createHistoryService(db: EchoDatabase = echoDb) {
       worldEntries: structuredClone(snapshot.worldEntries),
       greetingVariants: structuredClone(snapshot.greetingVariants),
       trialRuns: structuredClone(snapshot.trialRuns),
+      beautifications: structuredClone(snapshot.beautifications ?? []),
+      companions: structuredClone(snapshot.companions ?? []),
+      companionRelations: structuredClone(snapshot.companionRelations ?? []),
       profileSession: snapshot.profileSession ? structuredClone(snapshot.profileSession) : project.profileSession,
       updatedAt: now,
     };
@@ -74,6 +77,9 @@ export function createHistoryService(db: EchoDatabase = echoDb) {
         worldEntries: structuredClone(snapshot.worldEntries),
         greetingVariants: structuredClone(snapshot.greetingVariants),
         trialRuns: structuredClone(snapshot.trialRuns),
+        beautifications: structuredClone(snapshot.beautifications ?? []),
+        companions: structuredClone(snapshot.companions ?? []),
+        companionRelations: structuredClone(snapshot.companionRelations ?? []),
         profileSession: snapshot.profileSession ? structuredClone(snapshot.profileSession) : undefined,
         createdAt: now,
         updatedAt: now,
@@ -99,6 +105,34 @@ export function createHistoryService(db: EchoDatabase = echoDb) {
         id: createId("trial"),
         projectId: nextProject.id,
         createdAt: now,
+      }));
+      nextProject.beautifications = nextProject.beautifications.map((asset) => ({
+        ...asset,
+        id: createId("beauty"),
+        projectId: nextProject.id,
+        createdAt: now,
+        updatedAt: now,
+      }));
+      const companionIdMap = new Map<string, string>();
+      nextProject.companions = nextProject.companions.map((node) => {
+        const nextId = createId("npc");
+        companionIdMap.set(node.id, nextId);
+        return {
+          ...node,
+          id: nextId,
+          projectId: nextProject.id,
+          createdAt: now,
+          updatedAt: now,
+        };
+      });
+      nextProject.companionRelations = nextProject.companionRelations.map((relation) => ({
+        ...relation,
+        id: createId("relation"),
+        projectId: nextProject.id,
+        fromNodeId: companionIdMap.get(relation.fromNodeId) ?? relation.fromNodeId,
+        toNodeId: companionIdMap.get(relation.toNodeId) ?? relation.toNodeId,
+        createdAt: now,
+        updatedAt: now,
       }));
 
       await db.projects.add(nextProject);
