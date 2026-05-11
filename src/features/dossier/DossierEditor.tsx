@@ -92,12 +92,12 @@ export function DossierEditor({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto p-4">
+      <div className="min-h-0 flex-[1_1_auto] overflow-auto p-4">
         {mode === "edit" ? (
           <textarea
             value={markdown}
             onChange={(event) => onChange(event.target.value)}
-            className="min-h-[34rem] w-full resize-y border border-[var(--echo-line)] bg-[rgba(2,16,24,0.46)] p-4 font-mono text-sm leading-7 text-[var(--echo-paper)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
+            className="h-full min-h-[42rem] w-full resize-y border border-[var(--echo-line)] bg-[rgba(2,16,24,0.46)] p-4 font-mono text-sm leading-7 text-[var(--echo-paper)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
             spellCheck={false}
             aria-label="编辑 TA 的回音 Markdown"
           />
@@ -106,11 +106,16 @@ export function DossierEditor({
         )}
       </div>
 
-      <div className="border-t border-[var(--echo-line)] p-4">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
-          段落事实状态
-        </p>
-        <div className="mt-3 grid gap-2">
+      <div className="shrink-0 border-t border-[var(--echo-line)] bg-[rgba(2,16,24,0.18)] p-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
+            段落事实状态
+          </p>
+          <span className="font-mono text-[11px] text-[var(--echo-muted)]">
+            点击切换锁定
+          </span>
+        </div>
+        <div className="mt-2 grid max-h-40 gap-1.5 overflow-auto pr-1">
           {sections.map((section) => {
             const meta = metaBySection.get(section.section);
             const locked = Boolean(meta?.locked);
@@ -122,17 +127,17 @@ export function DossierEditor({
                 type="button"
                 onClick={() => onToggleLock(section.section)}
                 className={cn(
-                  "flex items-center justify-between gap-3 border border-[var(--echo-line)] px-3 py-2 text-left font-mono text-xs transition-colors",
+                  "flex items-center justify-between gap-2 border border-[var(--echo-line)] px-2.5 py-1.5 text-left font-mono text-[11px] transition-colors",
                   locked
                     ? "bg-[rgba(211,197,170,0.14)] text-[var(--echo-paper)]"
                     : "bg-[rgba(2,16,24,0.28)] text-[var(--echo-muted)] hover:text-[var(--echo-paper)]",
                 )}
               >
-                <span className="flex min-w-0 items-center gap-2">
+                <span className="flex min-w-0 items-center gap-1.5">
                   {locked ? (
-                    <LockKeyhole aria-hidden="true" size={15} />
+                    <LockKeyhole aria-hidden="true" size={13} />
                   ) : (
-                    <UnlockKeyhole aria-hidden="true" size={15} />
+                    <UnlockKeyhole aria-hidden="true" size={13} />
                   )}
                   <span className="truncate">{section.section}</span>
                 </span>
@@ -141,7 +146,7 @@ export function DossierEditor({
                     "用户确认事实"
                   ) : (
                     <>
-                      <Sparkles aria-hidden="true" size={14} />
+                      <Sparkles aria-hidden="true" size={12} />
                       推测中
                     </>
                   )}
