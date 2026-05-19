@@ -8,11 +8,11 @@ import type { GenerationTask } from "@/db/types";
 import { TokenUsageMeter } from "@/shared/components/TokenUsageMeter";
 
 const typeLabels: Record<GenerationTask["type"], string> = {
-  profile: "辨认轮廓",
+  profile: "认识岛民",
   world: "WorldInfo",
   greeting: "开场白",
-  trial_questionnaire: "终审问卷",
-  trial_answer: "终审回答",
+  trial_questionnaire: "相处测试问卷",
+  trial_answer: "相处测试回答",
   beautification: "美化与正则",
   companion: "关系网配角",
   export: "导出",
@@ -60,7 +60,7 @@ export function AssistantNotesPanel() {
     <aside className="flex min-h-0 flex-1 flex-col">
       <div className="border-b border-[var(--echo-line)] p-6">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
-          侦探助手笔记
+          助手笔记
         </p>
         <h2 className="mt-2 font-display text-3xl font-black text-[var(--echo-paper)]">
           生成链路

@@ -33,7 +33,7 @@ export function StepExport() {
           return;
         }
         if (!resolvedProject) {
-          setPageError("这里没有传来回音。");
+          setPageError("这里还没有 TA 的记录。");
           return;
         }
         setProject(resolvedProject);
@@ -99,10 +99,10 @@ export function StepExport() {
             带 TA 回来
           </p>
           <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
-            导出档案
+            导出记录
           </h1>
           <p className="mt-4 max-w-2xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            将已确认的回音、WorldInfo、开场白和终审记录整理为 SillyTavern Character Card V3。
+            将已确认的记录、WorldInfo、开场白和相处测试记录整理为 SillyTavern Character Card V3。
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
@@ -188,7 +188,7 @@ export function StepExport() {
             </p>
             <dl className="mt-4 space-y-3 font-mono text-sm text-[var(--echo-muted)]">
               <div>
-                <dt className="font-bold text-[var(--echo-paper)]">档案</dt>
+                <dt className="font-bold text-[var(--echo-paper)]">记录</dt>
                 <dd>{project?.title ?? "读取中"}</dd>
               </div>
               <div>
@@ -200,7 +200,7 @@ export function StepExport() {
                 <dd>{selectedGreeting ? selectedGreeting.title : "尚未锁定"}</dd>
               </div>
               <div>
-                <dt className="font-bold text-[var(--echo-paper)]">终审</dt>
+                <dt className="font-bold text-[var(--echo-paper)]">相处测试</dt>
                 <dd>{latestTrial ? new Date(latestTrial.createdAt).toLocaleString() : "尚未通过"}</dd>
               </div>
               <div>
@@ -232,7 +232,7 @@ export function StepExport() {
               )}
             </div>
             <Button asChild variant="secondary" className="mt-5 w-full">
-              <Link to="/library">回到档案库</Link>
+              <Link to="/library">回到岛民册</Link>
             </Button>
           </section>
         </aside>

@@ -39,7 +39,7 @@ export const useDossierStore = create<DossierState>((set, get) => ({
     set({ saveStatus: "loading", errorMessage: null });
     const project = await projectRepository.getById(projectId);
     if (!project) {
-      set({ saveStatus: "error", errorMessage: "没有找到这份回音档案。" });
+      set({ saveStatus: "error", errorMessage: "没有找到这份岛民记录。" });
       return;
     }
 
@@ -90,7 +90,7 @@ export const useDossierStore = create<DossierState>((set, get) => ({
     } catch (error) {
       set({
         saveStatus: "error",
-        errorMessage: error instanceof Error ? error.message : "档案保存失败。",
+        errorMessage: error instanceof Error ? error.message : "记录保存失败。",
       });
     }
   },
@@ -123,7 +123,7 @@ export const useDossierStore = create<DossierState>((set, get) => ({
     } catch (error) {
       set({
         saveStatus: "error",
-        errorMessage: error instanceof Error ? error.message : "AI 档案更新保存失败。",
+        errorMessage: error instanceof Error ? error.message : "AI 记录更新保存失败。",
       });
     }
   },

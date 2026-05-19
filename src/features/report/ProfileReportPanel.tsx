@@ -26,10 +26,10 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
             阶段 17
           </p>
           <h2 className="mt-2 font-display text-3xl font-black text-[var(--echo-paper)]">
-            侧写报告
+            岛民报告
           </h2>
           <p className="mt-2 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            生成纪念性质的 HTML 页面，记录 TA 被一点点寻回的过程。
+            生成纪念性质的 HTML 页面，记录 TA 被一点点找到的过程。
           </p>
         </div>
         <Button type="button" onClick={handleDownload}>
@@ -53,7 +53,7 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
             浏览器预览
           </p>
           <iframe
-            title="侧写报告预览"
+            title="岛民报告预览"
             srcDoc={html}
             className="mt-3 h-[32rem] w-full border border-[var(--echo-line)] bg-white"
           />

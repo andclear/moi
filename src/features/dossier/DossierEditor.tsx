@@ -125,7 +125,7 @@ export function DossierEditor({
           onClick={() => void handleSave()}
           loading={isSaveDisabled}
           disabled={isSaveDisabled}
-          aria-label="保存 TA 的回音"
+          aria-label="保存 TA 的记录"
         >
           {isSaveDisabled ? null : <SaveIcon aria-hidden="true" size={16} />}
           {saveLabel}
@@ -139,7 +139,7 @@ export function DossierEditor({
             onChange={(event) => handleChange(event.target.value)}
             className="h-full min-h-[46rem] w-full resize-y border border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 font-mono text-sm leading-7 text-[var(--animal-text-body)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)]"
             spellCheck={false}
-            aria-label="编辑 TA 的回音 Markdown"
+            aria-label="编辑 TA 的记录 Markdown"
           />
         ) : (
           <MarkdownPreview markdown={markdown} />

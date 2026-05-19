@@ -30,7 +30,7 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
             type="button"
             size="icon"
             variant="secondary"
-            aria-label="打开侦探助手笔记"
+            aria-label="打开助手笔记"
             onClick={() => openPanel("notes")}
           >
             <NotebookTabs aria-hidden="true" size={18} />
@@ -39,7 +39,7 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
             type="button"
             size="icon"
             variant="secondary"
-            aria-label="打开 TA 的回音"
+            aria-label="打开 TA 的记录"
             onClick={() => openPanel("dossier")}
           >
             <UserRoundCog aria-hidden="true" size={18} />

@@ -24,7 +24,7 @@ export function LandingPage() {
           <AnimalIcon name="icon-miles" size={116} />
         </div>
         <p className="fade-line mt-8 text-sm font-black uppercase tracking-[0.3em] text-[var(--animal-text-muted)]">
-          Echo Case Room
+          Echo Island
         </p>
         <h1 className="mt-4 font-display text-5xl font-black text-[var(--animal-text)] drop-shadow-[0_3px_0_rgba(255,255,255,0.72)]">
           回音
@@ -43,11 +43,11 @@ export function LandingPage() {
         <div className="fade-line mt-12 [animation-delay:4200ms]">
           <Button type="button" onClick={enterWorkspace} className="h-12 px-6">
             <AnimalIcon name="icon-map" size={20} />
-            寻找 TA 的回声
+            去小岛上找 TA
           </Button>
         </div>
       </section>
-      <Footer type="sea" className="relative" />
+      <Footer type="sea" className="relative left-1/2 w-screen -translate-x-1/2" />
     </main>
   );
 }

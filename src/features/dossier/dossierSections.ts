@@ -29,7 +29,7 @@ export function createDefaultDossierMarkdown(initialBrief?: string) {
   const lines: string[] = [];
 
   if (brief) {
-    lines.push("## 最初的回音", "", brief, "");
+    lines.push("## 最初的印象", "", brief, "");
   }
 
   dossierSections.forEach((section, index) => {

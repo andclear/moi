@@ -4,7 +4,7 @@ import { createProjectDraft } from "@/db/defaults";
 import { buildCharacterCard, formatCharacterCardJson } from "@/features/export/characterCardBuilder";
 
 describe("characterCardBuilder", () => {
-  it("构建包含角色主体、WorldInfo、开场白和终审摘要的 V3 角色卡", () => {
+  it("构建包含角色主体、WorldInfo、开场白和相处测试摘要的 V3 角色卡", () => {
     const project = createProjectDraft({
       title: "雨夜来客",
       dossierMarkdown: [
@@ -129,7 +129,7 @@ describe("characterCardBuilder", () => {
     expect(card.data.character_book?.entries).toHaveLength(3);
     expect(card.data.extensions.regex_scripts).toHaveLength(1);
     expect(card.data.first_mes).toContain("{{user}}");
-    expect(card.data.creator_notes).toContain("终审摘要");
+    expect(card.data.creator_notes).toContain("相处测试摘要");
     expect(() => JSON.parse(json)).not.toThrow();
   });
 });

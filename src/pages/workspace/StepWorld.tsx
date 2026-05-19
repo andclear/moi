@@ -203,7 +203,7 @@ export function StepWorld() {
   if (!project) {
     return (
       <div className="p-6">
-        <EmptyState title="这里没有传来回音" description="先从寻人启事开始，才能为 TA 找到世界。" />
+        <EmptyState title="这里还没有 TA" description="先从岛民便笺开始，才能为 TA 整理世界。" />
       </div>
     );
   }
@@ -216,7 +216,7 @@ export function StepWorld() {
             WorldInfo
           </p>
           <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
-            为 TA 找到世界留下的痕迹
+            为 TA 整理生活过的世界
           </h1>
           <p className="mt-3 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
             每次最多生成三条。只有你确认过的 WorldInfo 会进入后续上下文；被舍弃的条目不会再参与生成。
@@ -266,7 +266,7 @@ export function StepWorld() {
                 <textarea
                   value={userRequest}
                   onChange={(event) => setUserRequest(event.target.value)}
-                  placeholder="比如：补全 TA 所在城市的旧城区、禁忌行业、或一件和 TA 命运相关的物品。"
+                  placeholder="比如：补全 TA 住过的地方、常去的店、或一件和 TA 命运相关的物品。"
                   className="mt-3 min-h-28 w-full resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-7 text-[var(--echo-text)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
                 />
               </label>
@@ -285,8 +285,8 @@ export function StepWorld() {
                 </label>
                 <GenerationButton
                   idleLabel="生成 WorldInfo"
-                  runningLabel="正在勘探"
-                  retryLabel="重新勘探"
+                  runningLabel="正在整理"
+                  retryLabel="重新整理"
                   status={generationTask.status}
                   errorMessage={errorMessage ?? generationTask.errorMessage}
                   onGenerate={handleGenerateWorld}

@@ -8,7 +8,7 @@ describe("App", () => {
     window.localStorage.clear();
     render(<App />);
 
-    expect(await screen.findByRole("button", { name: /寻找 TA 的回声/ })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /去小岛上找 TA/ })).toBeInTheDocument();
   });
 
   it("已进入过的用户默认进入工作台", async () => {

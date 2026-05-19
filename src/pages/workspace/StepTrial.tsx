@@ -126,7 +126,7 @@ export function StepTrial() {
       });
       const nextProject = appendTrialRun(project, trialRun);
 
-      await persistProject(nextProject, `完成终审：${trialModeLabels[mode]}`, [
+    await persistProject(nextProject, `完成相处测试：${trialModeLabels[mode]}`, [
         questionnaire.taskId,
         answer.taskId,
       ]);
@@ -135,7 +135,7 @@ export function StepTrial() {
       if (controller.signal.aborted) {
         return;
       }
-      const message = error instanceof Error ? error.message : "终审生成失败。";
+      const message = error instanceof Error ? error.message : "相处测试生成失败。";
       setErrorMessage(message);
       setFailed(generationKey, message);
     }
@@ -151,7 +151,7 @@ export function StepTrial() {
         ...project,
         currentStep: "export",
       },
-      "通过终审",
+      "通过相处测试",
     );
 
     if (updatedProject) {
@@ -161,13 +161,13 @@ export function StepTrial() {
   }
 
   if (isLoading) {
-    return <div className="p-6 font-mono text-sm text-[var(--echo-muted)]">正在铺开终审记录……</div>;
+    return <div className="p-6 font-mono text-sm text-[var(--echo-muted)]">正在整理相处测试记录……</div>;
   }
 
   if (!project) {
     return (
       <div className="p-6">
-        <EmptyState title="这里没有传来回音" description="先找到 TA，才能进行终审。" />
+        <EmptyState title="这里还没有 TA" description="先找到 TA，才能进行相处测试。" />
       </div>
     );
   }
@@ -182,10 +182,10 @@ export function StepTrial() {
             角色一致性
           </p>
           <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
-            最后听一次 TA 的回答
+            看看 TA 在相处中是否稳定
           </h1>
           <p className="mt-3 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            终审会先生成问卷，再让 TA 作答。正式回复、内心独白和 OOC 风险会长期保存在本地。
+            相处测试会先生成问卷，再让 TA 作答。正式回复、内心独白和 OOC 风险会长期保存在本地。
           </p>
         </section>
 
@@ -214,9 +214,9 @@ export function StepTrial() {
               ))}
             </div>
             <GenerationButton
-              idleLabel={latestRun ? "重新测试" : "开始终审"}
-              runningLabel="正在终审"
-              retryLabel="重新终审"
+              idleLabel={latestRun ? "重新测试" : "开始测试"}
+              runningLabel="正在测试"
+              retryLabel="重新测试"
               status={generationTask.status}
               errorMessage={errorMessage ?? generationTask.errorMessage}
               onGenerate={handleRunTrial}
@@ -230,7 +230,7 @@ export function StepTrial() {
               onClick={() => void handlePassTrial()}
             >
               <CheckCircle2 aria-hidden="true" size={16} />
-              通过终审
+              通过测试
             </Button>
           </aside>
 
@@ -238,7 +238,7 @@ export function StepTrial() {
             {!latestRun ? (
               <EmptyState
                 icon={ScrollText}
-                title="还没有终审记录"
+                title="还没有测试记录"
                 description="选择一种测试模式，听听 TA 在不同压力下是否仍然像 TA。"
               />
             ) : (
@@ -268,7 +268,7 @@ function TrialRunCard({ trialRun, compact = false }: { trialRun: TrialRun; compa
             {trialModeLabels[trialRun.mode]}
           </p>
           <h2 className="mt-2 font-display text-2xl font-black text-[var(--echo-paper)]">
-            {compact ? "终审记录" : "最近一次终审"}
+            {compact ? "测试记录" : "最近一次测试"}
           </h2>
         </div>
         {trialRun.riskNotes.length > 0 && (

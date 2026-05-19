@@ -8,11 +8,11 @@ import {
 } from "@/features/world/worldStore";
 
 describe("worldStore", () => {
-  it("只把已确认 WorldInfo 写入档案上下文", () => {
+  it("只把已确认 WorldInfo 写入记录上下文", () => {
     const project = createProjectDraft({ id: "project_world" });
     const [candidate] = createWorldEntryCandidates("project_world", [
       {
-        comment: "旧城区钟楼",
+        comment: "旧码头钟楼",
         content: "【感官入口】：铜钟边缘已经发绿。",
         keywords: ["钟楼"],
       },
@@ -24,6 +24,6 @@ describe("worldStore", () => {
     const confirmed = confirmWorldEntry(withCandidate, candidate.id);
     expect(confirmed.worldEntries[0].enabled).toBe(true);
     expect(confirmed.dossier.markdown).toContain("WorldInfo:");
-    expect(confirmed.dossier.markdown).toContain("旧城区钟楼");
+    expect(confirmed.dossier.markdown).toContain("旧码头钟楼");
   });
 });

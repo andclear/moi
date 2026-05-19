@@ -23,7 +23,11 @@ interface ProjectLibraryItem {
 
 function hasRecognizableDossier(markdown: string) {
   return parseDossierSections(markdown).some(
-    (block) => block.section !== "最初的回音" && block.content.trim() && block.content.trim() !== "尚未听见",
+    (block) =>
+      block.section !== "最初的回音" &&
+      block.section !== "最初的印象" &&
+      block.content.trim() &&
+      block.content.trim() !== "尚未听见",
   );
 }
 
@@ -39,7 +43,7 @@ export function LibraryPage() {
 
     loadItems().catch((loadError: unknown) => {
       if (mounted) {
-        setError(loadError instanceof Error ? loadError.message : "读取档案库失败。");
+        setError(loadError instanceof Error ? loadError.message : "读取岛民册失败。");
       }
     });
 
@@ -137,16 +141,16 @@ export function LibraryPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
-            本地档案库
+            本地岛民册
           </p>
           <h1 className="mt-3 font-display text-3xl font-black text-[var(--echo-paper)]">
-            我的 TA 的回音
+            我的岛民记录
           </h1>
         </div>
         <Button asChild>
           <Link to="/workspace">
             <Plus aria-hidden="true" size={18} />
-            寻找新的回音
+            寻找新的 TA
           </Link>
         </Button>
       </div>
@@ -226,7 +230,7 @@ export function LibraryPage() {
                         ))
                       ) : (
                         <p className="font-mono text-sm text-[var(--echo-muted)]">
-                          这个档案还没有可复制的历史节点。
+                          这个记录还没有可复制的历史节点。
                         </p>
                       )}
                     </div>
@@ -239,16 +243,16 @@ export function LibraryPage() {
       ) : (
         <div className="mt-8 flex min-h-72 flex-col items-center justify-center border border-dashed border-[var(--echo-line)] text-center">
           <FileArchive aria-hidden="true" size={40} className="text-[var(--echo-muted)]" />
-          <p className="mt-4 font-bold text-[var(--echo-paper)]">还没有被寻回的 TA</p>
+          <p className="mt-4 font-bold text-[var(--echo-paper)]">还没有来到小岛的 TA</p>
           <p className="mt-2 max-w-md text-sm leading-6 text-[var(--echo-muted)]">
-            从一张寻人启事开始，等 TA 被你慢慢认出来。
+            从一张岛民便笺开始，慢慢把 TA 找回来。
           </p>
         </div>
       )}
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="确认删除这个回音？"
-        description="删除后会清理这个档案关联的历史、生成记录和导出记录，无法从本地恢复。"
+        title="确认删除这个记录？"
+        description="删除后会清理这个记录关联的历史、生成记录和导出记录，无法从本地恢复。"
         confirmLabel="删除"
         onConfirm={() => void handleDelete()}
         onCancel={() => setDeleteTarget(undefined)}

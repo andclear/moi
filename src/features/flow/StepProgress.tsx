@@ -74,7 +74,7 @@ export function StepProgress({ steps, currentStepId, completedStepIds = [] }: St
       <ConfirmDialog
         open={Boolean(pendingTarget)}
         title="回到旧节点"
-        description={`确定回到「${pendingTarget?.label ?? ""}」吗？当前档案会保留，但后续生成可能需要重新确认。`}
+        description={`确定回到「${pendingTarget?.label ?? ""}」吗？当前记录会保留，但后续生成可能需要重新确认。`}
         confirmLabel="回到这里"
         onCancel={() => setPendingTarget(null)}
         onConfirm={() => {

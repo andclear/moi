@@ -8,7 +8,7 @@ import {
 } from "@/features/profile/profileSession";
 
 describe("profileSession", () => {
-  it("创建完整的四段式侧写状态", () => {
+  it("创建完整的四段式岛民状态", () => {
     const session = createEmptyProfileSession();
 
     expect(session.currentStageId).toBe("silhouette");
@@ -36,6 +36,6 @@ describe("profileSession", () => {
     session.stages.silhouette.selectedChoiceId = choice.id;
 
     expect(choice.id).toMatch(/^choice_/);
-    expect(buildPreviousChoiceSummary(session)).toContain("剪影选择：雨夜里的灯");
+    expect(buildPreviousChoiceSummary(session)).toContain("初见印象：雨夜里的灯");
   });
 });

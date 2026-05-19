@@ -16,7 +16,7 @@ describe("historyService", () => {
     db.close();
   });
 
-  it("可以从历史快照恢复项目步骤、档案、世界书、开场白和终审记录", async () => {
+  it("可以从历史快照恢复项目步骤、记录、世界书、开场白和相处测试记录", async () => {
     const projects = createProjectRepository(db);
     const history = createHistoryService(db);
     const project = await projects.create({ title: "可恢复项目" });
@@ -32,9 +32,9 @@ describe("historyService", () => {
         {
           id: "world_1",
           projectId: project.id,
-          title: "旧城区",
+          title: "旧码头",
           content: "雾气很重。",
-          keywords: ["旧城区"],
+          keywords: ["旧码头"],
           enabled: true,
           createdAt: "2026-05-10T00:00:00.000Z",
           updatedAt: "2026-05-10T00:00:00.000Z",
@@ -65,7 +65,7 @@ describe("historyService", () => {
       ],
     });
 
-    const snapshot = await history.createSnapshot(project.id, "终审前");
+    const snapshot = await history.createSnapshot(project.id, "相处测试前");
 
     await projects.update(project.id, {
       currentStep: "export",

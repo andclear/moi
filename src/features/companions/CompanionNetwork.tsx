@@ -27,7 +27,7 @@ function createManualNode(project: Project): CompanionNode {
     name: "未命名的旁人",
     role: "关系未明",
     summary: "TA 在主角生活的边缘留下过一枚很浅的印记。",
-    personality: "尚待辨认。",
+    personality: "还需要继续了解。",
     relationToMain: "这段关系还没有被说清。",
     status: "candidate",
     createdAt: now,
@@ -88,7 +88,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
         updatedAt: nowIso(),
       });
     } catch (generationError) {
-      setError(generationError instanceof Error ? generationError.message : "配角寻人失败。");
+      setError(generationError instanceof Error ? generationError.message : "配角整理失败。");
     } finally {
       setIsGenerating(false);
     }
@@ -137,10 +137,10 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
             阶段 16
           </p>
           <h2 className="mt-2 font-display text-3xl font-black text-[var(--echo-paper)]">
-            关系网与配角微型寻人
+            关系网与配角整理
           </h2>
           <p className="mt-2 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            围绕主角辨认旁人，用三道剪影、两次排除和一枚碎片确认关系。
+            围绕主角整理旁人，用三种可能、两次排除和一枚小片段确认关系。
           </p>
         </div>
         <Button type="button" variant="secondary" onClick={() => void handleManualAdd()}>
@@ -152,7 +152,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
       <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="space-y-4">
           <label className="grid gap-2 text-sm font-bold text-[var(--echo-paper)]">
-            这次想寻找谁
+            这次想整理谁
             <textarea
               value={userRequest}
               onChange={(event) => setUserRequest(event.target.value)}
@@ -162,7 +162,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
           </label>
           <Button type="button" loading={isGenerating} disabled={isGenerating} onClick={() => void handleGenerate()}>
             {isGenerating ? null : <GitBranch aria-hidden="true" size={18} />}
-            寻找关系剪影
+            整理关系候选
           </Button>
           {error && (
             <p className="border border-[var(--echo-stamp)] bg-[rgba(120,40,34,0.18)] p-3 font-mono text-sm text-[var(--echo-paper)]">
@@ -178,7 +178,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
             <div className="grid gap-2">
               {exclusions.map((item) => (
                 <p key={item} className="border border-dashed border-[var(--echo-line)] p-2 font-mono text-xs text-[var(--echo-muted)]">
-                  反例排除：{item}
+                  不合适的方向：{item}
                 </p>
               ))}
             </div>

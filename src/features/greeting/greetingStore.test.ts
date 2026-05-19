@@ -7,7 +7,7 @@ import {
 } from "@/features/greeting/greetingStore";
 
 describe("greetingStore", () => {
-  it("选定开场白后只保留一个锁定项并同步档案", () => {
+  it("选定开场白后只保留一个锁定项并同步记录", () => {
     const project = createProjectDraft({ id: "project_greeting" });
     const [first, second] = createGreetingCandidates("project_greeting", "stranger", [
       { title: "雨夜", content: "{{char}} 递来一封湿透的信。" },

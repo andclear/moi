@@ -22,12 +22,12 @@ import { StepWorld } from "@/pages/workspace/StepWorld";
 import { WorkspaceLayout } from "@/shared/layout/WorkspaceLayout";
 
 const steps: FlowStep[] = [
-  { id: "post", label: "寻人启事", description: "描述脑海中的角色。", icon: PenLine },
-  { id: "profile", label: "辨认轮廓", description: "从几道轮廓里认出 TA 的样子。", icon: FileSearch },
-  { id: "world", label: "世界书", description: "整理角色所处世界。", icon: BookMarked },
-  { id: "greeting", label: "开场白", description: "生成初次接触场景。", icon: MessagesSquare },
-  { id: "trial", label: "终审", description: "测试角色一致性。", icon: ScrollText },
-  { id: "export", label: "带 TA 回来（导出）", description: "生成角色卡档案。", icon: Archive },
+  { id: "post", label: "岛民便笺", description: "写下你记得的 TA。", icon: PenLine },
+  { id: "profile", label: "认识岛民", description: "从几种可能里靠近 TA 的样子。", icon: FileSearch },
+  { id: "world", label: "小岛背景", description: "整理 TA 所在的世界。", icon: BookMarked },
+  { id: "greeting", label: "初次招呼", description: "生成第一次见面的场景。", icon: MessagesSquare },
+  { id: "trial", label: "相处测试", description: "测试角色一致性。", icon: ScrollText },
+  { id: "export", label: "带 TA 回来（导出）", description: "生成角色卡记录。", icon: Archive },
 ];
 
 function resolveStepId(step: string | undefined): FlowStepId {
@@ -58,7 +58,7 @@ export function WorkspacePage() {
         {shouldShowStepNav && (
           <aside className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.5)] p-4 lg:border-b-0 lg:border-r-2">
             <p className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--animal-text-muted)]">
-              档案流程
+              小岛流程
             </p>
             <StepProgress
               steps={steps}

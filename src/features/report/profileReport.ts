@@ -53,15 +53,15 @@ export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
 <body>
   <main>
     <header>
-      <p class="meta">Echo Profile Report · ${escapeHtml(versionLabel)} · ${escapeHtml(new Date().toLocaleString("zh-CN"))}</p>
+      <p class="meta">Echo Island Report · ${escapeHtml(versionLabel)} · ${escapeHtml(new Date().toLocaleString("zh-CN"))}</p>
       <h1>${escapeHtml(project.title)}</h1>
-      <p class="meta">这份报告记录 TA 被慢慢寻回的路径，不参与角色卡运行。</p>
+      <p class="meta">这份报告记录 TA 被慢慢找到的路径，不参与角色卡运行。</p>
     </header>
-    ${sectionHtml("寻人启事", sections[0]?.content.trim() ?? project.title)}
+    ${sectionHtml("岛民便笺", sections[0]?.content.trim() ?? project.title)}
     ${dossierHtml}
     <section><h2>WorldInfo 摘要</h2><ul>${worldHtml || "<li>尚未确认 WorldInfo。</li>"}</ul></section>
     <section><h2>开场白选择</h2><div>${escapeHtml(selectedGreeting?.content ?? "尚未锁定开场白。").replace(/\n/g, "<br>")}</div></section>
-    <section><h2>终审结果</h2><div>${escapeHtml(latestTrial?.resultMarkdown ?? "尚未留下终审记录。").replace(/\n/g, "<br>")}</div></section>
+    <section><h2>相处测试结果</h2><div>${escapeHtml(latestTrial?.resultMarkdown ?? "尚未留下相处测试记录。").replace(/\n/g, "<br>")}</div></section>
     <section><h2>关系网</h2><ul>${companionHtml || "<li>尚未确认配角关系。</li>"}</ul></section>
   </main>
 </body>
@@ -71,5 +71,5 @@ export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
 export function createReportFileName(project: Project, versionLabel: string) {
   const safeTitle = project.title.replace(/[\\/:*?"<>|]/g, "_").trim() || "echo-report";
   const safeVersion = versionLabel.replace(/[\\/:*?"<>|]/g, "_").trim() || "1.0";
-  return `${safeTitle}-寻回报告-${safeVersion}.html`;
+  return `${safeTitle}-岛民报告-${safeVersion}.html`;
 }

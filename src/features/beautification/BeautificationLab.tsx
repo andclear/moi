@@ -34,7 +34,7 @@ function splitCodeForExtensions(value: string) {
 
 export function BeautificationLab({ project, onProjectChange }: BeautificationLabProps) {
   const [originalText, setOriginalText] = useState("姓名：{{char}}\n状态：平静\n距离：三步之外");
-  const [userRequest, setUserRequest] = useState("生成可折叠的诗意状态栏，像旧档案上的微光标签。");
+  const [userRequest, setUserRequest] = useState("生成可折叠的诗意状态栏，像小岛留言板上的微光标签。");
   const [selectedId, setSelectedId] = useState(project.beautifications?.[0]?.id ?? "");
   const [error, setError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);

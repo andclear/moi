@@ -173,7 +173,7 @@ export async function generateProfileStage(input: {
       dossierMarkdown: input.dossierMarkdown,
       previousChoices: input.previousChoices,
     }),
-    inputSummary: `侧写子步骤：${input.stageId}`,
+    inputSummary: `认识岛民子步骤：${input.stageId}`,
     signal: input.signal,
   });
 
@@ -245,7 +245,7 @@ export async function generateTrialQuestionnaire(input: {
     projectId: input.projectId,
     type: "trial_questionnaire",
     messages: buildTrialQuestionnaireMessages(input),
-    inputSummary: `终审问卷：${input.mode}`,
+    inputSummary: `相处测试问卷：${input.mode}`,
     signal: input.signal,
   });
 
@@ -269,7 +269,7 @@ export async function generateTrialAnswer(input: {
     projectId: input.projectId,
     type: "trial_answer",
     messages: buildTrialAnswerMessages(input),
-    inputSummary: `终审回答：${input.mode}`,
+    inputSummary: `相处测试回答：${input.mode}`,
     signal: input.signal,
   });
 

@@ -21,7 +21,7 @@ describe("Dexie repositories", () => {
     db.close();
   });
 
-  it("projectRepository 支持创建、读取、更新步骤、保存档案和删除", async () => {
+  it("projectRepository 支持创建、读取、更新步骤、保存记录和删除", async () => {
     const projects = createProjectRepository(db);
     const project = await projects.create({ title: "雨夜里的回音" });
 

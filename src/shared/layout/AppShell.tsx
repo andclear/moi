@@ -15,7 +15,7 @@ type NavItem =
 
 const navItems: NavItem[] = [
   { to: "/workspace", label: "工作台", animalIcon: "icon-map" },
-  { to: "/library", label: "档案库", animalIcon: "icon-critterpedia" },
+  { to: "/library", label: "岛民册", animalIcon: "icon-critterpedia" },
   { to: "/settings", label: "设置", icon: Settings },
 ];
 
@@ -71,7 +71,7 @@ export function AppShell() {
           <Outlet />
         </PageTransition>
       </main>
-      <Footer type="sea" className="relative mt-6" />
+      <Footer type="sea" className="relative left-1/2 mt-6 w-screen -translate-x-1/2" />
     </div>
   );
 }

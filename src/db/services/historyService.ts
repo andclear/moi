@@ -64,7 +64,7 @@ export function createHistoryService(db: EchoDatabase = echoDb) {
 
       const project = await db.projects.get(snapshot.projectId);
       if (!project) {
-        throw new Error("历史节点对应的原档案不存在。");
+        throw new Error("历史节点对应的原记录不存在。");
       }
 
       const now = nowIso();

@@ -6,7 +6,7 @@ describe("promptAdapter", () => {
   it("在不支持 system prompt 时合并到第一条用户消息", () => {
     const messages = adaptMessagesForSystemSupport(
       [
-        { role: "system", content: "你是侧写师。" },
+        { role: "system", content: "你是岛民整理助手。" },
         { role: "user", content: "寻找雨夜出现的人。" },
       ],
       false,
@@ -15,7 +15,7 @@ describe("promptAdapter", () => {
     expect(messages).toHaveLength(1);
     expect(messages[0]).toMatchObject({ role: "user" });
     expect(messages[0]?.content).toContain("系统指令");
-    expect(messages[0]?.content).toContain("你是侧写师。");
+    expect(messages[0]?.content).toContain("你是岛民整理助手。");
   });
 
   it("支持 system prompt 时保持原消息结构", () => {

@@ -188,7 +188,7 @@ export function StepProfile() {
       if (controller.signal.aborted) {
         return;
       }
-      const message = error instanceof Error ? error.message : "侧写生成失败。";
+      const message = error instanceof Error ? error.message : "岛民印象生成失败。";
       setErrorMessage(message);
       setFailed(generationKey, message);
     }
@@ -252,7 +252,7 @@ export function StepProfile() {
   if (isLoading) {
     return (
       <div className="p-6 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-        正在整理 TA 的回音……
+        正在整理 TA 的记录……
       </div>
     );
   }
@@ -261,14 +261,14 @@ export function StepProfile() {
     return (
       <div className="p-6">
         <h1 className="mb-6 font-display text-4xl font-black text-[var(--echo-paper)]">
-          辨认轮廓
+          认识岛民
         </h1>
         <EmptyState
           title="还没有被寻回的 TA"
-          description="先写下一张寻人启事，系统才知道该从哪一道回音开始辨认。"
+          description="先写下一张岛民便笺，系统才知道该从哪里开始靠近 TA。"
           action={
             <Button type="button" onClick={() => navigate("/workspace/current/post")}>
-              返回寻人启事
+              返回岛民便笺
             </Button>
           }
         />
@@ -285,7 +285,7 @@ export function StepProfile() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
-                辨认轮廓
+                认识岛民
               </p>
               <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
                 {profileStageLabels[currentStageId]}
@@ -325,13 +325,13 @@ export function StepProfile() {
             {currentStage.choices.length === 0 ? (
               <EmptyState
                 icon={StageIcon}
-                title="这里还没有显影"
-                description="让模型先给出三种可能，再从里面认出最接近 TA 的那一个。"
+                title="这里还没有新的印象"
+                description="让模型先给出三种可能，再从里面选出最接近 TA 的那一个。"
                 action={
                   <GenerationButton
-                    idleLabel="寻找这一段回音"
-                    runningLabel="正在显影"
-                    retryLabel="重新寻找"
+                    idleLabel="整理这一段印象"
+                    runningLabel="正在整理"
+                    retryLabel="重新整理"
                     status={generationTask.status}
                     errorMessage={errorMessage ?? generationTask.errorMessage}
                     onGenerate={handleGenerateStage}
@@ -358,8 +358,8 @@ export function StepProfile() {
               <div className="flex flex-wrap items-center gap-3">
                 <GenerationButton
                   idleLabel="换一组三种可能"
-                  runningLabel="正在重新显影"
-                  retryLabel="重新寻找"
+                  runningLabel="正在重新整理"
+                  retryLabel="重新整理"
                   variant="secondary"
                   status={generationTask.status}
                   errorMessage={errorMessage ?? generationTask.errorMessage}
@@ -367,7 +367,7 @@ export function StepProfile() {
                   onCancel={() => cancel(generationKey)}
                 />
                 <p className="font-mono text-xs leading-5 text-[var(--echo-muted)]">
-                  选择后会写入 TA 的回音，逐步让核心人格更清楚。
+                  选择后会写入 TA 的记录，逐步让核心人格更清楚。
                 </p>
               </div>
             )}
@@ -376,7 +376,7 @@ export function StepProfile() {
           <aside className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
             <FileQuestion aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
-              已确认的回音
+              已确认的印象
             </h2>
             <p className="mt-3 whitespace-pre-wrap font-mono text-xs leading-6 text-[var(--echo-muted)]">
               {previousChoiceSummary || "尚未确认。"}

@@ -7,8 +7,8 @@ export type TrialMode = TrialRun["mode"];
 export const trialModeLabels = {
   interview: "多面试官对话",
   stress: "极压测试",
-  diary: "日记对话",
-  silent: "沉默证词",
+  diary: "小记对话",
+  silent: "安静对话",
 } satisfies Record<TrialMode, string>;
 
 export const trialModeDescriptions = {

@@ -166,9 +166,9 @@ function buildCreatorNotes(input: {
   const blocks = [
     input.note ? `导出备注：${input.note}` : "",
     input.versionLabel ? `版本：${input.versionLabel}` : "",
-    input.trialRuns[0]?.resultMarkdown ? `终审摘要：\n${input.trialRuns[0].resultMarkdown}` : "",
+    input.trialRuns[0]?.resultMarkdown ? `相处测试摘要：\n${input.trialRuns[0].resultMarkdown}` : "",
     input.trialRuns[0]?.riskNotes.length
-      ? `终审风险记录：${input.trialRuns[0].riskNotes.join("；")}`
+      ? `相处测试风险记录：${input.trialRuns[0].riskNotes.join("；")}`
       : "",
   ];
 
@@ -266,7 +266,7 @@ export function buildCharacterCard({
       creator_notes: creatorNotes,
       system_prompt:
         "你将扮演{{char}}。保持角色已有经历、欲望、边界和说话方式，不替{{user}}做决定，不描写{{user}}的内心。",
-      post_history_instructions: "持续遵守角色档案中用户确认的事实，避免突然改变人格、关系或世界逻辑。",
+      post_history_instructions: "持续遵守角色记录中用户确认的事实，避免突然改变人格、关系或世界逻辑。",
       tags: ["回音", "Echo"],
       creator: "Echo",
       character_version: versionLabel ?? "1.0",

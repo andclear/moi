@@ -14,17 +14,17 @@ export const profileStageOrder: ProfileStageId[] = [
 ];
 
 export const profileStageLabels: Record<ProfileStageId, string> = {
-  silhouette: "剪影选择",
-  exclusion: "反例排除",
-  fragment: "碎片叙事",
-  diary: "私密日记",
+  silhouette: "初见印象",
+  exclusion: "不合拍之处",
+  fragment: "小岛片段",
+  diary: "内心小记",
 };
 
 export const profileStageDescriptions: Record<ProfileStageId, string> = {
-  silhouette: "从三道朦胧轮廓里，认出 TA 最接近的行动方式。",
-  exclusion: "排除那个差一点像 TA 的影子，让真正的轮廓更清楚。",
-  fragment: "在一个短促瞬间里，看见 TA 会如何选择。",
-  diary: "揭开被涂掉的句子，确认 TA 心底最不能轻易说出口的矛盾。",
+  silhouette: "从三种初见感觉里，选出最接近 TA 的行动方式。",
+  exclusion: "排除那个差一点像 TA、但其实不合拍的方向。",
+  fragment: "在一个小岛上的短促瞬间里，看见 TA 会如何选择。",
+  diary: "确认 TA 心底最不容易说出口的矛盾。",
 };
 
 function emptyStage(stageId: ProfileStageId): ProfileStageState {

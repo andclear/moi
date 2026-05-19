@@ -28,7 +28,7 @@ describe("dossierSections", () => {
     );
   });
 
-  it("合并 AI 档案时保留原有段落顺序并使用新内容", () => {
+  it("合并 AI 记录时保留原有段落顺序并使用新内容", () => {
     const initial = "## 核心人格\n\n用户确认的本心\n\n## 世界观\n\n旧世界";
     const ai = "## 核心人格\n\nAI 想改写的本心\n\n## 世界观\n\n新世界";
     const merged = mergeAiDossierMarkdown(initial, ai);

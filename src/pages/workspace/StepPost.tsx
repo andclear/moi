@@ -1,4 +1,4 @@
-import { FileSearch, KeyRound, MessageCircleQuestion } from "lucide-react";
+import { MapPinned, KeyRound, MessageCircleQuestion } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -55,7 +55,7 @@ export function StepPost() {
     setErrorMessage(null);
 
     if (trimmedBrief.length < 12) {
-      setHint("再留下一点点线索吧。比如 TA 在什么场景里出现，或 TA 最不像谁。");
+      setHint("再多写一点点吧。比如 TA 常在哪里出现，或 TA 给你的第一感觉是什么。");
       return;
     }
 
@@ -103,7 +103,7 @@ export function StepPost() {
       });
 
       if (!updatedProject) {
-        throw new Error("初始档案保存失败。");
+        throw new Error("初始记录保存失败。");
       }
 
       hydrateDossier(updatedProject);
@@ -114,7 +114,7 @@ export function StepPost() {
       if (controller.signal.aborted) {
         return;
       }
-      const message = error instanceof Error ? error.message : "初始侧写生成失败。";
+      const message = error instanceof Error ? error.message : "初始岛民记录生成失败。";
       setErrorMessage(message);
       setFailed("profile:draft", message);
     }
@@ -124,13 +124,13 @@ export function StepPost() {
     <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-4 py-20">
       <article className="w-full max-w-3xl border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-5 text-[var(--echo-ink)] shadow-[0_4px_10px_rgba(107,92,67,0.28)] sm:p-8">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
-          张贴寻人启事
+          写下岛民便笺
         </p>
         <h1 className="mt-5 font-display text-4xl font-black tracking-normal sm:text-5xl">
           你记得 TA 的哪一部分？
         </h1>
         <p className="mt-5 max-w-2xl font-mono text-base leading-7">
-          不必急着说清 TA 是谁。写下一点气息、一句话、一个场景、一段你无法忘记的矛盾，或那个始终没有散去的瞬间。
+          不必急着说清 TA 是谁。写下一点气息、一句话、一个场景、一段你记得很久的小事，或那个始终没有散去的瞬间。
         </p>
         <div className="mt-8 grid gap-5">
           <fieldset>
@@ -188,7 +188,7 @@ export function StepPost() {
             />
           </label>
           <label htmlFor="case-brief" className="sr-only">
-            最初的回音
+            最初的印象
           </label>
           <textarea
             id="case-brief"
@@ -220,16 +220,16 @@ export function StepPost() {
         )}
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <GenerationButton
-            idleLabel="开始辨认轮廓"
-            runningLabel="正在听见最初的回音"
+            idleLabel="开始认识 TA"
+            runningLabel="正在整理最初印象"
             status={generationTask.status}
             errorMessage={generationTask.errorMessage}
             onGenerate={handleStartProfile}
             onCancel={() => cancel("profile:draft")}
           />
           <p className="font-mono text-xs leading-5 text-[var(--animal-text-muted)]">
-            <FileSearch aria-hidden="true" size={14} className="mr-1 inline" />
-            生成后会自动写入 TA 的回音，并进入辨认轮廓。
+            <MapPinned aria-hidden="true" size={14} className="mr-1 inline" />
+            生成后会自动写入 TA 的记录，并进入认识岛民。
           </p>
         </div>
       </article>

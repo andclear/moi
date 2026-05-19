@@ -182,7 +182,7 @@ export function StepGreeting() {
   if (!project) {
     return (
       <div className="p-6">
-        <EmptyState title="这里没有传来回音" description="先找到 TA，才能听见第一句话。" />
+        <EmptyState title="这里还没有 TA" description="先写下岛民便笺，才能整理第一句话。" />
       </div>
     );
   }
@@ -198,7 +198,7 @@ export function StepGreeting() {
             让 TA 从场景里开口
           </h1>
           <p className="mt-3 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            选择身份、字数和人称后生成候选。锁定的那一条会写入 TA 的回音，并进入终审上下文。
+            选择身份、字数和人称后生成候选。锁定的那一条会写入 TA 的记录，并进入相处测试上下文。
           </p>
         </section>
 
@@ -265,14 +265,14 @@ export function StepGreeting() {
               <textarea
                 value={mustInclude}
                 onChange={(event) => setMustInclude(event.target.value)}
-                placeholder="比如：雨夜、未寄出的信、旧城区的钟声。"
+                placeholder="比如：雨夜、未寄出的信、小岛钟声。"
                 className="mt-2 min-h-24 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 text-[var(--echo-text)] outline-none"
               />
             </label>
 
             <GenerationButton
               idleLabel="生成开场白"
-              runningLabel="正在听见第一句话"
+              runningLabel="正在整理第一句话"
               retryLabel="重新生成"
               status={generationTask.status}
               errorMessage={errorMessage ?? generationTask.errorMessage}
@@ -287,7 +287,7 @@ export function StepGreeting() {
               onClick={() => void handleNextStep()}
             >
               <CheckCircle2 aria-hidden="true" size={16} />
-              进入终审
+              进入相处测试
             </Button>
           </aside>
 

@@ -21,7 +21,7 @@ const roleDescriptions: Record<GreetingRoleTone, string> = {
 
 function formatWorldInfo(entries: WorldEntry[]) {
   if (entries.length === 0) {
-    return "尚未确认 WorldInfo。请主要依照角色档案生成。";
+    return "尚未确认 WorldInfo。请主要依照角色记录生成。";
   }
 
   return entries
@@ -46,13 +46,13 @@ export function buildGreetingMessages(input: BuildGreetingMessagesInput): LlmMes
     {
       role: "user",
       content: [
-        `角色档案：\n${input.dossierMarkdown}`,
+        `角色记录：\n${input.dossierMarkdown}`,
         `已确认 WorldInfo：\n${formatWorldInfo(input.confirmedEntries)}`,
         `用户身份：${roleDescriptions[input.userRole]}`,
         `目标字数：每个开场白约 ${input.wordCount} 字，允许上下浮动 20%。`,
         `人称模式：${input.personType}。第一人称使用“我”指代 {{char}}；第二人称聚焦 {{user}} 可看见、听见、触碰到的外部细节；第三人称使用 {{char}} 或他/她。`,
         `语气热烈程度：${input.heatLevel}/5。1 表示克制冷静，5 表示强烈但仍尊重边界。`,
-        `必须包含的要素：${input.mustInclude || "无特别要求。请从角色档案和 WorldInfo 中选择最有张力的触点。"}`,
+        `必须包含的要素：${input.mustInclude || "无特别要求。请从角色记录和 WorldInfo 中选择最有张力的触点。"}`,
       ].join("\n\n"),
     },
   ];

@@ -45,7 +45,7 @@ export function createProjectRepository(db: EchoDatabase = echoDb) {
     async copy(id: string, title?: string) {
       const project = await db.projects.get(id);
       if (!project) {
-        throw new Error("无法复制不存在的档案。");
+        throw new Error("无法复制不存在的记录。");
       }
 
       const now = nowIso();

@@ -4,7 +4,7 @@ import { createProjectDraft } from "@/db/defaults";
 import { buildProfileReportHtml, createReportFileName } from "@/features/report/profileReport";
 
 describe("profileReport", () => {
-  it("生成包含档案、WorldInfo、开场白和终审的 HTML 报告", () => {
+  it("生成包含记录、WorldInfo、开场白和相处测试的 HTML 报告", () => {
     const project = createProjectDraft({ title: "雨夜的回音" });
     project.worldEntries = [
       {
@@ -36,7 +36,7 @@ describe("profileReport", () => {
         projectId: project.id,
         mode: "interview",
         questionnaireMarkdown: "问题",
-        resultMarkdown: "终审通过。",
+        resultMarkdown: "相处测试通过。",
         riskNotes: [],
         createdAt: project.createdAt,
       },
@@ -46,7 +46,7 @@ describe("profileReport", () => {
 
     expect(html).toContain("雨夜的回音");
     expect(html).toContain("旧车站");
-    expect(html).toContain("终审通过");
-    expect(createReportFileName(project, "2.0")).toContain("寻回报告");
+    expect(html).toContain("相处测试通过");
+    expect(createReportFileName(project, "2.0")).toContain("岛民报告");
   });
 });

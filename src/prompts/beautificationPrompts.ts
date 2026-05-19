@@ -27,7 +27,7 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
     {
       role: "user",
       content: [
-        `角色档案：\n${input.dossierMarkdown}`,
+        `角色记录：\n${input.dossierMarkdown}`,
         `Original Text：\n${input.originalText}`,
         `User Request：\n${input.userRequest || "请根据原始文本选择适合的高级视觉风格。"}`,
         "请返回严格 JSON：",

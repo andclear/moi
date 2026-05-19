@@ -11,7 +11,7 @@ describe("uiStore", () => {
     });
   });
 
-  it("打开角色档案面板时同步展开侧边栏", () => {
+  it("打开角色记录面板时同步展开侧边栏", () => {
     useUiStore.getState().openPanel("dossier");
 
     expect(useUiStore.getState().activePanel).toBe("dossier");
@@ -34,7 +34,7 @@ describe("uiStore", () => {
     expect(useUiStore.getState().isSidebarOpen).toBe(false);
   });
 
-  it("toggleSidebar 从关闭变打开时默认打开角色档案", () => {
+  it("toggleSidebar 从关闭变打开时默认打开角色记录", () => {
     useUiStore.getState().toggleSidebar();
 
     expect(useUiStore.getState().activePanel).toBe("dossier");
