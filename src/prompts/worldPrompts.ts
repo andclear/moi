@@ -3,6 +3,7 @@ import type { LlmMessage } from "@/features/llm/llmTypes";
 
 export interface BuildWorldMessagesInput {
   dossierMarkdown: string;
+  characterInfo: string;
   currentWorldInfo: string;
   existingWorldEntries: WorldEntry[];
   userRequest: string;
@@ -61,6 +62,8 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
         "你是一名横跨维度的客观记录者。你的职责是构建物理上可触、逻辑上自洽、历史上深厚的世界档案。你对“悬浮设定”零容忍：无代价的力量、无来源的资源、无矛盾的社会结构，都不被接受。",
         "",
         "## 上下文",
+        `* 角色档案：${input.dossierMarkdown}`,
+        `* 角色信息：${input.characterInfo || "尚未生成"}`,
         `* 当前世界信息：${input.currentWorldInfo}`,
         `* 生成目标：请基于${input.userRequest}，精准生成 ${input.entryCount} 条档案。`,
         `* 已生成的所有世界书条目 JSON：${existingWorldEntriesJson}`,
@@ -137,7 +140,8 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
     {
       role: "user",
       content: [
-        `当前角色资料：\n${input.dossierMarkdown}`,
+        `角色档案：\n${input.dossierMarkdown}`,
+        `角色信息：\n${input.characterInfo || "尚未生成"}`,
         `current_world_info:\n${input.currentWorldInfo}`,
         `user_request:\n${input.userRequest}`,
         `entry_count:\n${input.entryCount}`,

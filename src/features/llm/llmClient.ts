@@ -439,6 +439,7 @@ export async function generateDossierTextRewrite(input: {
 export async function generateWorldEntries(input: {
   projectId: string;
   dossierMarkdown: string;
+  characterInfo: string;
   currentWorldInfo: string;
   existingWorldEntries: WorldEntry[];
   userRequest: string;
@@ -450,6 +451,7 @@ export async function generateWorldEntries(input: {
     type: "world",
     messages: buildWorldEntryMessages({
       dossierMarkdown: input.dossierMarkdown,
+      characterInfo: input.characterInfo,
       currentWorldInfo: input.currentWorldInfo,
       existingWorldEntries: input.existingWorldEntries,
       userRequest: input.userRequest,

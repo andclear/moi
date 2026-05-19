@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createProjectDraft } from "@/db/defaults";
-import { extractCurrentWorldInfo } from "@/prompts/worldPrompts";
+import { buildWorldEntryMessages, extractCurrentWorldInfo } from "@/prompts/worldPrompts";
 import { worldEntryResponseSchema } from "@/schemas/llmResponseSchemas";
 import {
   confirmWorldEntry,
@@ -76,5 +76,21 @@ describe("worldStore", () => {
 
     expect(extractCurrentWorldInfo(project)).toBe("近未来海港城");
     expect(extractCurrentWorldInfo(createProjectDraft())).toBe("尚未明确");
+  });
+
+  it("世界书提示词上下文包含角色档案和角色信息", () => {
+    const messages = buildWorldEntryMessages({
+      dossierMarkdown: "## 核心人格\n\n谨慎，怕被遗忘。",
+      characterInfo: "姓名: 陈露\n基本信息:\n  年龄: 22",
+      currentWorldInfo: "现代都市",
+      existingWorldEntries: [],
+      userRequest: "生成居住区域",
+      entryCount: 1,
+    });
+
+    expect(messages[0].content).toContain("角色档案");
+    expect(messages[0].content).toContain("角色信息");
+    expect(messages[1].content).toContain("姓名: 陈露");
+    expect(messages[1].content).toContain("## 核心人格");
   });
 });

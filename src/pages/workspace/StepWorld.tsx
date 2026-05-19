@@ -113,6 +113,7 @@ export function StepWorld() {
       const result = await generateWorldEntries({
         projectId: project.id,
         dossierMarkdown: project.dossier.markdown,
+        characterInfo: project.characterProfile?.yaml ?? "尚未生成",
         currentWorldInfo,
         existingWorldEntries: project.worldEntries,
         userRequest: trimmedRequest,
