@@ -118,6 +118,11 @@ describe("worldStore", () => {
     expect(messages[0].content).toContain("运转代价");
     expect(messages[0].content).toContain("不设置最大长度");
     expect(messages[0].content).toContain("entry_count 是必须输出的条目数量");
+    expect(messages[0].content).toContain("每个编号项都代表用户明确要求的主题");
+    expect(messages[0].content).toContain("亲密度阶段变化");
+    expect(messages[0].content).toContain("禁止把“低/中/高”");
+    expect(messages[0].content).toContain("社会默认规则");
+    expect(messages[0].content).toContain("优先判断为 constant=true");
     expect(messages[0].content).toContain("每个条目只能包含");
     expect(messages[0].content).toContain("只允许使用 keys 字段");
     expect(messages[0].content).toContain("不要让每个条目都机械套用同一批标题");
