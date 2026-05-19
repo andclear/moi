@@ -133,6 +133,21 @@ export function StepPost() {
           不必急着说清 TA 是谁。写下一点气息、一句话、一个场景、一段你记得很久的小事，或那个始终没有散去的瞬间。
         </p>
         <div className="mt-8 grid gap-5">
+          <label htmlFor="case-brief" className="sr-only">
+            最初的印象
+          </label>
+          <textarea
+            id="case-brief"
+            value={brief}
+            onChange={(event) => {
+              setBrief(event.target.value);
+              setHint(null);
+            }}
+            className="min-h-64 w-full resize-y rounded-[30px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-6 py-5 font-mono text-lg leading-9 text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] hover:border-[var(--animal-border-hover)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_4px_0_0_var(--animal-focus-yellow-dark)]"
+            placeholder="比如：TA 总在雨夜出现，话很少，像在等一封永远不会抵达的信。"
+          />
+
+          <div className="grid gap-5 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.38)] p-4 sm:grid-cols-[minmax(0,1.15fr)_minmax(14rem,0.85fr)]">
           <fieldset>
             <legend className="mb-3 text-sm font-black text-[var(--animal-text)]">
               TA 的性别 <span className="text-[var(--animal-error)]">*</span>
@@ -187,19 +202,7 @@ export function StepPost() {
               placeholder="只填写数字，例如 24"
             />
           </label>
-          <label htmlFor="case-brief" className="sr-only">
-            最初的印象
-          </label>
-          <textarea
-            id="case-brief"
-            value={brief}
-            onChange={(event) => {
-              setBrief(event.target.value);
-              setHint(null);
-            }}
-            className="min-h-56 w-full resize-y rounded-[30px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-6 py-5 font-mono text-lg leading-9 text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] hover:border-[var(--animal-border-hover)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_4px_0_0_var(--animal-focus-yellow-dark)]"
-            placeholder="比如：TA 总在雨夜出现，话很少，像在等一封永远不会抵达的信。"
-          />
+          </div>
         </div>
         {hint && (
           <p className="mt-4 flex items-start gap-2 font-mono text-sm leading-6 text-[var(--echo-stamp)]">
@@ -218,7 +221,7 @@ export function StepPost() {
             </Button>
           </div>
         )}
-        <div className="mt-8 flex flex-wrap items-center gap-3">
+        <div className="mt-8 flex flex-col gap-3 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] p-4 shadow-[0_5px_0_0_var(--animal-shadow-input)] sm:flex-row sm:items-center sm:justify-between">
           <GenerationButton
             idleLabel="开始认识 TA"
             runningLabel="正在整理最初印象"
@@ -226,6 +229,7 @@ export function StepPost() {
             errorMessage={generationTask.errorMessage}
             onGenerate={handleStartProfile}
             onCancel={() => cancel("profile:draft")}
+            className="h-14 min-w-52 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] px-8 text-base text-white shadow-[0_6px_0_0_var(--animal-primary-active)] hover:shadow-[0_7px_0_0_var(--animal-primary-active)] active:shadow-[0_2px_0_0_var(--animal-primary-active)]"
           />
           <p className="font-mono text-xs leading-5 text-[var(--animal-text-muted)]">
             <MapPinned aria-hidden="true" size={14} className="mr-1 inline" />

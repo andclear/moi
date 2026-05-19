@@ -188,9 +188,9 @@ export function StepGreeting() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-9rem)] px-4 py-6 sm:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <section className="border-2 border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-5 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
+    <main className="echo-workspace-page">
+      <div className="echo-workspace-inner space-y-6">
+        <section className="echo-section-card">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
             初次接触
           </p>
@@ -202,8 +202,8 @@ export function StepGreeting() {
           </p>
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="space-y-4 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
+        <section className="echo-readable-shell">
+          <aside className="echo-side-panel space-y-4 lg:order-2">
             <SlidersHorizontal aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">生成条件</h2>
 
@@ -291,7 +291,7 @@ export function StepGreeting() {
             </Button>
           </aside>
 
-          <div className="space-y-4">
+          <div className="echo-readable-main lg:order-1">
             {currentRoleVariants.length === 0 ? (
               <EmptyState
                 icon={MessagesSquare}
@@ -302,7 +302,7 @@ export function StepGreeting() {
               currentRoleVariants.map((variant) => (
                 <article
                   key={variant.id}
-                  className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4"
+                  className="echo-text-card"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <input
@@ -321,7 +321,7 @@ export function StepGreeting() {
                     onChange={(event) =>
                       void handleEditVariant(variant, { content: event.target.value })
                     }
-                    className="mt-4 min-h-72 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-7 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                    className="mt-4 min-h-96 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-base leading-8 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                   />
                   <Button
                     type="button"

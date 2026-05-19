@@ -1,11 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { NotebookTabs, Server, UserRoundCog, X } from "lucide-react";
+import { Server, UserRoundCog, X } from "lucide-react";
 import type { PropsWithChildren } from "react";
 
 import { ApiStatusBadge } from "@/features/activation/ApiStatusBadge";
 import { ApiStatusPanel } from "@/features/activation/ApiStatusPanel";
 import { DossierPanel } from "@/features/dossier/DossierPanel";
-import { AssistantNotesPanel } from "@/features/notes/AssistantNotesPanel";
 import { useUiStore } from "@/features/ui/uiStore";
 import { Button } from "@/shared/components/ui/button";
 
@@ -25,15 +24,6 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
             onClick={() => openPanel("api")}
           >
             <Server aria-hidden="true" size={18} />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="secondary"
-            aria-label="打开助手笔记"
-            onClick={() => openPanel("notes")}
-          >
-            <NotebookTabs aria-hidden="true" size={18} />
           </Button>
           <Button
             type="button"
@@ -80,13 +70,7 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
                       <X aria-hidden="true" size={18} />
                     </Button>
                   </div>
-                  {activePanel === "api" ? (
-                    <ApiStatusPanel />
-                  ) : activePanel === "notes" ? (
-                    <AssistantNotesPanel />
-                  ) : (
-                    <DossierPanel />
-                  )}
+                  {activePanel === "api" ? <ApiStatusPanel /> : <DossierPanel />}
                 </div>
               </motion.div>
             </>

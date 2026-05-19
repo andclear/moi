@@ -209,9 +209,9 @@ export function StepWorld() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-9rem)] px-4 py-6 sm:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <section className="border-2 border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-5 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
+    <main className="echo-workspace-page">
+      <div className="echo-workspace-inner space-y-6">
+        <section className="echo-section-card">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
             WorldInfo
           </p>
@@ -223,8 +223,8 @@ export function StepWorld() {
           </p>
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-5">
+        <section className="echo-readable-shell">
+          <div className="echo-readable-main">
             <div className="grid gap-4 md:grid-cols-3">
               {fragments.map((fragment, index) => (
                 <label
@@ -258,7 +258,7 @@ export function StepWorld() {
               ))}
             </div>
 
-            <div className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-5">
+            <div className="echo-section-card">
               <label className="block">
                 <span className="font-display text-xl font-black text-[var(--echo-paper)]">
                   这次想生成什么样的世界书？
@@ -295,11 +295,11 @@ export function StepWorld() {
               </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid gap-4">
               {project.worldEntries.map((entry) => (
                 <article
                   key={entry.id}
-                  className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4"
+                  className="echo-text-card"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <input
@@ -314,7 +314,7 @@ export function StepWorld() {
                   <textarea
                     value={entry.content}
                     onChange={(event) => void handleEditEntry(entry, { content: event.target.value })}
-                    className="mt-4 min-h-60 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-7 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                    className="mt-4 min-h-72 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-base leading-8 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                   />
                   <input
                     value={entry.keywords.join("、")}
@@ -357,12 +357,12 @@ export function StepWorld() {
             </div>
           </div>
 
-          <aside className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
+          <aside className="echo-side-panel">
             <BookMarked aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
               已确认 WorldInfo
             </h2>
-            <p className="mt-3 whitespace-pre-wrap font-mono text-xs leading-6 text-[var(--echo-muted)]">
+            <p className="mt-3 max-h-[52vh] overflow-auto whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--echo-muted)]">
               {formatWorldInfoForDossier(project.worldEntries)}
             </p>
             <Button type="button" className="mt-5 w-full" onClick={() => void handleNextStep()}>

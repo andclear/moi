@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type WorkspacePanel = "dossier" | "api" | "notes" | null;
+type WorkspacePanel = "dossier" | "api" | null;
 
 interface UiState {
   activePanel: WorkspacePanel;

@@ -279,9 +279,9 @@ export function StepProfile() {
   const StageIcon = stageIcons[currentStageId];
 
   return (
-    <main className="min-h-[calc(100vh-9rem)] px-4 py-6 sm:px-6">
-      <div className="mx-auto max-w-6xl">
-        <section className="border-2 border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-5 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
+    <main className="echo-workspace-page">
+      <div className="echo-workspace-inner">
+        <section className="echo-section-card">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
@@ -320,8 +320,8 @@ export function StepProfile() {
           </div>
         </section>
 
-        <section className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="space-y-5">
+        <section className="echo-readable-shell mt-6">
+          <div className="echo-readable-main">
             {currentStage.choices.length === 0 ? (
               <EmptyState
                 icon={StageIcon}
@@ -340,7 +340,7 @@ export function StepProfile() {
                 }
               />
             ) : (
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4">
                 {currentStage.choices.map((choice) => (
                   <ChoiceCard
                     key={choice.id}
@@ -373,12 +373,12 @@ export function StepProfile() {
             )}
           </div>
 
-          <aside className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
+          <aside className="echo-side-panel">
             <FileQuestion aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
               已确认的印象
             </h2>
-            <p className="mt-3 whitespace-pre-wrap font-mono text-xs leading-6 text-[var(--echo-muted)]">
+            <p className="mt-3 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--echo-muted)]">
               {previousChoiceSummary || "尚未确认。"}
             </p>
           </aside>

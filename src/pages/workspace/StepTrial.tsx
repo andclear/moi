@@ -126,7 +126,7 @@ export function StepTrial() {
       });
       const nextProject = appendTrialRun(project, trialRun);
 
-    await persistProject(nextProject, `完成相处测试：${trialModeLabels[mode]}`, [
+      await persistProject(nextProject, `完成相处测试：${trialModeLabels[mode]}`, [
         questionnaire.taskId,
         answer.taskId,
       ]);
@@ -175,9 +175,9 @@ export function StepTrial() {
   const latestRun = project.trialRuns[0];
 
   return (
-    <main className="min-h-[calc(100vh-9rem)] px-4 py-6 sm:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <section className="border-2 border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-5 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
+    <main className="echo-workspace-page">
+      <div className="echo-workspace-inner space-y-6">
+        <section className="echo-section-card">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
             角色一致性
           </p>
@@ -189,8 +189,8 @@ export function StepTrial() {
           </p>
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="space-y-4 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
+        <section className="echo-readable-shell">
+          <aside className="echo-side-panel space-y-4 lg:order-2">
             <ScrollText aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">测试模式</h2>
             <div className="space-y-2">
@@ -234,7 +234,7 @@ export function StepTrial() {
             </Button>
           </aside>
 
-          <div className="space-y-4">
+          <div className="echo-readable-main lg:order-1">
             {!latestRun ? (
               <EmptyState
                 icon={ScrollText}
@@ -246,7 +246,7 @@ export function StepTrial() {
             )}
 
             {project.trialRuns.slice(1).length > 0 && (
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3">
                 {project.trialRuns.slice(1).map((trialRun) => (
                   <TrialRunCard key={trialRun.id} trialRun={trialRun} compact />
                 ))}
@@ -261,7 +261,7 @@ export function StepTrial() {
 
 function TrialRunCard({ trialRun, compact = false }: { trialRun: TrialRun; compact?: boolean }) {
   return (
-    <article className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
+    <article className="echo-text-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--echo-muted)]">
@@ -279,16 +279,16 @@ function TrialRunCard({ trialRun, compact = false }: { trialRun: TrialRun; compa
         )}
       </div>
       {!compact && (
-        <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-3">
+        <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-4">
           <h3 className="font-display text-lg font-black text-[var(--echo-paper)]">问卷</h3>
-          <p className="mt-2 whitespace-pre-wrap font-mono text-xs leading-6 text-[var(--echo-muted)]">
+          <p className="echo-long-text mt-2 font-mono text-[var(--echo-muted)]">
             {trialRun.questionnaireMarkdown}
           </p>
         </section>
       )}
-      <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-3">
+      <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-4">
         <h3 className="font-display text-lg font-black text-[var(--echo-paper)]">回答</h3>
-        <p className="mt-2 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--echo-text)]">
+        <p className="echo-long-text mt-2 font-mono text-[var(--echo-text)]">
           {trialRun.resultMarkdown}
         </p>
       </section>

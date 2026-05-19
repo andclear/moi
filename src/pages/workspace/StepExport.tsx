@@ -91,9 +91,9 @@ export function StepExport() {
   }
 
   return (
-    <section className="p-4 sm:p-6">
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-6 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
+    <section className="echo-workspace-page">
+      <div className="echo-readable-shell echo-workspace-inner">
+        <article className="echo-section-card">
           <Archive aria-hidden="true" size={26} className="text-[var(--echo-paper)]" />
           <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
             带 TA 回来
@@ -181,8 +181,8 @@ export function StepExport() {
           )}
         </article>
 
-        <aside className="space-y-4">
-          <section className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-5">
+        <aside className="echo-side-panel space-y-4">
+          <section>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
               导出内容
             </p>
@@ -214,7 +214,7 @@ export function StepExport() {
             </dl>
           </section>
 
-          <section className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-5">
+          <section className="border-t-2 border-[var(--animal-border)] pt-5">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
               导出记录
             </p>
@@ -239,7 +239,7 @@ export function StepExport() {
       </div>
 
       {project && (
-        <div className="mt-6 space-y-6">
+        <div className="echo-workspace-inner mt-6 space-y-6">
           <BeautificationLab project={project} onProjectChange={setProject} />
           <CompanionNetwork project={project} onProjectChange={setProject} />
           <ProfileReportPanel project={project} />

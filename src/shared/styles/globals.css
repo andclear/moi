@@ -69,7 +69,26 @@ input[type="range"],
 input[type="checkbox"],
 input[type="radio"],
 input[type="file"] {
-  box-shadow: none;
+  box-shadow: none !important;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  accent-color: var(--animal-primary);
+}
+
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
+  box-shadow: none !important;
+  outline: 3px solid rgba(25, 200, 185, 0.24);
+  outline-offset: 3px;
 }
 
 .animal-button-loading::before {
@@ -92,6 +111,69 @@ input[type="file"] {
   background-position: bottom left !important;
   background-repeat: repeat-x !important;
   background-size: auto 100% !important;
+}
+
+.echo-workspace-page {
+  min-height: calc(100vh - 9rem);
+  padding: clamp(1rem, 2vw, 1.75rem);
+}
+
+.echo-workspace-inner {
+  margin: 0 auto;
+  width: min(100%, 88rem);
+}
+
+.echo-readable-shell {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .echo-readable-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+    align-items: start;
+  }
+}
+
+.echo-readable-main {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.echo-section-card,
+.echo-side-panel,
+.echo-text-card {
+  border: 2px solid var(--animal-border);
+  background: rgba(247, 243, 223, 0.9);
+  color: var(--animal-text-body);
+  box-shadow: 0 4px 10px rgba(107, 92, 67, 0.18);
+}
+
+.echo-section-card {
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.echo-side-panel {
+  padding: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .echo-side-panel {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.echo-text-card {
+  padding: clamp(1rem, 2vw, 1.35rem);
+}
+
+.echo-long-text {
+  max-width: 76ch;
+  white-space: pre-wrap;
+  font-size: 0.98rem;
+  line-height: 1.9;
 }
 
 section.border,
