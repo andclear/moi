@@ -1,28 +1,34 @@
-import { BookOpenText, FileQuestion, LockKeyhole, Scissors, UserRoundSearch } from "lucide-react";
+import { BookOpenText, LockKeyhole, Scissors, UserRoundSearch } from "lucide-react";
+import { Select } from "animal-island-ui";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import type {
   DossierBlockMeta,
   ProfileChoice,
-  ProfileSession,
+  ProfileDiaryDraft,
   ProfileStageId,
+  ProfileSession,
   Project,
 } from "@/db/types";
-import { projectService } from "@/db/services/projectService";
 import { historyService } from "@/db/services/historyService";
-import { useDossierStore } from "@/features/dossier/dossierStore";
+import { projectService } from "@/db/services/projectService";
 import {
   buildDossierBlockMeta,
   parseDossierSections,
 } from "@/features/dossier/dossierSections";
+import { useDossierStore } from "@/features/dossier/dossierStore";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { useGenerationStore } from "@/features/generation/generationStore";
-import { generateProfileStage } from "@/features/llm/llmClient";
+import {
+  generateProfileDossierUpdate,
+  generateProfileStage,
+} from "@/features/llm/llmClient";
 import {
   buildPreviousChoiceSummary,
   createEmptyProfileSession,
   getNextProfileStage,
+  getSelectedProfileChoice,
   normalizeProfileChoices,
   profileStageDescriptions,
   profileStageLabels,
@@ -70,8 +76,156 @@ function appendToDossierSection(markdown: string, section: string, addition: str
 
 function getStageCompletionIndex(session: ProfileSession) {
   return profileStageOrder.reduce((index, stageId, currentIndex) => {
-    return session.stages[stageId].selectedChoiceId ? currentIndex : index;
+    const stage = session.stages[stageId];
+    return stage.selectedChoiceId || stage.completedAt ? currentIndex : index;
   }, -1);
+}
+
+function buildSelectedContextSummary(session: ProfileSession) {
+  return profileStageOrder
+    .filter((stageId) => stageId !== "diary")
+    .map((stageId) => {
+      const choice = getSelectedProfileChoice(session, stageId);
+      return choice ? `${profileStageLabels[stageId]}：${choice.title} - ${choice.content}` : "";
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buildCompletedDiaryText(draft: ProfileDiaryDraft, selections: Record<string, string>) {
+  return draft.diaryText.replace(/\[\[(blank_\d+|[^\]]+)\]\]/g, (placeholder, key: string) => {
+    const blank = draft.blanks.find((item) => item.key === key);
+    const selectedOption = blank?.options.find((option) => option.key === selections[key]);
+    return selectedOption?.label ?? placeholder;
+  });
+}
+
+function areAllDiaryBlanksSelected(draft: ProfileDiaryDraft, selections: Record<string, string>) {
+  return draft.blanks.every((blank) => Boolean(selections[blank.key]));
+}
+
+interface DiaryDecodePanelProps {
+  draft: ProfileDiaryDraft;
+  selections: Record<string, string>;
+  disabled?: boolean;
+  onChange: (blankKey: string, optionKey: string) => void;
+}
+
+function DiaryDecodePanel({
+  draft,
+  selections,
+  disabled = false,
+  onChange,
+}: DiaryDecodePanelProps) {
+  const [openedBlankKey, setOpenedBlankKey] = useState(draft.blanks[0]?.key ?? "");
+  const parts = draft.diaryText.split(/(\[\[(?:blank_\d+|[^\]]+)\]\])/g);
+
+  return (
+    <article className="echo-text-card">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--animal-text-muted)]">
+            日记破译
+          </p>
+          <h2 className="mt-2 font-display text-3xl font-black text-[var(--animal-text)]">
+            {draft.title}
+          </h2>
+        </div>
+        <span className="rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] px-4 py-2 text-sm font-black text-[var(--animal-text)]">
+          选完 3 处遮挡后更新档案
+        </span>
+      </div>
+
+      {draft.note && (
+        <p className="mt-4 max-w-3xl text-sm font-bold leading-7 text-[var(--animal-text-muted)]">
+          {draft.note}
+        </p>
+      )}
+
+      <div className="mt-6 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-5 shadow-[0_3px_0_0_var(--animal-shadow-input)]">
+        <p className="echo-long-text max-w-none text-[var(--animal-text-body)]">
+          {parts.map((part, index) => {
+            const match = /^\[\[(.+)\]\]$/.exec(part);
+            if (!match) {
+              return <span key={`${part}-${index}`}>{part}</span>;
+            }
+
+            const blankKey = match[1];
+            const blank = draft.blanks.find((item) => item.key === blankKey);
+            const selectedOption = blank?.options.find(
+              (option) => option.key === selections[blankKey],
+            );
+
+            return (
+              <button
+                key={blankKey}
+                type="button"
+                disabled={disabled || !blank}
+                onClick={() => setOpenedBlankKey(blankKey)}
+                className={cn(
+                  "mx-1 inline-flex min-h-9 items-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-1 align-baseline text-sm font-black transition-all",
+                  selectedOption
+                    ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
+                    : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-muted)] shadow-[0_3px_0_0_var(--animal-shadow-input)] hover:-translate-y-0.5 hover:border-[var(--animal-primary)]",
+                )}
+              >
+                {selectedOption?.label ?? blank?.label ?? "未破译"}
+              </button>
+            );
+          })}
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-4">
+        {draft.blanks.map((blank, index) => {
+          const isOpen = openedBlankKey === blank.key || Boolean(selections[blank.key]);
+          const selectedOption = blank.options.find(
+            (option) => option.key === selections[blank.key],
+          );
+
+          return (
+            <section
+              key={blank.key}
+              className="rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 shadow-[0_3px_0_0_var(--animal-shadow-input)]"
+            >
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 text-left"
+                onClick={() => setOpenedBlankKey(isOpen ? "" : blank.key)}
+              >
+                <span className="font-display text-lg font-black text-[var(--animal-text)]">
+                  遮挡 {index + 1}：{blank.label}
+                </span>
+                <span className="text-sm font-black text-[var(--animal-primary)]">
+                  {selectedOption ? "已选择" : "点击选择"}
+                </span>
+              </button>
+
+              {isOpen && (
+                <div className="mt-4 grid gap-3">
+                  <Select
+                    options={blank.options.map((option) => ({
+                      key: option.key,
+                      label: option.label,
+                    }))}
+                    value={selections[blank.key] ?? ""}
+                    onChange={(optionKey) => onChange(blank.key, optionKey)}
+                    placeholder="请选择"
+                    disabled={disabled}
+                  />
+                  {selectedOption && (
+                    <p className="text-sm font-bold leading-7 text-[var(--animal-text-muted)]">
+                      {selectedOption.meaning}
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    </article>
+  );
 }
 
 export function StepProfile() {
@@ -86,7 +240,9 @@ export function StepProfile() {
   const generationKey = project?.profileSession
     ? `profile:${project.id}:${project.profileSession.currentStageId}`
     : "profile:pending";
+  const updateGenerationKey = project ? `profile:${project.id}:diary-update` : "profile:update:pending";
   const generationTask = useGenerationStore((state) => state.getTask(generationKey));
+  const updateGenerationTask = useGenerationStore((state) => state.getTask(updateGenerationKey));
   const setRunning = useGenerationStore((state) => state.setRunning);
   const setSucceeded = useGenerationStore((state) => state.setSucceeded);
   const setFailed = useGenerationStore((state) => state.setFailed);
@@ -133,8 +289,13 @@ export function StepProfile() {
   const currentStageId = session.currentStageId;
   const currentStage = session.stages[currentStageId];
   const completedIndex = getStageCompletionIndex(session);
-
   const previousChoiceSummary = useMemo(() => buildPreviousChoiceSummary(session), [session]);
+  const selectedContextSummary = useMemo(() => buildSelectedContextSummary(session), [session]);
+  const diarySelections = currentStage.diarySelections ?? {};
+  const completedDiaryText =
+    currentStage.diaryDraft && areAllDiaryBlanksSelected(currentStage.diaryDraft, diarySelections)
+      ? buildCompletedDiaryText(currentStage.diaryDraft, diarySelections)
+      : "";
 
   async function persistProject(patch: Partial<Omit<Project, "id" | "createdAt">>) {
     if (!project) {
@@ -148,14 +309,17 @@ export function StepProfile() {
     return updatedProject;
   }
 
-  async function handleGenerateStage() {
-    if (!project) {
-      return;
-    }
-
+  function ensureModelAvailable() {
     const availability = getAvailability();
     if (!availability.available) {
       setErrorMessage("尚未连接模型。请先在设置中配置自有 API，或激活预置调用模式。");
+      return false;
+    }
+    return true;
+  }
+
+  async function handleGenerateStage() {
+    if (!project || !ensureModelAvailable()) {
       return;
     }
 
@@ -171,15 +335,29 @@ export function StepProfile() {
         previousChoices: previousChoiceSummary,
         signal: controller.signal,
       });
+      const nextStageState =
+        result.data.kind === "diary"
+          ? {
+              ...currentStage,
+              choices: [],
+              diaryDraft: result.data.draft,
+              diarySelections: {},
+              completedDiaryText: undefined,
+              generationId: result.taskId,
+            }
+          : {
+              ...currentStage,
+              choices: normalizeProfileChoices(result.data.choices),
+              diaryDraft: undefined,
+              diarySelections: undefined,
+              completedDiaryText: undefined,
+              generationId: result.taskId,
+            };
       const nextSession: ProfileSession = {
         ...session,
         stages: {
           ...session.stages,
-          [currentStageId]: {
-            ...currentStage,
-            choices: normalizeProfileChoices(result.data.choices),
-            generationId: result.taskId,
-          },
+          [currentStageId]: nextStageState,
         },
       };
       await persistProject({ profileSession: nextSession });
@@ -188,7 +366,7 @@ export function StepProfile() {
       if (controller.signal.aborted) {
         return;
       }
-      const message = error instanceof Error ? error.message : "岛民印象生成失败。";
+      const message = error instanceof Error ? error.message : "岛民资料生成失败。";
       setErrorMessage(message);
       setFailed(generationKey, message);
     }
@@ -227,7 +405,7 @@ export function StepProfile() {
       },
     };
 
-    const updatedProject = await persistProject({
+    await persistProject({
       currentStep: nextStageId ? "profile" : "world",
       dossier: {
         markdown: nextMarkdown,
@@ -242,17 +420,107 @@ export function StepProfile() {
       `${profileStageLabels[currentStageId]}：${choice.title}`,
       currentStage.generationId ? [currentStage.generationId] : [],
     );
+  }
 
-    if (!nextStageId && updatedProject) {
-      markStepCompleted("profile");
-      navigate(`/workspace/${updatedProject.id}/world`);
+  async function handleSelectDiaryBlank(blankKey: string, optionKey: string) {
+    if (!project || !currentStage.diaryDraft) {
+      return;
+    }
+
+    const nextSelections = {
+      ...diarySelections,
+      [blankKey]: optionKey,
+    };
+    const nextCompletedDiaryText = areAllDiaryBlanksSelected(
+      currentStage.diaryDraft,
+      nextSelections,
+    )
+      ? buildCompletedDiaryText(currentStage.diaryDraft, nextSelections)
+      : undefined;
+    const nextSession: ProfileSession = {
+      ...session,
+      stages: {
+        ...session.stages,
+        diary: {
+          ...currentStage,
+          diarySelections: nextSelections,
+          completedDiaryText: nextCompletedDiaryText,
+        },
+      },
+    };
+
+    await persistProject({ profileSession: nextSession });
+  }
+
+  async function handleUpdateDossier() {
+    if (!project || !currentStage.diaryDraft || !completedDiaryText || !ensureModelAvailable()) {
+      return;
+    }
+
+    const controller = new AbortController();
+    setErrorMessage(null);
+    setRunning(updateGenerationKey, controller);
+
+    try {
+      const result = await generateProfileDossierUpdate({
+        projectId: project.id,
+        dossierMarkdown: project.dossier.markdown,
+        previousChoices: selectedContextSummary,
+        completedDiaryText,
+        signal: controller.signal,
+      });
+      const now = nowIso();
+      const nextBlocks = buildDossierBlockMeta(
+        result.data.dossierMarkdown,
+        project.dossier.blocks,
+        "ai_inferred",
+        now,
+        result.taskId,
+      );
+      const nextSession: ProfileSession = {
+        currentStageId,
+        stages: {
+          ...session.stages,
+          diary: {
+            ...currentStage,
+            completedDiaryText,
+            completedAt: now,
+            generationId: result.taskId,
+          },
+        },
+      };
+      const updatedProject = await persistProject({
+        title: result.data.title || project.title,
+        currentStep: "world",
+        dossier: {
+          markdown: result.data.dossierMarkdown,
+          blocks: nextBlocks,
+          updatedAt: now,
+        },
+        profileSession: nextSession,
+      });
+
+      await historyService.createSnapshot(project.id, "更新岛民档案", [result.taskId]);
+      setSucceeded(updateGenerationKey, result.taskId);
+
+      if (updatedProject) {
+        markStepCompleted("profile");
+        navigate(`/workspace/${updatedProject.id}/world`);
+      }
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+      const message = error instanceof Error ? error.message : "岛民档案更新失败。";
+      setErrorMessage(message);
+      setFailed(updateGenerationKey, message);
     }
   }
 
   if (isLoading) {
     return (
       <div className="p-6 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-        正在整理 TA 的记录……
+        正在整理 TA 的档案……
       </div>
     );
   }
@@ -277,6 +545,8 @@ export function StepProfile() {
   }
 
   const StageIcon = stageIcons[currentStageId];
+  const isDiaryStage = currentStageId === "diary";
+  const activeTask = isDiaryStage && currentStage.diaryDraft ? updateGenerationTask : generationTask;
 
   return (
     <main className="echo-workspace-page">
@@ -290,7 +560,7 @@ export function StepProfile() {
               <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
                 {profileStageLabels[currentStageId]}
               </h1>
-              <p className="mt-3 max-w-2xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
+              <p className="mt-3 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
                 {profileStageDescriptions[currentStageId]}
               </p>
             </div>
@@ -320,26 +590,37 @@ export function StepProfile() {
           </div>
         </section>
 
-        <section className="echo-readable-shell mt-6">
-          <div className="echo-readable-main">
-            {currentStage.choices.length === 0 ? (
-              <EmptyState
-                icon={StageIcon}
-                title="这里还没有新的印象"
-                description="让模型先给出三种可能，再从里面选出最接近 TA 的那一个。"
-                action={
-                  <GenerationButton
-                    idleLabel="整理这一段印象"
-                    runningLabel="正在整理"
-                    retryLabel="重新整理"
-                    status={generationTask.status}
-                    errorMessage={errorMessage ?? generationTask.errorMessage}
-                    onGenerate={handleGenerateStage}
-                    onCancel={() => cancel(generationKey)}
-                  />
-                }
-              />
-            ) : (
+        <section className="mt-6 grid gap-5">
+          {!isDiaryStage && currentStage.choices.length === 0 ? (
+            <EmptyState
+              icon={StageIcon}
+              title="这里还没有新的选项"
+              description={
+                currentStageId === "exclusion"
+                  ? "这一轮要选最不可能是 TA 的方向，排除掉它。"
+                  : "让模型先给出三种可能，再从里面选出最接近 TA 的那一个。"
+              }
+              action={
+                <GenerationButton
+                  idleLabel={`生成${profileStageLabels[currentStageId]}`}
+                  runningLabel="正在整理"
+                  retryLabel="重新整理"
+                  status={generationTask.status}
+                  errorMessage={errorMessage ?? generationTask.errorMessage}
+                  onGenerate={handleGenerateStage}
+                  onCancel={() => cancel(generationKey)}
+                />
+              }
+            />
+          ) : null}
+
+          {!isDiaryStage && currentStage.choices.length > 0 ? (
+            <>
+              <div className="rounded-[var(--animal-radius)] border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] p-4 text-sm font-black leading-7 text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]">
+                {currentStageId === "exclusion"
+                  ? "请注意：这一轮不是选最像 TA 的，而是选一个最不可能是 TA 的方向。"
+                  : "请选择最像 TA、最能补充 TA 的那一项。"}
+              </div>
               <div className="grid gap-4">
                 {currentStage.choices.map((choice) => (
                   <ChoiceCard
@@ -353,35 +634,72 @@ export function StepProfile() {
                   />
                 ))}
               </div>
-            )}
-            {currentStage.choices.length > 0 && !currentStage.selectedChoiceId && (
-              <div className="flex flex-wrap items-center gap-3">
+            </>
+          ) : null}
+
+          {!isDiaryStage && currentStage.choices.length > 0 && !currentStage.selectedChoiceId ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <GenerationButton
+                idleLabel="换一组三种可能"
+                runningLabel="正在重新整理"
+                retryLabel="重新整理"
+                variant="secondary"
+                status={generationTask.status}
+                errorMessage={errorMessage ?? generationTask.errorMessage}
+                onGenerate={handleGenerateStage}
+                onCancel={() => cancel(generationKey)}
+              />
+              <p className="font-mono text-xs leading-5 text-[var(--echo-muted)]">
+                选择后会写入岛民档案，让 TA 的轮廓更清楚。
+              </p>
+            </div>
+          ) : null}
+
+          {isDiaryStage && !currentStage.diaryDraft ? (
+            <EmptyState
+              icon={StageIcon}
+              title="还没有可破译的日记"
+              description="先生成一篇被遮住关键处的日记，再补全它。"
+              action={
                 <GenerationButton
-                  idleLabel="换一组三种可能"
-                  runningLabel="正在重新整理"
+                  idleLabel="生成日记破译"
+                  runningLabel="正在整理日记"
                   retryLabel="重新整理"
-                  variant="secondary"
                   status={generationTask.status}
                   errorMessage={errorMessage ?? generationTask.errorMessage}
                   onGenerate={handleGenerateStage}
                   onCancel={() => cancel(generationKey)}
                 />
-                <p className="font-mono text-xs leading-5 text-[var(--echo-muted)]">
-                  选择后会写入 TA 的记录，逐步让核心人格更清楚。
+              }
+            />
+          ) : null}
+
+          {isDiaryStage && currentStage.diaryDraft ? (
+            <>
+              <DiaryDecodePanel
+                draft={currentStage.diaryDraft}
+                selections={diarySelections}
+                disabled={updateGenerationTask.status === "running"}
+                onChange={(blankKey, optionKey) => void handleSelectDiaryBlank(blankKey, optionKey)}
+              />
+              <div className="flex flex-wrap items-center gap-4">
+                <GenerationButton
+                  idleLabel="更新岛民档案"
+                  runningLabel="正在更新档案"
+                  retryLabel="重新更新"
+                  status={activeTask.status}
+                  errorMessage={errorMessage ?? activeTask.errorMessage}
+                  onGenerate={handleUpdateDossier}
+                  onCancel={() => cancel(updateGenerationKey)}
+                  disabled={!completedDiaryText}
+                  className="min-w-[13rem]"
+                />
+                <p className="max-w-xl text-sm font-bold leading-7 text-[var(--animal-text-muted)]">
+                  需要先补全 3 处遮挡。更新后会把本阶段确认的信息写入岛民档案。
                 </p>
               </div>
-            )}
-          </div>
-
-          <aside className="echo-side-panel">
-            <FileQuestion aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
-            <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
-              已确认的印象
-            </h2>
-            <p className="mt-3 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--echo-muted)]">
-              {previousChoiceSummary || "尚未确认。"}
-            </p>
-          </aside>
+            </>
+          ) : null}
         </section>
       </div>
     </main>

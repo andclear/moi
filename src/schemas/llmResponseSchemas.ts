@@ -74,6 +74,34 @@ export const profileChoiceResponseSchema = z.object({
     .length(3),
 });
 
+export const profileDiaryResponseSchema = z.object({
+  title: z.string().min(1),
+  diaryText: z.string().min(1),
+  note: z.string().optional(),
+  blanks: z
+    .array(
+      z.object({
+        key: z.string().min(1).optional(),
+        label: z.string().min(1),
+        options: z
+          .array(
+            z.object({
+              label: z.string().min(1),
+              meaning: z.string().min(1),
+            }),
+          )
+          .min(3),
+      }),
+    )
+    .min(3),
+});
+
+export const profileDossierUpdateResponseSchema = z.object({
+  title: z.string().min(1),
+  dossierMarkdown: z.string().min(1),
+  summary: z.string().optional(),
+});
+
 export const worldEntryResponseSchema = z
   .array(
     z.object({

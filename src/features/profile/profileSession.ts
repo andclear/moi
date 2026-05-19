@@ -14,17 +14,17 @@ export const profileStageOrder: ProfileStageId[] = [
 ];
 
 export const profileStageLabels: Record<ProfileStageId, string> = {
-  silhouette: "初见印象",
-  exclusion: "不合拍之处",
-  fragment: "小岛片段",
-  diary: "内心小记",
+  silhouette: "内心独白",
+  exclusion: "这不是TA",
+  fragment: "叙事碎片",
+  diary: "日记破译",
 };
 
 export const profileStageDescriptions: Record<ProfileStageId, string> = {
-  silhouette: "从三种初见感觉里，选出最接近 TA 的行动方式。",
-  exclusion: "排除那个差一点像 TA、但其实不合拍的方向。",
-  fragment: "在一个小岛上的短促瞬间里，看见 TA 会如何选择。",
-  diary: "确认 TA 心底最不容易说出口的矛盾。",
+  silhouette: "阅读三段内心独白，选择最像 TA 的那一个。",
+  exclusion: "这里要反向选择：选出最不可能是 TA 的方向。",
+  fragment: "从三个很短的片段里，选择最能补充 TA 的一段。",
+  diary: "读一篇被遮住关键处的日记，用选择器补全它。",
 };
 
 function emptyStage(stageId: ProfileStageId): ProfileStageState {
@@ -61,9 +61,18 @@ export function buildPreviousChoiceSummary(session: ProfileSession) {
   return profileStageOrder
     .map((stageId) => {
       const stage = session.stages[stageId];
+      if (stageId === "diary" && stage.completedDiaryText) {
+        return `${profileStageLabels[stageId]}：${stage.completedDiaryText}`;
+      }
+
       const choice = stage.choices.find((item) => item.id === stage.selectedChoiceId);
       return choice ? `${profileStageLabels[stageId]}：${choice.title} - ${choice.content}` : "";
     })
     .filter(Boolean)
     .join("\n");
+}
+
+export function getSelectedProfileChoice(session: ProfileSession, stageId: ProfileStageId) {
+  const stage = session.stages[stageId];
+  return stage.choices.find((item) => item.id === stage.selectedChoiceId);
 }

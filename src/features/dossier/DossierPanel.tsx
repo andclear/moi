@@ -41,7 +41,7 @@ export function DossierPanel() {
               TA 的记录
             </p>
             <h2 className="mt-2 font-display text-2xl font-black text-[var(--animal-text)]">
-              岛民笔记
+              岛民档案
             </h2>
           </div>
           <LockKeyhole aria-hidden="true" size={20} className="text-[var(--echo-muted)]" />

@@ -106,6 +106,21 @@ input[type="radio"]:focus {
   animation: animal-loading-stripes 0.8s linear infinite;
 }
 
+.echo-dossier-button-ripple {
+  position: relative;
+  isolation: isolate;
+}
+
+.echo-dossier-button-ripple::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  border: 2px solid rgba(25, 200, 185, 0.42);
+  border-radius: var(--animal-radius-pill);
+  animation: echo-dossier-ripple 1.8s ease-out infinite;
+}
+
 [data-danger="true"] {
   color: white !important;
   border-color: var(--animal-error) !important;
@@ -312,6 +327,23 @@ code {
 @keyframes animal-loading-stripes {
   to {
     background-position: 22px 0;
+  }
+}
+
+@keyframes echo-dossier-ripple {
+  0% {
+    opacity: 0.72;
+    transform: scale(0.96);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.12);
   }
 }
 

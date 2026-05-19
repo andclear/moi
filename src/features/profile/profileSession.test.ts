@@ -36,6 +36,6 @@ describe("profileSession", () => {
     session.stages.silhouette.selectedChoiceId = choice.id;
 
     expect(choice.id).toMatch(/^choice_/);
-    expect(buildPreviousChoiceSummary(session)).toContain("初见印象：雨夜里的灯");
+    expect(buildPreviousChoiceSummary(session)).toContain("内心独白：雨夜里的灯");
   });
 });

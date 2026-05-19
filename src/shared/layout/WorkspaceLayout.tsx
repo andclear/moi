@@ -27,12 +27,13 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
           </Button>
           <Button
             type="button"
-            size="icon"
             variant="secondary"
-            aria-label="打开 TA 的记录"
+            className="echo-dossier-button-ripple min-w-[9.5rem] px-6"
+            aria-label="打开岛民档案"
             onClick={() => openPanel("dossier")}
           >
             <UserRoundCog aria-hidden="true" size={18} />
+            岛民档案
           </Button>
         </div>
       </div>
@@ -56,7 +57,7 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 32 }}
                 transition={{ duration: 0.22 }}
-                className="fixed inset-y-0 right-0 z-40 w-[min(92vw,380px)] border-l-2 border-[var(--animal-border)] shadow-[-12px_0_24px_rgba(61,52,40,0.14)]"
+                className="fixed inset-y-0 right-0 z-40 w-[min(96vw,50vw)] min-w-[min(96vw,380px)] border-l-2 border-[var(--animal-border)] shadow-[-12px_0_24px_rgba(61,52,40,0.14)]"
               >
                 <div className="flex h-full flex-col bg-[var(--animal-bg-content)]">
                   <div className="flex justify-end border-b-2 border-[var(--animal-border)] p-3">

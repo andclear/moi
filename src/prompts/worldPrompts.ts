@@ -41,7 +41,7 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
     {
       role: "user",
       content: [
-        `当前岛民笔记：\n${input.dossierMarkdown}`,
+        `当前岛民档案：\n${input.dossierMarkdown}`,
         `已确认 WorldInfo：\n${currentWorldInfo}`,
         `用户想生成的世界书方向：\n${input.userRequest}`,
         `本次请生成 EXACTLY ${input.entryCount} 条 WorldInfo。`,

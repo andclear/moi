@@ -12,7 +12,7 @@ export function createMainCharacterNode(project: Project): CompanionNode {
     name: project.title,
     role: "主角",
     summary: "这份记录正在寻找的 TA。",
-    personality: "见 TA 的岛民笔记。",
+    personality: "见 TA 的岛民档案。",
     relationToMain: "自我",
     status: "confirmed",
     createdAt: now,

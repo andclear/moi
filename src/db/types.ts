@@ -116,9 +116,31 @@ export interface ProfileChoice {
   dossierAddition: string;
 }
 
+export interface ProfileDiaryBlankOption {
+  key: string;
+  label: string;
+  meaning: string;
+}
+
+export interface ProfileDiaryBlank {
+  key: string;
+  label: string;
+  options: ProfileDiaryBlankOption[];
+}
+
+export interface ProfileDiaryDraft {
+  title: string;
+  diaryText: string;
+  blanks: ProfileDiaryBlank[];
+  note?: string;
+}
+
 export interface ProfileStageState {
   stageId: ProfileStageId;
   choices: ProfileChoice[];
+  diaryDraft?: ProfileDiaryDraft;
+  diarySelections?: Record<string, string>;
+  completedDiaryText?: string;
   selectedChoiceId?: string;
   generationId?: string;
   completedAt?: string;

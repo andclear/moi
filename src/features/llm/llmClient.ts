@@ -1,11 +1,21 @@
 import { activationRepository } from "@/db/repositories/activationRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
-import type { GreetingVariant, ProfileStageId, TrialRun, WorldEntry } from "@/db/types";
+import type {
+  GreetingVariant,
+  ProfileDiaryBlank,
+  ProfileStageId,
+  TrialRun,
+  WorldEntry,
+} from "@/db/types";
 import type {
   GreetingPersonType,
   GreetingRoleTone,
 } from "@/features/greeting/greetingStore";
-import { buildProfileDraftMessages, buildProfileStageMessages } from "@/prompts/profilePrompts";
+import {
+  buildProfileDossierUpdateMessages,
+  buildProfileDraftMessages,
+  buildProfileStageMessages,
+} from "@/prompts/profilePrompts";
 import { buildGreetingMessages } from "@/prompts/greetingPrompts";
 import { buildBeautificationMessages } from "@/prompts/beautificationPrompts";
 import { buildCompanionMessages } from "@/prompts/companionPrompts";
@@ -28,6 +38,8 @@ import {
   companionResponseSchema,
   intakeQuestionnaireResponseSchema,
   profileChoiceResponseSchema,
+  profileDiaryResponseSchema,
+  profileDossierUpdateResponseSchema,
   profileDraftResponseSchema,
   trialAnswerResponseSchema,
   trialQuestionnaireResponseSchema,
@@ -251,6 +263,29 @@ export async function generateIntakeQuestionnaire(input: {
   };
 }
 
+function normalizeDiaryBlanks(
+  blanks: Array<{
+    key?: string;
+    label: string;
+    options: Array<{ label: string; meaning: string }>;
+  }>,
+): ProfileDiaryBlank[] {
+  return blanks.slice(0, 3).map((blank, blankIndex) => {
+    const key = blank.key?.trim() || `blank_${blankIndex + 1}`;
+    const options = blank.options.slice(0, 3).map((option, optionIndex) => ({
+      key: `${key}_option_${optionIndex + 1}`,
+      label: option.label.trim(),
+      meaning: option.meaning.trim(),
+    }));
+
+    return {
+      key,
+      label: blank.label.trim(),
+      options,
+    };
+  });
+}
+
 export async function generateProfileDraft(input: {
   projectId: string;
   brief: string;
@@ -290,9 +325,55 @@ export async function generateProfileStage(input: {
     signal: input.signal,
   });
 
+  if (input.stageId === "diary") {
+    const data = parseLlmJson(result.response.content, profileDiaryResponseSchema);
+    return {
+      taskId: result.taskId,
+      data: {
+        kind: "diary" as const,
+        draft: {
+          title: data.title,
+          diaryText: data.diaryText,
+          note: data.note,
+          blanks: normalizeDiaryBlanks(data.blanks),
+        },
+      },
+      response: result.response,
+    };
+  }
+
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, profileChoiceResponseSchema),
+    data: {
+      kind: "choices" as const,
+      ...parseLlmJson(result.response.content, profileChoiceResponseSchema),
+    },
+    response: result.response,
+  };
+}
+
+export async function generateProfileDossierUpdate(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  previousChoices: string;
+  completedDiaryText: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "profile",
+    messages: buildProfileDossierUpdateMessages({
+      dossierMarkdown: input.dossierMarkdown,
+      previousChoices: input.previousChoices,
+      completedDiaryText: input.completedDiaryText,
+    }),
+    inputSummary: "更新岛民档案",
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, profileDossierUpdateResponseSchema),
     response: result.response,
   };
 }

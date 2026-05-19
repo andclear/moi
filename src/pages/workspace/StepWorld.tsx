@@ -210,7 +210,7 @@ export function StepWorld() {
                   这次想生成什么样的世界书？
                 </span>
                 <span className="mt-2 block font-mono text-sm leading-7 text-[var(--echo-muted)]">
-                  直接描述你想补全的世界书方向。系统会结合已生成的岛民笔记与已确认
+                  直接描述你想补全的世界书方向。系统会结合已生成的岛民档案与已确认
                   WorldInfo 来生成，不会额外加入预设主题。
                 </span>
                 <textarea
