@@ -1,5 +1,5 @@
 import { ArrowRight, Check, Circle } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link } from "react-router";
 
 import type { FlowStep } from "@/features/flow/flowTypes";
