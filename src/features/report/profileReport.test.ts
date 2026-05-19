@@ -12,7 +12,7 @@ describe("profileReport", () => {
         projectId: project.id,
         title: "旧车站",
         content: "月台灯常年闪烁。",
-        keywords: ["旧车站"],
+        keys: ["旧车站"],
         enabled: true,
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,

@@ -22,7 +22,7 @@ describe("worldStore", () => {
       {
         comment: "旧码头钟楼",
         content: "【感官入口】：铜钟边缘已经发绿。",
-        keywords: ["钟楼"],
+        keys: ["钟楼"],
       },
     ]);
 
@@ -51,7 +51,6 @@ describe("worldStore", () => {
     const [candidate] = createWorldEntryCandidates("project_world", [parsed]);
 
     expect(candidate.keys).toEqual(["东翼", "第三进院"]);
-    expect(candidate.keywords).toEqual(["东翼", "第三进院"]);
     expect(candidate.constant).toBe(false);
     expect(candidate.position).toBe(4);
     expect(candidate.depth).toBe(4);
@@ -70,7 +69,6 @@ describe("worldStore", () => {
 
     expect(candidate.constant).toBe(true);
     expect(candidate.keys).toEqual([]);
-    expect(candidate.keywords).toEqual([]);
     expect(formatWorldEntriesJson([candidate])).toContain('"keys": []');
   });
 
@@ -113,15 +111,15 @@ describe("worldStore", () => {
     expect(messages[0].content).toContain("角色档案");
     expect(messages[0].content).toContain("用户信息 character_info");
     expect(messages[0].content).toContain("真实姓名");
-    expect(messages[0].content).toContain("小于或等于 entry_count");
+    expect(messages[0].content).toContain("严格等于 entry_count");
     expect(messages[0].content).toContain("constant/keys 判断规则");
     expect(messages[0].content).toContain("keys 必须输出空数组");
     expect(messages[0].content).toContain("不要用几句概括带过");
     expect(messages[0].content).toContain("运转代价");
     expect(messages[0].content).toContain("不设置最大长度");
-    expect(messages[0].content).toContain("entry_count 是本次生成数量上限");
+    expect(messages[0].content).toContain("entry_count 是必须输出的条目数量");
     expect(messages[0].content).toContain("每个条目只能包含");
-    expect(messages[0].content).toContain("不要输出 keywords 字段");
+    expect(messages[0].content).toContain("只允许使用 keys 字段");
     expect(messages[0].content).toContain("不要让每个条目都机械套用同一批标题");
     expect(messages[0].content).not.toContain("enabled");
     expect(messages[1].content).toContain("character_info");

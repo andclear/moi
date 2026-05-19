@@ -33,8 +33,7 @@ function selectedGreeting(greetings: GreetingVariant[]) {
 }
 
 function buildWorldEntry(entry: WorldEntry, index: number) {
-  const generatedKeys = entry.keys?.length ? entry.keys : entry.keywords;
-  const keys = generatedKeys.length > 0 ? generatedKeys : [entry.title].filter(Boolean);
+  const keys = entry.keys.length > 0 ? entry.keys : [entry.title].filter(Boolean);
   const position = entry.position ?? 1;
   const depth = entry.depth ?? 4;
 
@@ -89,7 +88,7 @@ function buildWorldEntry(entry: WorldEntry, index: number) {
 function buildSyntheticWorldEntry(input: {
   title: string;
   content: string;
-  keywords: string[];
+  keys: string[];
   index: number;
   category: "beautification" | "companion";
 }) {
@@ -100,7 +99,7 @@ function buildSyntheticWorldEntry(input: {
         projectId: "",
         title: input.title,
         content: input.content,
-        keywords: input.keywords,
+        keys: input.keys,
         enabled: true,
         createdAt: new Date(0).toISOString(),
         updatedAt: new Date(0).toISOString(),
@@ -114,7 +113,7 @@ function buildSyntheticWorldEntry(input: {
           projectId: "",
           title: input.title,
           content: input.content,
-          keywords: input.keywords,
+          keys: input.keys,
           enabled: true,
           createdAt: new Date(0).toISOString(),
           updatedAt: new Date(0).toISOString(),
@@ -229,7 +228,7 @@ export function buildCharacterCard({
       buildSyntheticWorldEntry({
         title: asset.worldInfo?.key ?? asset.title,
         content: asset.worldInfo?.content ?? "",
-        keywords: [asset.worldInfo?.key ?? asset.title],
+        keys: [asset.worldInfo?.key ?? asset.title],
         index: worldEntries.length + index,
         category: "beautification",
       }),
@@ -239,7 +238,7 @@ export function buildCharacterCard({
     buildSyntheticWorldEntry({
       title: `配角关系：${node.name}`,
       content: buildCompanionWorldInfo(node, project.companionRelations ?? []),
-      keywords: [node.name, node.role].filter(Boolean),
+      keys: [node.name, node.role].filter(Boolean),
       index: worldEntries.length + beautificationWorldEntries.length + index,
       category: "companion",
     }),

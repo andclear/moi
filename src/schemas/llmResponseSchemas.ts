@@ -195,8 +195,7 @@ export const worldEntryResponseSchema = z
     z.object({
       comment: z.string().min(1),
       content: z.string().min(1),
-      keywords: stringArrayLikeSchema.default([]),
-      keys: stringArrayLikeSchema.optional(),
+      keys: stringArrayLikeSchema.default([]),
       constant: booleanLikeSchema.optional(),
       position: positionLikeSchema.optional(),
       depth: nonNegativeNumberLikeSchema.optional(),

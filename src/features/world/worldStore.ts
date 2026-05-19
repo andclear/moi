@@ -9,7 +9,6 @@ import { createId } from "@/shared/lib/ids";
 export interface GeneratedWorldEntryInput {
   comment: string;
   content: string;
-  keywords?: string[];
   keys?: string[];
   constant?: boolean;
   position?: number;
@@ -48,8 +47,8 @@ export function formatWorldInfoForDossier(entries: WorldEntry[]) {
   return [
     "WorldInfo:",
     ...confirmedEntries.map((entry) => {
-      const keywords = entry.keywords.length ? `\n关键词：${entry.keywords.join("、")}` : "";
-      return `- ${entry.title}${keywords}\n${entry.content}`;
+      const keys = entry.keys.length ? `\n关键词：${entry.keys.join("、")}` : "";
+      return `- ${entry.title}${keys}\n${entry.content}`;
     }),
   ].join("\n\n");
 }
@@ -60,14 +59,13 @@ export function createWorldEntryCandidates(
   now = nowIso(),
 ) {
   return entries.map((entry) => {
-    const keys = entry.constant ? [] : (entry.keys ?? entry.keywords ?? []);
+    const keys = entry.constant ? [] : (entry.keys ?? []);
 
     return {
       id: createId("world"),
       projectId,
       title: entry.comment,
       content: entry.content,
-      keywords: keys,
       keys,
       constant: entry.constant,
       position: entry.position,

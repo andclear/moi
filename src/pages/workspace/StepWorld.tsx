@@ -126,7 +126,11 @@ export function StepWorld() {
         entryCount,
         signal: controller.signal,
       });
-      const candidates = createWorldEntryCandidates(project.id, result.data.slice(0, entryCount));
+      if (result.data.length !== entryCount) {
+        throw new Error(`模型返回了 ${result.data.length} 条 WorldInfo，但本次要求必须是 ${entryCount} 条。请重新生成。`);
+      }
+
+      const candidates = createWorldEntryCandidates(project.id, result.data);
       const nextProject = {
         ...project,
         worldEntries: [...candidates, ...project.worldEntries],
@@ -174,6 +178,10 @@ export function StepWorld() {
         entryCount: 1,
         signal: controller.signal,
       });
+      if (result.data.length !== 1) {
+        throw new Error(`模型返回了 ${result.data.length} 条 WorldInfo，但这次操作必须只返回 1 条。请重试。`);
+      }
+
       const [candidate] = createWorldEntryCandidates(project.id, result.data);
       if (!candidate) {
         throw new Error("没有生成可用的 WorldInfo 条目。");
@@ -186,7 +194,6 @@ export function StepWorld() {
                 ...entry,
                 title: candidate.title,
                 content: candidate.content,
-                keywords: candidate.keywords,
                 keys: candidate.keys,
                 constant: candidate.constant,
                 position: candidate.position,
@@ -282,7 +289,7 @@ export function StepWorld() {
             为 TA 整理生活过的世界
           </h1>
           <p className="mt-3 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            每次最多生成三条。只有你确认过的 WorldInfo 会进入后续上下文；被舍弃的条目不会再参与生成。
+            每次按你选择的条数生成，最多三条。只有你确认过的 WorldInfo 会进入后续上下文；被舍弃的条目不会再参与生成。
           </p>
         </section>
 
@@ -361,10 +368,10 @@ export function StepWorld() {
                     className="mt-4 min-h-72 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-base leading-8 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                   />
                   <input
-                    value={entry.keywords.join("、")}
+                    value={entry.keys.join("、")}
                     onChange={(event) =>
                       void handleEditEntry(entry, {
-                        keywords: event.target.value
+                        keys: event.target.value
                           .split(/[、,\s]+/)
                           .map((keyword) => keyword.trim())
                           .filter(Boolean),

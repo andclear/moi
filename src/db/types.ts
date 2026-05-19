@@ -37,8 +37,7 @@ export interface WorldEntry {
   projectId: string;
   title: string;
   content: string;
-  keywords: string[];
-  keys?: string[];
+  keys: string[];
   constant?: boolean;
   position?: number;
   depth?: number;

@@ -44,7 +44,6 @@ describe("characterCardBuilder", () => {
         projectId: project.id,
         title: "旧图书馆",
         content: "雨水会从东侧窗框渗入。",
-        keywords: ["旧图书馆"],
         keys: ["旧馆", "雨水"],
         constant: true,
         position: 4,
