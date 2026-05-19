@@ -58,6 +58,16 @@ export function WorkspacePage() {
 
   return (
     <WorkspaceLayout>
+      {shouldShowStepNav && (
+        <div className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.58)] px-4 py-3 lg:hidden">
+          <StepProgress
+            steps={steps}
+            currentStepId={currentStepId}
+            completedStepIds={completedStepIds}
+            compact
+          />
+        </div>
+      )}
       <div
         className={
           shouldShowStepNav
@@ -66,7 +76,7 @@ export function WorkspacePage() {
         }
       >
         {shouldShowStepNav && (
-          <aside className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.5)] p-4 lg:border-b-0 lg:border-r-2">
+          <aside className="hidden border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.5)] p-4 lg:block lg:border-b-0 lg:border-r-2">
             <p className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--animal-text-muted)]">
               小岛流程
             </p>
