@@ -50,12 +50,13 @@ export function Button({
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
+  const resolvedVariant = variant ?? "primary";
   const dangerStyles =
-    danger && variant === "primary"
+    danger && resolvedVariant === "primary"
       ? "!border-[var(--animal-error)] !bg-[var(--animal-error)] !text-white !shadow-[0_5px_0_0_var(--animal-error-active)] hover:!bg-[var(--animal-error-hover)] hover:!shadow-[0_6px_0_0_var(--animal-error-active)] active:!bg-[var(--animal-error-active)] active:!shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:!outline-[var(--animal-error-active)]"
-      : danger && variant === "secondary"
+      : danger && resolvedVariant === "secondary"
         ? "!border-[var(--animal-error)] !bg-[var(--animal-bg-content)] !text-[var(--animal-error)] !shadow-[0_4px_0_0_var(--animal-error-active)] hover:!border-[var(--animal-error-hover)] hover:!text-[var(--animal-error-hover)] hover:!shadow-[0_5px_0_0_var(--animal-error-active)] active:!shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:!outline-[var(--animal-error)]"
-        : danger && variant === "ghost"
+        : danger && resolvedVariant === "ghost"
           ? "!text-[var(--animal-error)] hover:!bg-[rgba(224,90,90,0.12)] hover:!text-[var(--animal-error-active)] focus-visible:!outline-[var(--animal-error)]"
           : "";
 
