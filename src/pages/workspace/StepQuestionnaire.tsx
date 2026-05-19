@@ -1,5 +1,5 @@
 import { ClipboardList, KeyRound, MapPinned, MessageCircleQuestion } from "lucide-react";
-import { Typewriter } from "animal-island-ui";
+import { Footer, Typewriter } from "animal-island-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
@@ -325,8 +325,8 @@ export function StepQuestionnaire() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--animal-bg)] px-4 py-8 text-[var(--animal-text)] sm:py-12">
-      <article className="mx-auto w-full max-w-4xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_10px_0_0_var(--animal-shadow-input)] sm:p-9">
+    <main className="flex min-h-screen flex-col bg-[var(--animal-bg)] text-[var(--animal-text)]">
+      <article className="mx-auto my-8 w-[calc(100%-2rem)] max-w-4xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_10px_0_0_var(--animal-shadow-input)] sm:my-12 sm:p-9">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
           登岛小问卷
         </p>
@@ -483,6 +483,9 @@ export function StepQuestionnaire() {
             )}
         </div>
       </article>
+      <div className="mt-auto w-full overflow-hidden">
+        <Footer type="sea" style={{ width: "100%" }} />
+      </div>
     </main>
   );
 }
