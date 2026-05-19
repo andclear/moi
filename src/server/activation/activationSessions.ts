@@ -1,7 +1,7 @@
 import { createPostgresClient } from "@/server/db/postgres";
 import { getEnv } from "@/server/runtime/env";
 import { createId } from "@/shared/lib/ids";
-import { hashActivationSecret } from "@/server/activation/activationCodes";
+import { hashSessionSecret } from "@/server/activation/activationCodes";
 import { getModelChannelSettings } from "@/server/admin/modelChannel";
 
 export async function activateCode(code: string, sql = createPostgresClient()) {
@@ -10,9 +10,9 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
     throw new Error("预置模型渠道暂未开启。");
   }
 
-  const codeHash = await hashActivationSecret(code);
+  const activationCode = code.trim();
   const sessionToken = createId("session");
-  const sessionHash = await hashActivationSecret(sessionToken);
+  const sessionHash = await hashSessionSecret(sessionToken);
   const sessionId = createId("activation_session");
   const availableModel = channel.model || getEnv("PRESET_MODEL") || "preset-model";
 
@@ -20,9 +20,8 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
     with selected_code as (
       select id, usage_limit, duration_hours
       from activation_codes
-      where code_hash = ${codeHash}
+      where code = ${activationCode}
         and status = 'unused'
-        and deleted_at is null
       for update
     ),
     inserted_session as (
@@ -37,7 +36,10 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
         ${sessionId},
         selected_code.id,
         ${sessionHash},
-        now() + make_interval(hours => selected_code.duration_hours),
+        case
+          when selected_code.duration_hours = 0 then null
+          else now() + make_interval(hours => selected_code.duration_hours)
+        end,
         selected_code.usage_limit
       from selected_code
       returning id, expires_at, usage_limit, usage_count
@@ -56,7 +58,7 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
   `;
 
   const row = rows[0] as
-    | { expires_at: Date | string; usage_limit: number; usage_count: number }
+    | { expires_at: Date | string | null; usage_limit: number; usage_count: number }
     | undefined;
   if (!row) {
     throw new Error("激活码无效或已经使用。");
@@ -64,7 +66,7 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
 
   return {
     sessionToken,
-    expiresAt: new Date(row.expires_at).toISOString(),
+    expiresAt: row.expires_at ? new Date(row.expires_at).toISOString() : undefined,
     availableModel,
     usageLimit: row.usage_limit,
     usageCount: row.usage_count,
@@ -72,19 +74,19 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
 }
 
 export async function verifyActivationSession(sessionToken: string, sql = createPostgresClient()) {
-  const sessionHash = await hashActivationSecret(sessionToken);
+  const sessionHash = await hashSessionSecret(sessionToken);
   const rows = await sql`
     select id, expires_at, usage_limit, usage_count
     from activation_sessions
     where session_hash = ${sessionHash}
       and disabled_at is null
-      and expires_at > now()
-      and usage_count < usage_limit
+      and (expires_at is null or expires_at > now())
+      and (usage_limit = 0 or usage_count < usage_limit)
     limit 1
   `;
 
   return rows[0] as
-    | { id: string; expires_at: Date | string; usage_limit: number; usage_count: number }
+    | { id: string; expires_at: Date | string | null; usage_limit: number; usage_count: number }
     | undefined;
 }
 

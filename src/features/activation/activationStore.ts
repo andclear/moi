@@ -5,7 +5,7 @@ import { activationRepository } from "@/db/repositories/activationRepository";
 
 interface ActivateResponse {
   sessionToken: string;
-  expiresAt: string;
+  expiresAt?: string;
   availableModel: string;
   usageLimit?: number;
   usageCount?: number;

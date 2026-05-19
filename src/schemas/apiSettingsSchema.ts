@@ -18,7 +18,7 @@ export const activationRecordSchema = z.object({
   expiresAt: z.string().datetime().optional(),
   sessionToken: z.string().optional(),
   availableModel: z.string().optional(),
-  usageLimit: z.number().int().positive().optional(),
+  usageLimit: z.number().int().min(0).optional(),
   usageCount: z.number().int().min(0),
   updatedAt: z.string().datetime(),
 });

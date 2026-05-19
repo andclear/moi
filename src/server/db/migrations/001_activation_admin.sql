@@ -1,6 +1,6 @@
 create table if not exists activation_codes (
   id text primary key,
-  code_hash text not null unique,
+  code text not null unique,
   status text not null,
   created_at timestamptz not null default now(),
   activated_at timestamptz,
@@ -8,8 +8,7 @@ create table if not exists activation_codes (
   activation_session_id text,
   duration_hours integer not null default 72,
   usage_limit integer not null default 100,
-  usage_count integer not null default 0,
-  deleted_at timestamptz
+  usage_count integer not null default 0
 );
 
 create table if not exists activation_sessions (
@@ -17,7 +16,7 @@ create table if not exists activation_sessions (
   activation_code_id text not null references activation_codes(id),
   session_hash text not null unique,
   created_at timestamptz not null default now(),
-  expires_at timestamptz not null,
+  expires_at timestamptz,
   usage_limit integer not null default 100,
   usage_count integer not null default 0,
   disabled_at timestamptz
@@ -40,8 +39,10 @@ create table if not exists model_channel_settings (
 );
 
 alter table activation_codes
-  add column if not exists duration_hours integer not null default 72,
-  add column if not exists deleted_at timestamptz;
+  add column if not exists duration_hours integer not null default 72;
+
+alter table activation_sessions
+  alter column expires_at drop not null;
 
 alter table model_channel_settings
   alter column preset_enabled set default false;

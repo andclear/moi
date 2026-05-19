@@ -1,7 +1,7 @@
 import { createPostgresClient } from "@/server/db/postgres";
 import { createId } from "@/shared/lib/ids";
 
-export async function hashActivationSecret(secret: string) {
+export async function hashSessionSecret(secret: string) {
   const bytes = new TextEncoder().encode(secret.trim());
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest))
@@ -16,15 +16,15 @@ export async function createActivationCodeRecord(input: {
   sql?: ReturnType<typeof createPostgresClient>;
 }) {
   const sql = input.sql ?? createPostgresClient();
-  const codeHash = await hashActivationSecret(input.code);
   const id = createId("activation_code");
+  const code = input.code.trim();
 
   await sql`
-    insert into activation_codes (id, code_hash, status, duration_hours, usage_limit)
-    values (${id}, ${codeHash}, 'unused', ${input.durationHours}, ${input.usageLimit})
+    insert into activation_codes (id, code, status, duration_hours, usage_limit)
+    values (${id}, ${code}, 'unused', ${input.durationHours}, ${input.usageLimit})
   `;
 
-  return { id, codeHash };
+  return { id, code };
 }
 
 export async function createActivationCodeBatch(input: {
@@ -48,28 +48,65 @@ export async function createActivationCodeBatch(input: {
   return records;
 }
 
-export async function listActivationCodes(sql = createPostgresClient()) {
-  return sql`
+export type ActivationCodeStatusFilter = "all" | "unused" | "used";
+
+export async function listActivationCodes(
+  input: {
+    page?: number;
+    pageSize?: number;
+    status?: ActivationCodeStatusFilter;
+    sql?: ReturnType<typeof createPostgresClient>;
+  } = {},
+) {
+  const sql = input.sql ?? createPostgresClient();
+  const page = Math.max(1, Math.floor(input.page ?? 1));
+  const pageSize = Math.min(30, Math.max(1, Math.floor(input.pageSize ?? 30)));
+  const offset = (page - 1) * pageSize;
+  const status = input.status ?? "all";
+
+  const rows = await sql`
     select
       id,
+      code,
       case
-        when status = 'used' and expires_at <= now() then 'expired'
+        when status = 'used' and expires_at is not null and expires_at <= now() then 'expired'
         else status
       end as status,
       created_at,
       activated_at,
       expires_at,
       duration_hours,
-      usage_limit,
-      usage_count,
+      coalesce(activation_sessions.usage_limit, activation_codes.usage_limit) as usage_limit,
+      coalesce(activation_sessions.usage_count, activation_codes.usage_count) as usage_count,
       case
-        when status = 'used' and expires_at > now() then floor(extract(epoch from (expires_at - now())))::integer
+        when status = 'used' and expires_at is not null and expires_at > now()
+          then floor(extract(epoch from (expires_at - now())))::integer
         else null
       end as remaining_seconds
     from activation_codes
-    where deleted_at is null
-    order by created_at desc
+    left join activation_sessions
+      on activation_sessions.id = activation_codes.activation_session_id
+    where
+      (${status} = 'all')
+      or (${status} = 'unused' and status = 'unused')
+      or (${status} = 'used' and status = 'used')
+    order by
+      case when status = 'unused' then 0 else 1 end,
+      created_at desc
+    limit ${pageSize}
+    offset ${offset}
   `;
+  const totalRows = await sql`
+    select count(*)::integer as total
+    from activation_codes
+    where
+      (${status} = 'all')
+      or (${status} = 'unused' and status = 'unused')
+      or (${status} = 'used' and status = 'used')
+  `;
+  const total = Number((totalRows[0] as { total?: number | string } | undefined)?.total ?? 0);
+
+  return { rows, total, page, pageSize, status };
 }
 
 export async function disableActivationCode(id: string, sql = createPostgresClient()) {
@@ -82,10 +119,11 @@ export async function disableActivationCode(id: string, sql = createPostgresClie
 
 export async function deleteActivationCode(id: string, sql = createPostgresClient()) {
   await sql`
-    update activation_codes
-    set
-      status = 'deleted',
-      deleted_at = now()
+    delete from activation_sessions
+    where activation_code_id = ${id}
+  `;
+  await sql`
+    delete from activation_codes
     where id = ${id}
   `;
 }

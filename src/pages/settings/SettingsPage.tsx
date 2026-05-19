@@ -215,9 +215,10 @@ export function SettingsPage() {
             {activation?.expiresAt && (
               <p>到期：{new Date(activation.expiresAt).toLocaleString()}</p>
             )}
-            {activation?.usageLimit && (
+            {activation?.usageLimit !== undefined && (
               <p>
-                调用：{activation.usageCount}/{activation.usageLimit}
+                调用：{activation.usageCount}/
+                {activation.usageLimit === 0 ? "无限" : activation.usageLimit}
               </p>
             )}
           </div>

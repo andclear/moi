@@ -9,6 +9,15 @@ function readPositiveInteger(name: string, fallback: number, max: number) {
   return Math.min(Math.floor(parsed), max);
 }
 
+function readLimitedInteger(name: string, fallback: number, max: number) {
+  const raw = process.argv.find((item) => item.startsWith(`--${name}=`))?.split("=")[1];
+  const parsed = Number(raw ?? fallback);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return fallback;
+  }
+  return Math.min(Math.floor(parsed), max);
+}
+
 function createPlainActivationCode() {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const bytes = new Uint8Array(8);
@@ -19,8 +28,8 @@ function createPlainActivationCode() {
 
 async function main() {
   const quantity = readPositiveInteger("quantity", 1, 200);
-  const usageLimit = readPositiveInteger("usage-limit", 100, 100000);
-  const durationHours = readPositiveInteger("duration-hours", 72, 24 * 365);
+  const usageLimit = readLimitedInteger("usage-limit", 100, 100000);
+  const durationHours = readLimitedInteger("duration-hours", 72, 24 * 365);
   const customCodes = process.argv
     .filter((item) => item.startsWith("--code="))
     .map((item) => item.slice("--code=".length).trim())

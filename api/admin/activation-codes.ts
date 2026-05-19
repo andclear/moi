@@ -22,13 +22,36 @@ function normalizePositiveInteger(value: unknown, fallback: number, max: number)
   return Math.min(Math.floor(parsed), max);
 }
 
+function normalizeLimitedInteger(value: unknown, fallback: number, max: number) {
+  const parsed = Number(value ?? fallback);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return fallback;
+  }
+  return Math.min(Math.floor(parsed), max);
+}
+
+function normalizeStatusFilter(value: string | null) {
+  return value === "unused" || value === "used" ? value : "all";
+}
+
 export default async function handler(request: Request) {
   if (!isAdminRequest(request)) {
     return Response.json({ error: "未登录后台。" }, { status: 401 });
   }
 
   if (request.method === "GET") {
-    return Response.json({ codes: await listActivationCodes() });
+    const url = new URL(request.url);
+    const page = normalizePositiveInteger(url.searchParams.get("page"), 1, 100000);
+    const pageSize = normalizePositiveInteger(url.searchParams.get("pageSize"), 30, 30);
+    const status = normalizeStatusFilter(url.searchParams.get("status"));
+    const result = await listActivationCodes({ page, pageSize, status });
+    return Response.json({
+      codes: result.rows,
+      page: result.page,
+      pageSize: result.pageSize,
+      total: result.total,
+      status: result.status,
+    });
   }
 
   if (request.method === "POST") {
@@ -44,8 +67,8 @@ export default async function handler(request: Request) {
           ?.map((code) => code.trim())
           .filter((code, index, list) => code && list.indexOf(code) === index) ?? [];
       const quantity = normalizePositiveInteger(payload.quantity, 1, 200);
-      const usageLimit = normalizePositiveInteger(payload.usageLimit, 100, 100000);
-      const durationHours = normalizePositiveInteger(payload.durationHours, 72, 24 * 365);
+      const usageLimit = normalizeLimitedInteger(payload.usageLimit, 100, 100000);
+      const durationHours = normalizeLimitedInteger(payload.durationHours, 72, 24 * 365);
       const codes =
         customCodes.length > 0
           ? customCodes

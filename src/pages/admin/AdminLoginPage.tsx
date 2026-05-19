@@ -1,10 +1,21 @@
-import { KeyRound, LockKeyhole, Power, RefreshCw, Server, Trash2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  KeyRound,
+  ListFilter,
+  LockKeyhole,
+  Power,
+  RefreshCw,
+  Server,
+  Trash2,
+} from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/shared/components/ui/button";
 
 interface ActivationCodeRow {
   id: string;
+  code: string;
   status: string;
   created_at?: string;
   activated_at?: string;
@@ -19,6 +30,8 @@ interface ModelChannelPayload {
   presetEnabled: boolean;
   model: string;
 }
+
+type ActivationCodeFilter = "all" | "unused" | "used";
 
 async function readJson<T>(response: Response, fallback: T): Promise<T> {
   return response.json().catch(() => fallback) as Promise<T>;
@@ -36,6 +49,10 @@ export function AdminLoginPage() {
   const [durationHours, setDurationHours] = useState(72);
   const [usageLimit, setUsageLimit] = useState(100);
   const [customCodesText, setCustomCodesText] = useState("");
+  const [codeFilter, setCodeFilter] = useState<ActivationCodeFilter>("all");
+  const [page, setPage] = useState(1);
+  const [totalCodes, setTotalCodes] = useState(0);
+  const pageSize = 30;
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,16 +72,29 @@ export function AdminLoginPage() {
     setPassword("");
   }
 
-  const loadCodes = useCallback(async () => {
-    const response = await fetch("/api/admin/activation-codes", {
+  const loadCodes = useCallback(async (nextPage: number, nextFilter: ActivationCodeFilter) => {
+    const params = new URLSearchParams({
+      page: String(nextPage),
+      pageSize: String(pageSize),
+      status: nextFilter,
+    });
+    const response = await fetch(`/api/admin/activation-codes?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const payload = await readJson<{ codes?: ActivationCodeRow[]; error?: string }>(response, {});
+    const payload = await readJson<{
+      codes?: ActivationCodeRow[];
+      total?: number;
+      page?: number;
+      error?: string;
+    }>(response, {});
     if (!response.ok) {
       setError(payload.error ?? "读取激活码失败。");
-      return;
+      return [];
     }
     setCodes(payload.codes ?? []);
+    setTotalCodes(payload.total ?? 0);
+    setPage(payload.page ?? nextPage);
+    return payload.codes ?? [];
   }, [token]);
 
   const loadModelChannel = useCallback(async () => {
@@ -86,9 +116,9 @@ export function AdminLoginPage() {
   useEffect(() => {
     if (token) {
       void loadModelChannel();
-      void loadCodes();
+      void loadCodes(1, codeFilter);
     }
-  }, [token, loadCodes, loadModelChannel]);
+  }, [token, codeFilter, loadCodes, loadModelChannel]);
 
   async function createCode() {
     const response = await fetch("/api/admin/activation-codes", {
@@ -114,7 +144,7 @@ export function AdminLoginPage() {
     }
     setNewCodes(payload.codes?.map((item) => item.code) ?? []);
     setCustomCodesText("");
-    await loadCodes();
+    await loadCodes(1, codeFilter);
   }
 
   async function deleteCode(id: string) {
@@ -128,7 +158,10 @@ export function AdminLoginPage() {
       setError(payload.error ?? "删除激活码失败。");
       return;
     }
-    await loadCodes();
+    const rows = await loadCodes(page, codeFilter);
+    if (rows.length === 0 && page > 1) {
+      await loadCodes(page - 1, codeFilter);
+    }
   }
 
   async function saveModelChannel() {
@@ -150,6 +183,9 @@ export function AdminLoginPage() {
       return "未使用";
     }
     if (code.status === "used") {
+      if (code.duration_hours === 0) {
+        return "已使用，无限时长";
+      }
       const hours = Math.max(0, Math.floor((code.remaining_seconds ?? 0) / 3600));
       const minutes = Math.max(0, Math.floor(((code.remaining_seconds ?? 0) % 3600) / 60));
       return `已使用，剩余 ${hours} 小时 ${minutes} 分钟`;
@@ -161,6 +197,23 @@ export function AdminLoginPage() {
       return "已禁用";
     }
     return code.status;
+  }
+
+  function formatDuration(hours: number | undefined) {
+    return hours === 0 ? "无限时长" : `${hours ?? 72} 小时`;
+  }
+
+  function formatUsageLimit(limit: number | undefined, count: number | undefined) {
+    return `${count ?? 0}/${limit === 0 ? "无限" : (limit ?? 0)}`;
+  }
+
+  async function switchFilter(nextFilter: ActivationCodeFilter) {
+    setCodeFilter(nextFilter);
+    await loadCodes(1, nextFilter);
+  }
+
+  async function turnPage(nextPage: number) {
+    await loadCodes(nextPage, codeFilter);
   }
 
   if (!token) {
@@ -247,22 +300,24 @@ export function AdminLoginPage() {
             <input
               value={durationHours}
               onChange={(event) => setDurationHours(Number(event.target.value))}
-              min={1}
+              min={0}
               max={8760}
               type="number"
               className="h-11 border-2 border-[var(--echo-ink)] bg-transparent px-3 outline-none"
             />
+            <span className="text-xs text-[var(--echo-muted-ink)]">填 0 代表无限时长</span>
           </label>
           <label className="grid gap-2 font-mono text-sm">
             调用上限
             <input
               value={usageLimit}
               onChange={(event) => setUsageLimit(Number(event.target.value))}
-              min={1}
+              min={0}
               max={100000}
               type="number"
               className="h-11 border-2 border-[var(--echo-ink)] bg-transparent px-3 outline-none"
             />
+            <span className="text-xs text-[var(--echo-muted-ink)]">按模型请求次数计数，填 0 不限</span>
           </label>
         </div>
         <label className="mt-4 grid gap-2 font-mono text-sm">
@@ -280,7 +335,7 @@ export function AdminLoginPage() {
             <KeyRound aria-hidden="true" size={18} />
             生成激活码
           </Button>
-          <Button type="button" variant="secondary" onClick={loadCodes}>
+          <Button type="button" variant="secondary" onClick={() => void loadCodes(page, codeFilter)}>
             <RefreshCw aria-hidden="true" size={18} />
             刷新列表
           </Button>
@@ -296,12 +351,38 @@ export function AdminLoginPage() {
           </div>
         )}
         {error && <p className="mt-4 font-mono text-sm text-[var(--echo-stamp)]">{error}</p>}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y-2 border-[var(--echo-ink)] py-3">
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+            <ListFilter aria-hidden="true" size={16} />
+            {(
+              [
+                ["all", "全部"],
+                ["unused", "未使用"],
+                ["used", "已使用"],
+              ] satisfies Array<[ActivationCodeFilter, string]>
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => void switchFilter(value)}
+                className={`border border-[var(--echo-ink)] px-3 py-2 ${
+                  codeFilter === value ? "bg-[var(--echo-ink)] text-[var(--echo-paper)]" : ""
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="font-mono text-xs">
+            共 {totalCodes} 个 · 第 {page}/{Math.max(1, Math.ceil(totalCodes / pageSize))} 页
+          </p>
+        </div>
         <div className="mt-5 grid gap-2 font-mono text-xs">
           {codes.map((code) => (
             <div key={code.id} className="border border-[var(--echo-ink)] p-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p>{code.id}</p>
+                  <p className="break-all text-sm font-black">{code.code}</p>
                   <p>{formatCodeStatus(code)}</p>
                 </div>
                 <button
@@ -314,13 +395,33 @@ export function AdminLoginPage() {
                 </button>
               </div>
               <p>
-                时长：{code.duration_hours ?? 72} 小时 · 调用：{code.usage_count ?? 0}/
-                {code.usage_limit ?? 0}
+                时长：{formatDuration(code.duration_hours)} · 调用：
+                {formatUsageLimit(code.usage_limit, code.usage_count)}
               </p>
               {code.activated_at && <p>激活：{new Date(code.activated_at).toLocaleString()}</p>}
               {code.expires_at && <p>到期：{new Date(code.expires_at).toLocaleString()}</p>}
             </div>
           ))}
+        </div>
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => void turnPage(page - 1)}
+            className="inline-flex h-9 items-center gap-2 border border-[var(--echo-ink)] px-3 disabled:opacity-40"
+          >
+            <ChevronLeft aria-hidden="true" size={16} />
+            上一页
+          </button>
+          <button
+            type="button"
+            disabled={page >= Math.max(1, Math.ceil(totalCodes / pageSize))}
+            onClick={() => void turnPage(page + 1)}
+            className="inline-flex h-9 items-center gap-2 border border-[var(--echo-ink)] px-3 disabled:opacity-40"
+          >
+            下一页
+            <ChevronRight aria-hidden="true" size={16} />
+          </button>
         </div>
       </article>
     </section>
