@@ -195,25 +195,26 @@ ${input.previousChoices || "暂无"}
 输出只能是标准 JSON 数组，必须以 `[` 开头并以 `]` 结尾，数组长度必须等于用户要求的条目数，最多三条。
 每个数组元素必须包含 comment、content、keywords。comment 是条目名，content 是正文，keywords 是关键词数组。
 content 字段内部必须使用 `【维度名】：` 起段，并用两个换行分隔段落。
-每条新 WorldInfo 必须引用至少一个已知元素：角色记录、用户请求，或已确认 WorldInfo。
+每条新 WorldInfo 必须同时回应用户描述，并引用角色记录或已确认 WorldInfo 中至少一个已知元素。
+不要自行加入用户没有要求的预设主题、道具、地点或线索。
 不要输出 Markdown，不要输出解释，不要输出 JSON 以外的内容，不要把 JSON 放进代码块。
 ```
 
 ### User
 
 ```text
-当前角色记录：
+当前岛民笔记：
 ${input.dossierMarkdown}
 
 已确认 WorldInfo：
 ${currentWorldInfo}
 
 用户想生成的世界书方向：
-${input.userRequest || "请根据角色记录补出最需要的世界根基。"}
+${input.userRequest}
 
 本次请生成 EXACTLY ${input.entryCount} 条 WorldInfo。
 
-可选维度参考：宏观势力可写地理与代谢、权力结构、历史沉积、外部张力；人物可写生理痕迹、社交面具、核心欲望、能力代价、随身物；物件可写物理规格、运行机制、流转历史、副作用；地点可写感官入口、空间逻辑、功能变迁、环境伤痕。
+请根据用户描述决定条目的类型、角度和细节密度；如果用户描述较宽泛，请从角色记录中寻找最相关的矛盾、经历、关系或世界逻辑来收束，不要扩写成无关设定。
 ```
 
 ### 英文内容同步翻译

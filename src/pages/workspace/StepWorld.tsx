@@ -23,24 +23,6 @@ import { EmptyState } from "@/shared/components/EmptyState";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
 
-const defaultFragments = [
-  {
-    title: "路牌",
-    text: "TA 经常经过的地方，可能有一块被雨水洗旧的路牌。",
-    question: "那块路牌指向哪里？",
-  },
-  {
-    title: "旧报",
-    text: "一段被折过很多次的消息，记录着世界不愿再提的旧事。",
-    question: "这条旧消息曾改变过谁的命运？",
-  },
-  {
-    title: "随身物",
-    text: "一件总被 TA 带在身边的物品，上面有磨损、缺口或修补痕迹。",
-    question: "它为什么还没有被丢掉？",
-  },
-];
-
 export function StepWorld() {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -48,7 +30,6 @@ export function StepWorld() {
   const [isLoading, setIsLoading] = useState(true);
   const [userRequest, setUserRequest] = useState("");
   const [entryCount, setEntryCount] = useState(3);
-  const [fragments, setFragments] = useState(defaultFragments);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { load: loadSettings, getAvailability } = useSettingsStore();
   const { hydrateFromProject } = useDossierStore();
@@ -103,16 +84,14 @@ export function StepWorld() {
     return updatedProject;
   }
 
-  function buildRequest() {
-    const fragmentText = fragments
-      .map((fragment) => `${fragment.title}：${fragment.text}\n问题：${fragment.question}`)
-      .join("\n\n");
-
-    return [userRequest.trim(), fragmentText].filter(Boolean).join("\n\n");
-  }
-
   async function handleGenerateWorld() {
     if (!project) {
+      return;
+    }
+
+    const trimmedRequest = userRequest.trim();
+    if (!trimmedRequest) {
+      setErrorMessage("请先描述这次想生成的世界书内容。");
       return;
     }
 
@@ -131,7 +110,7 @@ export function StepWorld() {
         projectId: project.id,
         dossierMarkdown: project.dossier.markdown,
         confirmedEntries,
-        userRequest: buildRequest(),
+        userRequest: trimmedRequest,
         entryCount,
         signal: controller.signal,
       });
@@ -225,49 +204,20 @@ export function StepWorld() {
 
         <section className="echo-readable-shell">
           <div className="echo-readable-main">
-            <div className="grid gap-4 md:grid-cols-3">
-              {fragments.map((fragment, index) => (
-                <label
-                  key={fragment.title}
-                  className="block border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-4 text-[var(--echo-ink)]"
-                >
-                  <span className="font-display text-lg font-black">{fragment.title}</span>
-                  <textarea
-                    value={fragment.text}
-                    onChange={(event) =>
-                      setFragments((items) =>
-                        items.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, text: event.target.value } : item,
-                        ),
-                      )
-                    }
-                    className="mt-3 min-h-28 w-full resize-y border border-[rgba(36,49,65,0.22)] bg-[rgba(255,252,244,0.76)] p-3 font-mono text-sm leading-6 outline-none focus:border-[var(--echo-stamp)]"
-                  />
-                  <input
-                    value={fragment.question}
-                    onChange={(event) =>
-                      setFragments((items) =>
-                        items.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, question: event.target.value } : item,
-                        ),
-                      )
-                    }
-                    className="mt-3 w-full border border-[rgba(36,49,65,0.22)] bg-[rgba(255,252,244,0.76)] px-3 py-2 font-mono text-xs outline-none focus:border-[var(--echo-stamp)]"
-                  />
-                </label>
-              ))}
-            </div>
-
             <div className="echo-section-card">
               <label className="block">
                 <span className="font-display text-xl font-black text-[var(--echo-paper)]">
                   这次想生成什么样的世界书？
                 </span>
+                <span className="mt-2 block font-mono text-sm leading-7 text-[var(--echo-muted)]">
+                  直接描述你想补全的世界书方向。系统会结合已生成的岛民笔记与已确认
+                  WorldInfo 来生成，不会额外加入预设主题。
+                </span>
                 <textarea
                   value={userRequest}
                   onChange={(event) => setUserRequest(event.target.value)}
-                  placeholder="比如：补全 TA 住过的地方、常去的店、或一件和 TA 命运相关的物品。"
-                  className="mt-3 min-h-28 w-full resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-7 text-[var(--echo-text)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
+                  placeholder="例如：补全 TA 所在组织的规矩、TA 居住区域的日常秩序、或某段会影响 TA 行动的历史背景。"
+                  className="mt-3 min-h-40 w-full resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-base leading-8 text-[var(--echo-text)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
                 />
               </label>
               <div className="mt-4 flex flex-wrap items-center gap-3">
