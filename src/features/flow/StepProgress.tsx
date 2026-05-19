@@ -22,20 +22,26 @@ export function StepProgress({
 }: StepProgressProps) {
   const currentIndex = steps.findIndex((step) => step.id === currentStepId);
   const [pendingTarget, setPendingTarget] = useState<FlowStep | null>(null);
+  const unlockedSteps = steps.filter((step, index) => {
+    const isDone = completedStepIds.includes(step.id) || index < currentIndex;
+    const isCurrent = step.id === currentStepId;
+    return isDone || isCurrent;
+  });
+  const progressPercent = steps.length > 1 ? (currentIndex / (steps.length - 1)) * 100 : 100;
 
   if (compact) {
-    const unlockedSteps = steps.filter((step, index) => {
-      const isDone = completedStepIds.includes(step.id) || index < currentIndex;
-      const isCurrent = step.id === currentStepId;
-      return isDone || isCurrent;
-    });
-
     return (
       <>
-        <ol
-          className="flex gap-2 overflow-x-auto pb-1"
-          aria-label="创作流程进度"
+        <div
+          className="h-2 overflow-hidden rounded-[var(--animal-radius-pill)] border border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)]"
+          aria-hidden="true"
         >
+          <div
+            className="h-full rounded-[var(--animal-radius-pill)] bg-[var(--animal-primary)] transition-all duration-300"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <ol className="mt-3 flex flex-wrap gap-2" aria-label="创作流程进度">
           {unlockedSteps.map((step) => {
             const index = steps.findIndex((item) => item.id === step.id);
             const isDone = completedStepIds.includes(step.id) || index < currentIndex;
@@ -56,7 +62,7 @@ export function StepProgress({
                   }}
                   aria-disabled={!isDone && !isCurrent}
                   className={cn(
-                    "flex min-h-9 min-w-28 items-center justify-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-1.5 text-center text-xs font-black transition-all duration-200",
+                    "flex min-h-8 items-center justify-center rounded-[var(--animal-radius-pill)] border-2 px-3 py-1 text-center text-[11px] font-black transition-all duration-200",
                     isDone || isCurrent ? "cursor-pointer" : "cursor-default",
                     isCurrent
                       ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]"
@@ -66,7 +72,9 @@ export function StepProgress({
                       "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-primary-active)]",
                   )}
                 >
-                  <span className="min-w-0 truncate whitespace-nowrap leading-tight">{step.label}</span>
+                  <span className="min-w-0 whitespace-nowrap leading-tight">
+                    {isCurrent ? `当前：${step.label}` : step.label}
+                  </span>
                 </Link>
               </li>
             );
@@ -79,8 +87,9 @@ export function StepProgress({
   return (
     <>
       <ol className="grid gap-3 lg:grid-cols-1" aria-label="创作流程进度">
-        {steps.map((step, index) => {
+        {unlockedSteps.map((step) => {
           const Icon = step.icon;
+          const index = steps.findIndex((item) => item.id === step.id);
           const isDone = completedStepIds.includes(step.id) || index < currentIndex;
           const isCurrent = step.id === currentStepId;
           const content = (
