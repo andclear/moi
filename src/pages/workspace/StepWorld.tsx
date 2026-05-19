@@ -1,4 +1,4 @@
-import { Bug, GitMerge, Lightbulb, Plus, Trash2, WandSparkles, X } from "lucide-react";
+import { Bug, GitMerge, Lightbulb, Plus, Save, Trash2, WandSparkles, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
@@ -27,11 +27,33 @@ import { EmptyState } from "@/shared/components/EmptyState";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
 
+interface WorldEntryDraft {
+  title: string;
+  content: string;
+  keysText: string;
+}
+
+function createEntryDraft(entry: WorldEntry): WorldEntryDraft {
+  return {
+    title: entry.title,
+    content: entry.content,
+    keysText: entry.keys.join("、"),
+  };
+}
+
+function parseKeysText(keysText: string) {
+  return keysText
+    .split(/[、,\s]+/)
+    .map((keyword) => keyword.trim())
+    .filter(Boolean);
+}
+
 export function StepWorld() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [pendingEntries, setPendingEntries] = useState<WorldEntry[]>([]);
+  const [entryDrafts, setEntryDrafts] = useState<Record<string, WorldEntryDraft>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [userRequest, setUserRequest] = useState("");
   const [entryCount, setEntryCount] = useState(3);
@@ -72,6 +94,7 @@ export function StepWorld() {
           hydrateFromProject(nextProject);
         }
         setPendingEntries([]);
+        setEntryDrafts({});
         setProject(nextProject);
         setIsLoading(false);
       }
@@ -246,6 +269,11 @@ export function StepWorld() {
               : item,
           ),
         );
+        setEntryDrafts((drafts) => {
+          const { [entry.id]: _removed, ...rest } = drafts;
+          void _removed;
+          return rest;
+        });
       } else if (mode === "associate" && !entry.enabled) {
         setPendingEntries((entries) => [...entries, candidate]);
       } else if (mode === "associate") {
@@ -271,21 +299,51 @@ export function StepWorld() {
     }
   }
 
-  async function handleEditEntry(entry: WorldEntry, patch: Partial<WorldEntry>) {
+  function handleDraftChange(entry: WorldEntry, patch: Partial<WorldEntryDraft>) {
+    setEntryDrafts((drafts) => ({
+      ...drafts,
+      [entry.id]: {
+        ...(drafts[entry.id] ?? createEntryDraft(entry)),
+        ...patch,
+      },
+    }));
+  }
+
+  async function handleSaveEntry(entry: WorldEntry) {
     if (!project) {
       return;
     }
 
+    const draft = entryDrafts[entry.id] ?? createEntryDraft(entry);
+    const nextEntry = {
+      ...entry,
+      title: draft.title.trim() || entry.title,
+      content: draft.content,
+      keys: parseKeysText(draft.keysText),
+    };
+
     if (!entry.enabled) {
       setPendingEntries((entries) =>
-        entries.map((item) => (item.id === entry.id ? { ...item, ...patch } : item)),
+        entries.map((item) => (item.id === entry.id ? nextEntry : item)),
       );
+      setEntryDrafts((drafts) => {
+        const { [entry.id]: _removed, ...rest } = drafts;
+        void _removed;
+        return rest;
+      });
       return;
     }
 
-    const updated = upsertWorldEntry(project, { ...entry, ...patch });
+    const updated = upsertWorldEntry(project, nextEntry);
     const synced = syncWorldInfoToDossier(updated);
-    await persistProject(synced);
+    const updatedProject = await persistProject(synced);
+    if (updatedProject) {
+      setEntryDrafts((drafts) => {
+        const { [entry.id]: _removed, ...rest } = drafts;
+        void _removed;
+        return rest;
+      });
+    }
   }
 
   async function handleConfirmEntry(entry: WorldEntry) {
@@ -296,6 +354,11 @@ export function StepWorld() {
     if (!entry.enabled) {
       const confirmedEntry = { ...entry, enabled: true };
       setPendingEntries((entries) => entries.filter((item) => item.id !== entry.id));
+      setEntryDrafts((drafts) => {
+        const { [entry.id]: _removed, ...rest } = drafts;
+        void _removed;
+        return rest;
+      });
       const nextProject = syncWorldInfoToDossier({
         ...project,
         worldEntries: [confirmedEntry, ...project.worldEntries],
@@ -314,6 +377,11 @@ export function StepWorld() {
 
     if (!entry.enabled) {
       setPendingEntries((entries) => entries.filter((item) => item.id !== entry.id));
+      setEntryDrafts((drafts) => {
+        const { [entry.id]: _removed, ...rest } = drafts;
+        void _removed;
+        return rest;
+      });
       return;
     }
 
@@ -411,6 +479,11 @@ export function StepWorld() {
             <div className="grid gap-4">
               {visibleWorldEntries.map((entry) => (
                 (() => {
+                  const draft = entryDrafts[entry.id] ?? createEntryDraft(entry);
+                  const isDraftDirty =
+                    draft.title !== entry.title ||
+                    draft.content !== entry.content ||
+                    draft.keysText !== entry.keys.join("、");
                   const deepenKey = `world:${project.id}:deepen:${entry.id}`;
                   const associationKey = `world:${project.id}:associate:${entry.id}`;
                   const deepenTask = generationTasks[deepenKey];
@@ -421,17 +494,18 @@ export function StepWorld() {
                   return (
                 <article
                   key={entry.id}
+                  style={entry.enabled ? { borderColor: "var(--animal-primary)" } : undefined}
                   className={
                     entry.enabled
-                      ? "echo-text-card border-[var(--animal-primary)] bg-[rgba(230,249,246,0.72)] shadow-[0_8px_24px_rgba(25,200,185,0.18)]"
+                      ? "echo-text-card border-2 bg-[rgba(230,249,246,0.72)] shadow-[0_8px_24px_rgba(25,200,185,0.18)]"
                       : "echo-text-card"
                   }
                 >
                   <div className="flex items-start justify-between gap-3">
                     <input
-                      value={entry.title}
-                      onChange={(event) => void handleEditEntry(entry, { title: event.target.value })}
-                      className="min-h-16 min-w-0 flex-1 rounded-[24px] border-2 border-transparent bg-[rgba(255,255,255,0.28)] px-4 py-3 font-display text-2xl font-black leading-9 text-[var(--echo-paper)] outline-none focus:border-[var(--animal-primary)]"
+                      value={draft.title}
+                      onChange={(event) => handleDraftChange(entry, { title: event.target.value })}
+                      className="min-h-12 min-w-0 flex-1 rounded-[18px] border-2 border-transparent bg-[rgba(255,255,255,0.28)] px-4 py-2 font-display text-2xl font-black leading-8 text-[var(--echo-paper)] outline-none focus:border-[var(--animal-primary)]"
                     />
                     <span
                       className={
@@ -444,21 +518,14 @@ export function StepWorld() {
                     </span>
                   </div>
                   <textarea
-                    value={entry.content}
-                    onChange={(event) => void handleEditEntry(entry, { content: event.target.value })}
+                    value={draft.content}
+                    onChange={(event) => handleDraftChange(entry, { content: event.target.value })}
                     className="mt-4 min-h-72 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-base leading-8 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                   />
                   {entry.keys.length > 0 ? (
                     <input
-                      value={entry.keys.join("、")}
-                      onChange={(event) =>
-                        void handleEditEntry(entry, {
-                          keys: event.target.value
-                            .split(/[、,\s]+/)
-                            .map((keyword) => keyword.trim())
-                            .filter(Boolean),
-                        })
-                      }
+                      value={draft.keysText}
+                      onChange={(event) => handleDraftChange(entry, { keysText: event.target.value })}
                       placeholder="关键词，用顿号分隔"
                       className="mt-3 w-full border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 py-2 font-mono text-xs text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                     />
@@ -468,17 +535,28 @@ export function StepWorld() {
                       type="button"
                       size="sm"
                       onClick={() => void handleConfirmEntry(entry)}
-                      disabled={entry.enabled}
+                      disabled={entry.enabled || isDraftDirty}
                     >
                       <Plus aria-hidden="true" size={15} />
                       确认
                     </Button>
+                    {isDraftDirty ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_4px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_5px_0_0_var(--animal-primary-active)]"
+                        onClick={() => void handleSaveEntry(entry)}
+                      >
+                        <Save aria-hidden="true" size={15} />
+                        保存
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       size="sm"
                       variant="secondary"
                       loading={isDeepening}
-                      disabled={isAssociating}
+                      disabled={isAssociating || isDraftDirty}
                       onClick={() => void handleRefineEntry(entry, "deepen")}
                     >
                       <Lightbulb aria-hidden="true" size={15} />
@@ -489,7 +567,7 @@ export function StepWorld() {
                       size="sm"
                       variant="secondary"
                       loading={isAssociating}
-                      disabled={isDeepening}
+                      disabled={isDeepening || isDraftDirty}
                       onClick={() => void handleRefineEntry(entry, "associate")}
                     >
                       <GitMerge aria-hidden="true" size={15} />
