@@ -20,7 +20,7 @@ export function ConfirmDialog({
   description,
   confirmLabel = "确认",
   cancelLabel = "取消",
-  dangerConfirm = false,
+  dangerConfirm = confirmLabel.includes("删除"),
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
