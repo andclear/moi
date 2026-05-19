@@ -52,11 +52,11 @@ export function Button({
   const Comp = asChild ? Slot : "button";
   const dangerStyles =
     danger && variant === "primary"
-      ? "border-[var(--animal-error)] bg-[var(--animal-error)] text-white shadow-[0_5px_0_0_var(--animal-error-active)] hover:-translate-y-0.5 hover:bg-[var(--animal-error-hover)] hover:shadow-[0_6px_0_0_var(--animal-error-active)] active:bg-[var(--animal-error-active)] active:shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:outline-[var(--animal-error-active)]"
+      ? "!border-[var(--animal-error)] !bg-[var(--animal-error)] !text-white !shadow-[0_5px_0_0_var(--animal-error-active)] hover:!bg-[var(--animal-error-hover)] hover:!shadow-[0_6px_0_0_var(--animal-error-active)] active:!bg-[var(--animal-error-active)] active:!shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:!outline-[var(--animal-error-active)]"
       : danger && variant === "secondary"
-        ? "border-[var(--animal-error)] bg-[var(--animal-bg-content)] text-[var(--animal-error)] shadow-[0_4px_0_0_var(--animal-error-active)] hover:-translate-y-0.5 hover:border-[var(--animal-error-hover)] hover:text-[var(--animal-error-hover)] hover:shadow-[0_5px_0_0_var(--animal-error-active)] active:shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:outline-[var(--animal-error)]"
+        ? "!border-[var(--animal-error)] !bg-[var(--animal-bg-content)] !text-[var(--animal-error)] !shadow-[0_4px_0_0_var(--animal-error-active)] hover:!border-[var(--animal-error-hover)] hover:!text-[var(--animal-error-hover)] hover:!shadow-[0_5px_0_0_var(--animal-error-active)] active:!shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:!outline-[var(--animal-error)]"
         : danger && variant === "ghost"
-          ? "text-[var(--animal-error)] hover:bg-[rgba(224,90,90,0.12)] hover:text-[var(--animal-error-active)] focus-visible:outline-[var(--animal-error)]"
+          ? "!text-[var(--animal-error)] hover:!bg-[rgba(224,90,90,0.12)] hover:!text-[var(--animal-error-active)] focus-visible:!outline-[var(--animal-error)]"
           : "";
 
   if (asChild) {
