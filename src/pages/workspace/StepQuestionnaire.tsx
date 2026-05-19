@@ -325,8 +325,8 @@ export function StepQuestionnaire() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-[var(--animal-bg)] text-[var(--animal-text)]">
-      <article className="mx-auto my-8 w-[calc(100%-2rem)] max-w-4xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_10px_0_0_var(--animal-shadow-input)] sm:my-12 sm:p-9">
+    <main className="min-h-screen bg-[var(--animal-bg)] text-[var(--animal-text)]">
+      <article className="mx-auto my-8 w-[calc(100%-2rem)] max-w-4xl overflow-hidden rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_10px_0_0_var(--animal-shadow-input)] sm:my-12 sm:p-9">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
           登岛小问卷
         </p>
@@ -482,10 +482,10 @@ export function StepQuestionnaire() {
               </section>
             )}
         </div>
+        <div className="-mx-5 -mb-5 mt-8 overflow-hidden sm:-mx-9 sm:-mb-9">
+          <Footer type="sea" className="echo-questionnaire-footer" />
+        </div>
       </article>
-      <div className="mt-auto w-full overflow-hidden">
-        <Footer type="sea" style={{ width: "100%" }} />
-      </div>
     </main>
   );
 }

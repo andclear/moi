@@ -113,6 +113,14 @@ input[type="radio"]:focus {
   background-size: auto 100% !important;
 }
 
+.echo-questionnaire-footer {
+  width: 100% !important;
+  min-width: 100% !important;
+  background-position: bottom left !important;
+  background-repeat: repeat-x !important;
+  background-size: auto 100% !important;
+}
+
 .echo-workspace-page {
   min-height: calc(100vh - 9rem);
   padding: clamp(1rem, 2vw, 1.75rem);
