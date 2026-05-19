@@ -3,15 +3,14 @@ import {
   BookMarked,
   ClipboardList,
   FileSearch,
-  ChevronDown,
-  ChevronUp,
   MessagesSquare,
   PenLine,
   ScrollText,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, useParams } from "react-router";
+import { Collapse } from "animal-island-ui";
 
 import { useFlowStore, type FlowStepId } from "@/features/flow/flowStore";
 import { StepProgress } from "@/features/flow/StepProgress";
@@ -43,15 +42,12 @@ export function WorkspacePage() {
   const { projectId, step } = useParams();
   const currentStepId = resolveStepId(step);
   const { completedStepIds, setCurrentStep } = useFlowStore();
-  const [isMobileStepNavOpen, setIsMobileStepNavOpen] = useState(false);
+  const currentStepIndex = steps.findIndex((item) => item.id === currentStepId);
+  const currentStepLabel = steps.find((item) => item.id === currentStepId)?.label ?? "未知步骤";
 
   useEffect(() => {
     setCurrentStep(currentStepId);
   }, [currentStepId, setCurrentStep]);
-
-  useEffect(() => {
-    setIsMobileStepNavOpen(false);
-  }, [currentStepId]);
 
   if (step === "questionnaire-loading") {
     return <Navigate to={`/questionnaire-loading/${projectId ?? "current"}`} replace />;
@@ -67,47 +63,28 @@ export function WorkspacePage() {
     <WorkspaceLayout>
       {shouldShowStepNav && (
         <div className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.58)] px-4 py-3 lg:hidden">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between gap-3 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-4 py-3 text-left shadow-[0_3px_0_0_var(--animal-shadow-input)] transition-all hover:-translate-y-0.5"
-            onClick={() => setIsMobileStepNavOpen((current) => !current)}
-          >
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--animal-text-muted)]">
-                小岛流程
-              </p>
-              <p className="mt-1 truncate text-sm font-black text-[var(--animal-text)]">
-                当前在「{steps.find((item) => item.id === currentStepId)?.label ?? "未知步骤"}」
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2 text-xs font-black text-[var(--animal-primary-active)]">
-              <span>{isMobileStepNavOpen ? "收起" : "展开"}</span>
-              {isMobileStepNavOpen ? (
-                <ChevronUp aria-hidden="true" size={16} />
-              ) : (
-                <ChevronDown aria-hidden="true" size={16} />
-              )}
-            </div>
-          </button>
-          <AnimatePresence initial={false}>
-            {isMobileStepNavOpen ? (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3 max-h-[42vh] overflow-auto rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.5)] p-3 shadow-[0_4px_10px_rgba(107,92,67,0.2)]">
-                  <StepProgress
-                    steps={steps}
-                    currentStepId={currentStepId}
-                    completedStepIds={completedStepIds}
-                  />
-                </div>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
+          <Collapse
+            question={
+              <div className="flex w-full items-center justify-between gap-3">
+                <span className="truncate text-sm font-black text-[var(--animal-text)]">
+                  当前步骤 · {currentStepLabel}
+                </span>
+                <span className="shrink-0 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-3 py-1 text-[11px] font-black text-[var(--animal-text-muted)] shadow-[0_3px_0_0_var(--animal-shadow-input)]">
+                  {currentStepIndex + 1}/{steps.length}
+                </span>
+              </div>
+            }
+            answer={
+              <div className="mt-3 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.5)] p-2 shadow-[0_4px_10px_rgba(107,92,67,0.2)]">
+                <StepProgress
+                  steps={steps}
+                  currentStepId={currentStepId}
+                  completedStepIds={completedStepIds}
+                  compact
+                />
+              </div>
+            }
+          />
         </div>
       )}
       <div
