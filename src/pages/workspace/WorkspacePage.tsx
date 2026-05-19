@@ -75,7 +75,7 @@ export function WorkspacePage() {
               </div>
             }
             answer={
-              <div className="mt-3 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.5)] p-2 shadow-[0_4px_10px_rgba(107,92,67,0.2)]">
+              <div className="mt-3">
                 <StepProgress
                   steps={steps}
                   currentStepId={currentStepId}
