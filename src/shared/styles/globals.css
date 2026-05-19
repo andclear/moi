@@ -87,6 +87,13 @@ input[type="file"] {
   animation: animal-loading-stripes 0.8s linear infinite;
 }
 
+.echo-sea-footer {
+  min-width: 100vw;
+  background-position: bottom left !important;
+  background-repeat: repeat-x !important;
+  background-size: auto 100% !important;
+}
+
 section.border,
 section.border-2,
 article.border,

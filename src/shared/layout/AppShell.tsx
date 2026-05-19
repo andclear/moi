@@ -71,7 +71,7 @@ export function AppShell() {
           <Outlet />
         </PageTransition>
       </main>
-      <Footer type="sea" className="relative left-1/2 mt-6 w-screen -translate-x-1/2" />
+      <Footer type="sea" className="echo-sea-footer relative left-1/2 mt-6 w-screen -translate-x-1/2" />
     </div>
   );
 }

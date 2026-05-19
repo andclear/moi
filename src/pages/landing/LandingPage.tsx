@@ -47,7 +47,7 @@ export function LandingPage() {
           </Button>
         </div>
       </section>
-      <Footer type="sea" className="relative left-1/2 w-screen -translate-x-1/2" />
+      <Footer type="sea" className="echo-sea-footer relative left-1/2 w-screen -translate-x-1/2" />
     </main>
   );
 }
