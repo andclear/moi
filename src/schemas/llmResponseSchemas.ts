@@ -12,6 +12,7 @@ export const generationTaskSchema = z.object({
   projectId: z.string().min(1),
   type: z.enum([
     "profile",
+    "intake_questionnaire",
     "world",
     "greeting",
     "trial_questionnaire",
@@ -38,6 +39,28 @@ export const structuredLlmResponseSchema = z.object({
 export const profileDraftResponseSchema = z.object({
   title: z.string().min(1),
   dossierMarkdown: z.string().min(1),
+});
+
+export const intakeQuestionnaireResponseSchema = z.object({
+  title: z.string().min(1),
+  questions: z
+    .array(
+      z.object({
+        title: z.string().min(1),
+        description: z.string().optional(),
+        options: z
+          .array(
+            z.object({
+              label: z.string().min(1),
+              allowCustom: z.boolean().optional(),
+            }),
+          )
+          .min(2)
+          .max(6),
+      }),
+    )
+    .min(5)
+    .max(7),
 });
 
 export const profileChoiceResponseSchema = z.object({

@@ -3,6 +3,7 @@ import type { FlowStepId } from "@/features/flow/flowStore";
 export type DossierBlockSource = "ai_inferred" | "user_confirmed";
 export type GenerationStatus = "pending" | "running" | "succeeded" | "failed" | "cancelled";
 export type GenerationType =
+  | "intake_questionnaire"
   | "profile"
   | "world"
   | "greeting"
@@ -128,6 +129,40 @@ export interface ProfileSession {
   stages: Record<ProfileStageId, ProfileStageState>;
 }
 
+export interface IntakeQuestionOption {
+  id: string;
+  label: string;
+  allowCustom?: boolean;
+}
+
+export interface IntakeQuestion {
+  id: string;
+  title: string;
+  description?: string;
+  options: IntakeQuestionOption[];
+}
+
+export interface IntakeQuestionnaire {
+  title: string;
+  designNote: string;
+  questions: IntakeQuestion[];
+}
+
+export interface IntakeAnswer {
+  questionId: string;
+  optionId: string;
+  customValue?: string;
+}
+
+export interface ProjectIntake {
+  brief: string;
+  gender: string;
+  age?: string;
+  questionnaire?: IntakeQuestionnaire;
+  answers?: IntakeAnswer[];
+  generationId?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -140,6 +175,7 @@ export interface Project {
   companions: CompanionNode[];
   companionRelations: CompanionRelation[];
   profileSession?: ProfileSession;
+  intake?: ProjectIntake;
   createdAt: string;
   updatedAt: string;
   archivedAt?: string;
@@ -158,6 +194,7 @@ export interface HistorySnapshot {
   companions: CompanionNode[];
   companionRelations: CompanionRelation[];
   profileSession?: ProfileSession;
+  intake?: ProjectIntake;
   generationIds: string[];
   createdAt: string;
 }

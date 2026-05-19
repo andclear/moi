@@ -4,16 +4,9 @@ import { Link, useNavigate } from "react-router";
 
 import { projectRepository } from "@/db/repositories/projectRepository";
 import { projectService } from "@/db/services/projectService";
-import { useDossierStore } from "@/features/dossier/dossierStore";
 import { useFlowStore } from "@/features/flow/flowStore";
-import { useGenerationStore } from "@/features/generation/generationStore";
-import { generateProfileDraft } from "@/features/llm/llmClient";
-import { createEmptyProfileSession } from "@/features/profile/profileSession";
 import { useSettingsStore } from "@/features/settings/settingsStore";
-import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
-import { buildDossierBlockMeta } from "@/features/dossier/dossierSections";
-import { nowIso } from "@/shared/lib/date";
 
 type GenderOption = "男" | "女" | "其他";
 
@@ -36,20 +29,15 @@ export function StepPost() {
   const [age, setAge] = useState("");
   const [hint, setHint] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
   const { load: loadSettings, getAvailability } = useSettingsStore();
-  const generationTask = useGenerationStore((state) => state.getTask("profile:draft"));
-  const setRunning = useGenerationStore((state) => state.setRunning);
-  const setSucceeded = useGenerationStore((state) => state.setSucceeded);
-  const setFailed = useGenerationStore((state) => state.setFailed);
-  const cancel = useGenerationStore((state) => state.cancel);
-  const hydrateDossier = useDossierStore((state) => state.hydrateFromProject);
 
   useEffect(() => {
     void loadSettings();
   }, [loadSettings]);
 
-  async function handleStartProfile() {
+  async function handleStartQuestionnaire() {
     const trimmedBrief = brief.trim();
     const trimmedCustomGender = customGender.trim();
     setErrorMessage(null);
@@ -70,53 +58,32 @@ export function StepPost() {
       return;
     }
 
-    const controller = new AbortController();
-    setRunning("profile:draft", controller);
-
+    setIsSubmitting(true);
     try {
       const aiBrief = buildBriefForAi(trimmedBrief, gender, trimmedCustomGender, age);
       const draftProject = await projectRepository.create({
         title: trimmedBrief.length > 18 ? `${trimmedBrief.slice(0, 18)}…` : trimmedBrief,
       });
-      const result = await generateProfileDraft({
-        projectId: draftProject.id,
-        brief: aiBrief,
-        signal: controller.signal,
-      });
-      const now = nowIso();
-      const dossierBlocks = buildDossierBlockMeta(
-        result.data.dossierMarkdown,
-        draftProject.dossier.blocks,
-        "ai_inferred",
-        now,
-        result.taskId,
-      );
       const updatedProject = await projectService.updateProject(draftProject.id, {
-        title: result.data.title,
-        currentStep: "profile",
-        profileSession: createEmptyProfileSession(),
-        dossier: {
-          markdown: result.data.dossierMarkdown,
-          blocks: dossierBlocks,
-          updatedAt: now,
+        currentStep: "questionnaire",
+        intake: {
+          brief: aiBrief,
+          gender: gender === "其他" ? trimmedCustomGender : gender,
+          age: age.trim() || undefined,
         },
       });
 
       if (!updatedProject) {
-        throw new Error("初始记录保存失败。");
+        throw new Error("登岛问卷准备失败。");
       }
 
-      hydrateDossier(updatedProject);
       markStepCompleted("post");
-      setSucceeded("profile:draft", result.taskId);
-      navigate(`/workspace/${updatedProject.id}/profile`);
+      navigate(`/workspace/${updatedProject.id}/questionnaire`);
     } catch (error) {
-      if (controller.signal.aborted) {
-        return;
-      }
-      const message = error instanceof Error ? error.message : "初始岛民记录生成失败。";
+      const message = error instanceof Error ? error.message : "登岛问卷准备失败。";
       setErrorMessage(message);
-      setFailed("profile:draft", message);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -222,18 +189,19 @@ export function StepPost() {
           </div>
         )}
         <div className="mt-8 flex flex-col gap-3 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] p-4 shadow-[0_5px_0_0_var(--animal-shadow-input)] sm:flex-row sm:items-center sm:justify-between">
-          <GenerationButton
-            idleLabel="开始认识 TA"
-            runningLabel="正在整理最初印象"
-            status={generationTask.status}
-            errorMessage={generationTask.errorMessage}
-            onGenerate={handleStartProfile}
-            onCancel={() => cancel("profile:draft")}
+          <Button
+            type="button"
+            loading={isSubmitting}
+            disabled={isSubmitting}
+            onClick={() => void handleStartQuestionnaire()}
             className="h-14 min-w-52 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] px-8 text-base text-white shadow-[0_6px_0_0_var(--animal-primary-active)] hover:shadow-[0_7px_0_0_var(--animal-primary-active)] active:shadow-[0_2px_0_0_var(--animal-primary-active)]"
-          />
+          >
+            <MapPinned aria-hidden="true" size={18} />
+            {isSubmitting ? "正在准备问卷" : "领取登岛问卷"}
+          </Button>
           <p className="font-mono text-xs leading-5 text-[var(--animal-text-muted)]">
             <MapPinned aria-hidden="true" size={14} className="mr-1 inline" />
-            生成后会自动写入 TA 的记录，并进入认识岛民。
+            先领取一份登岛小问卷，再把 TA 的样子整理得更清楚。
           </p>
         </div>
       </article>

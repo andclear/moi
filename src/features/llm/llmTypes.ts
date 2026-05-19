@@ -14,6 +14,7 @@ export interface LlmRequest {
   messages: LlmMessage[];
   inputSummary: string;
   signal?: AbortSignal;
+  onDelta?: (delta: string, content: string) => void;
 }
 
 export interface LlmResponse {

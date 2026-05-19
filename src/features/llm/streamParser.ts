@@ -1,7 +1,14 @@
-export async function readTextResponse(response: Response) {
+export async function readTextResponse(
+  response: Response,
+  onDelta?: (delta: string, content: string) => void,
+) {
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("text/event-stream")) {
-    return response.text();
+    const text = await response.text();
+    if (text) {
+      onDelta?.(text, text);
+    }
+    return text;
   }
 
   const reader = response.body?.getReader();
@@ -24,25 +31,49 @@ export async function readTextResponse(response: Response) {
     buffer = events.pop() ?? "";
 
     for (const event of events) {
-      const dataLines = event
-        .split("\n")
-        .filter((line) => line.startsWith("data:"))
-        .map((line) => line.replace(/^data:\s*/, ""));
+      result = appendStreamEvent(event, result, onDelta);
+    }
+  }
 
-      for (const data of dataLines) {
-        if (data === "[DONE]") {
-          continue;
-        }
+  if (buffer.trim()) {
+    result = appendStreamEvent(buffer, result, onDelta);
+  }
 
-        try {
-          const payload = JSON.parse(data) as {
-            choices?: Array<{ delta?: { content?: string }; text?: string }>;
-          };
-          result += payload.choices?.[0]?.delta?.content ?? payload.choices?.[0]?.text ?? "";
-        } catch {
-          result += data;
-        }
+  return result;
+}
+
+function appendStreamEvent(
+  event: string,
+  current: string,
+  onDelta?: (delta: string, content: string) => void,
+) {
+  let result = current;
+  const dataLines = event
+    .split("\n")
+    .filter((line) => line.startsWith("data:"))
+    .map((line) => line.replace(/^data:\s*/, ""));
+
+  for (const data of dataLines) {
+    if (data === "[DONE]") {
+      continue;
+    }
+
+    try {
+      const payload = JSON.parse(data) as {
+        choices?: Array<{ delta?: { content?: string }; message?: { content?: string }; text?: string }>;
+      };
+      const delta =
+        payload.choices?.[0]?.delta?.content ??
+        payload.choices?.[0]?.message?.content ??
+        payload.choices?.[0]?.text ??
+        "";
+      result += delta;
+      if (delta) {
+        onDelta?.(delta, result);
       }
+    } catch {
+      result += data;
+      onDelta?.(data, result);
     }
   }
 

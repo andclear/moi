@@ -1,6 +1,7 @@
 import {
   Archive,
   BookMarked,
+  ClipboardList,
   FileSearch,
   MessagesSquare,
   PenLine,
@@ -14,6 +15,7 @@ import { useFlowStore, type FlowStepId } from "@/features/flow/flowStore";
 import { StepProgress } from "@/features/flow/StepProgress";
 import type { FlowStep } from "@/features/flow/flowTypes";
 import { StepPost } from "@/pages/workspace/StepPost";
+import { StepQuestionnaire } from "@/pages/workspace/StepQuestionnaire";
 import { StepProfile } from "@/pages/workspace/StepProfile";
 import { StepExport } from "@/pages/workspace/StepExport";
 import { StepGreeting } from "@/pages/workspace/StepGreeting";
@@ -23,6 +25,7 @@ import { WorkspaceLayout } from "@/shared/layout/WorkspaceLayout";
 
 const steps: FlowStep[] = [
   { id: "post", label: "岛民便笺", description: "写下你记得的 TA。", icon: PenLine },
+  { id: "questionnaire", label: "登岛小问卷", description: "先确认几个创作方向。", icon: ClipboardList },
   { id: "profile", label: "认识岛民", description: "从几种可能里靠近 TA 的样子。", icon: FileSearch },
   { id: "world", label: "小岛背景", description: "整理 TA 所在的世界。", icon: BookMarked },
   { id: "greeting", label: "初次招呼", description: "生成第一次见面的场景。", icon: MessagesSquare },
@@ -78,6 +81,8 @@ export function WorkspacePage() {
           >
             {currentStepId === "post" ? (
               <StepPost />
+            ) : currentStepId === "questionnaire" ? (
+              <StepQuestionnaire />
             ) : currentStepId === "profile" ? (
               <StepProfile />
             ) : currentStepId === "world" ? (

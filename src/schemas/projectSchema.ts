@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-export const flowStepIdSchema = z.enum(["post", "profile", "world", "greeting", "trial", "export"]);
+export const flowStepIdSchema = z.enum([
+  "post",
+  "questionnaire",
+  "profile",
+  "world",
+  "greeting",
+  "trial",
+  "export",
+]);
 
 export const dossierBlockMetaSchema = z.object({
   blockId: z.string().min(1),
@@ -109,6 +117,7 @@ export const projectSchema = z.object({
   companions: z.array(companionNodeSchema).default([]),
   companionRelations: z.array(companionRelationSchema).default([]),
   profileSession: z.unknown().optional(),
+  intake: z.unknown().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   archivedAt: z.string().datetime().optional(),
@@ -127,6 +136,7 @@ export const historySnapshotSchema = z.object({
   companions: z.array(companionNodeSchema).default([]),
   companionRelations: z.array(companionRelationSchema).default([]),
   profileSession: z.unknown().optional(),
+  intake: z.unknown().optional(),
   generationIds: z.array(z.string()),
   createdAt: z.string().datetime(),
 });

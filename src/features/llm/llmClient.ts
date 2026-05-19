@@ -11,6 +11,8 @@ import { buildBeautificationMessages } from "@/prompts/beautificationPrompts";
 import { buildCompanionMessages } from "@/prompts/companionPrompts";
 import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
 import { buildWorldEntryMessages } from "@/prompts/worldPrompts";
+import { buildIntakeQuestionnaireMessages } from "@/prompts/intakePrompts";
+import { withGlobalPrompt } from "@/prompts/globalPrompt";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
 import { parseLlmJson } from "@/features/llm/jsonResponse";
 import { LlmError, type LlmRequest, type LlmResponse } from "@/features/llm/llmTypes";
@@ -24,6 +26,7 @@ import {
   greetingVariantResponseSchema,
   beautificationResponseSchema,
   companionResponseSchema,
+  intakeQuestionnaireResponseSchema,
   profileChoiceResponseSchema,
   profileDraftResponseSchema,
   trialAnswerResponseSchema,
@@ -59,6 +62,9 @@ async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
   }
 
   const payload = (await response.json()) as LlmResponse;
+  if (payload.content) {
+    request.onDelta?.(payload.content, payload.content);
+  }
   return {
     ...payload,
     usage: {
@@ -125,10 +131,20 @@ export async function callLlm(request: LlmRequest) {
       throw new LlmError("尚未配置可用模型。", "api_not_configured");
     }
 
+    const normalizedRequest: LlmRequest = {
+      ...request,
+      messages: withGlobalPrompt(request.messages),
+    };
+
     const response =
       settings.mode === "preset"
-        ? await callPresetGateway(request)
-        : await callOpenAiCompatible(settings, request.messages, request.signal);
+        ? await callPresetGateway(normalizedRequest)
+        : await callOpenAiCompatible(
+            settings,
+            normalizedRequest.messages,
+            normalizedRequest.signal,
+            normalizedRequest.onDelta,
+          );
 
     await markGenerationSucceeded(task, { content: response.content, raw: response.raw }, response.usage);
     return { taskId: task.id, response };
@@ -136,6 +152,49 @@ export async function callLlm(request: LlmRequest) {
     await markGenerationFailed(task, error);
     throw error;
   }
+}
+
+function extractDesignNote(content: string) {
+  const match = /<cot>([\s\S]*?)<\/cot>/i.exec(content);
+  return (match?.[1] ?? "").trim();
+}
+
+export async function generateIntakeQuestionnaire(input: {
+  projectId: string;
+  brief: string;
+  gender: string;
+  age?: string;
+  signal?: AbortSignal;
+  onDelta?: (delta: string, content: string) => void;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "intake_questionnaire",
+    messages: buildIntakeQuestionnaireMessages(input),
+    inputSummary: `生成登岛问卷：${input.brief.slice(0, 100)}`,
+    signal: input.signal,
+    onDelta: input.onDelta,
+  });
+  const data = parseLlmJson(result.response.content, intakeQuestionnaireResponseSchema);
+
+  return {
+    taskId: result.taskId,
+    data: {
+      title: data.title,
+      designNote: extractDesignNote(result.response.content),
+      questions: data.questions.map((question, questionIndex) => ({
+        id: `q${questionIndex + 1}`,
+        title: question.title,
+        description: question.description,
+        options: question.options.map((option, optionIndex) => ({
+          id: `q${questionIndex + 1}_o${optionIndex + 1}`,
+          label: option.label,
+          allowCustom: option.allowCustom,
+        })),
+      })),
+    },
+    response: result.response,
+  };
 }
 
 export async function generateProfileDraft(input: {

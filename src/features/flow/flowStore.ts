@@ -1,6 +1,13 @@
 import { create } from "zustand";
 
-export type FlowStepId = "post" | "profile" | "world" | "greeting" | "trial" | "export";
+export type FlowStepId =
+  | "post"
+  | "questionnaire"
+  | "profile"
+  | "world"
+  | "greeting"
+  | "trial"
+  | "export";
 
 interface FlowState {
   currentStepId: FlowStepId;
