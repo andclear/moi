@@ -45,6 +45,11 @@ describe("characterCardBuilder", () => {
         title: "旧图书馆",
         content: "雨水会从东侧窗框渗入。",
         keywords: ["旧图书馆"],
+        keys: ["旧馆", "雨水"],
+        constant: true,
+        position: 4,
+        depth: 3,
+        insertionOrder: 140,
         enabled: true,
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
@@ -127,6 +132,16 @@ describe("characterCardBuilder", () => {
     expect(card.spec).toBe("chara_card_v3");
     expect(card.spec_version).toBe("3.0");
     expect(card.data.character_book?.entries).toHaveLength(3);
+    expect(card.data.character_book?.entries[0]).toMatchObject({
+      keys: ["旧馆", "雨水"],
+      constant: true,
+      position: 4,
+      insertion_order: 140,
+      extensions: {
+        depth: 3,
+        position: 4,
+      },
+    });
     expect(card.data.extensions.regex_scripts).toHaveLength(1);
     expect(card.data.first_mes).toContain("{{user}}");
     expect(card.data.creator_notes).toContain("相处测试摘要");

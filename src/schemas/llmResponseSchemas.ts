@@ -103,12 +103,104 @@ export const profileDossierUpdateResponseSchema = z.object({
   summary: z.string().optional(),
 });
 
+const booleanLikeSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") {
+      return true;
+    }
+    if (normalized === "false") {
+      return false;
+    }
+  }
+
+  return value;
+}, z.boolean());
+
+const numberLikeSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    const normalized = value.trim();
+    if (!normalized) {
+      return undefined;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : value;
+  }
+
+  return value;
+}, z.number().int().optional());
+
+const positionLikeSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    const normalized = value.trim();
+    if (!normalized) {
+      return undefined;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : value;
+  }
+
+  return value;
+}, z.number().int().min(0).max(4));
+
+const nonNegativeNumberLikeSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    const normalized = value.trim();
+    if (!normalized) {
+      return undefined;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : value;
+  }
+
+  return value;
+}, z.number().int().min(0).optional());
+
+const stringArrayLikeSchema = z.preprocess((value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // 不是 JSON 数组时，按常见分隔符拆分。
+  }
+
+  return trimmed
+    .replace(/^\[/, "")
+    .replace(/\]$/, "")
+    .split(/[、,\s]+/)
+    .map((item) => item.trim().replace(/^["']|["']$/g, ""))
+    .filter(Boolean);
+}, z.array(z.string().min(1)));
+
 export const worldEntryResponseSchema = z
   .array(
     z.object({
       comment: z.string().min(1),
       content: z.string().min(1),
-      keywords: z.array(z.string().min(1)).default([]),
+      keywords: stringArrayLikeSchema.default([]),
+      keys: stringArrayLikeSchema.optional(),
+      constant: booleanLikeSchema.optional(),
+      position: positionLikeSchema.optional(),
+      depth: nonNegativeNumberLikeSchema.optional(),
+      insertion_order: numberLikeSchema.optional(),
     }),
   )
   .min(1)

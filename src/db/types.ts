@@ -38,6 +38,11 @@ export interface WorldEntry {
   title: string;
   content: string;
   keywords: string[];
+  keys?: string[];
+  constant?: boolean;
+  position?: number;
+  depth?: number;
+  insertionOrder?: number;
   enabled: boolean;
   createdAt: string;
   updatedAt: string;

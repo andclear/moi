@@ -1,4 +1,4 @@
-import { BookMarked, GitMerge, Lightbulb, Plus, Trash2, WandSparkles } from "lucide-react";
+import { Bug, GitMerge, Lightbulb, Plus, Trash2, WandSparkles, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
@@ -13,12 +13,11 @@ import { useSettingsStore } from "@/features/settings/settingsStore";
 import {
   confirmWorldEntry,
   createWorldEntryCandidates,
-  formatWorldInfoForDossier,
-  getConfirmedWorldEntries,
   removeWorldEntry,
   syncWorldInfoToDossier,
   upsertWorldEntry,
 } from "@/features/world/worldStore";
+import { extractCurrentWorldInfo } from "@/prompts/worldPrompts";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
@@ -31,6 +30,7 @@ export function StepWorld() {
   const [userRequest, setUserRequest] = useState("");
   const [entryCount, setEntryCount] = useState(3);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
   const { load: loadSettings, getAvailability } = useSettingsStore();
   const { hydrateFromProject } = useDossierStore();
   const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
@@ -66,8 +66,12 @@ export function StepWorld() {
     };
   }, [hydrateFromProject, projectId]);
 
-  const confirmedEntries = useMemo(() => {
-    return project ? getConfirmedWorldEntries(project) : [];
+  const currentWorldInfo = useMemo(() => {
+    return project ? extractCurrentWorldInfo(project) : "尚未明确";
+  }, [project]);
+
+  const debugWorldEntriesJson = useMemo(() => {
+    return JSON.stringify(project?.worldEntries ?? [], null, 2);
   }, [project]);
 
   async function persistProject(nextProject: Project, snapshotTitle?: string, generationIds: string[] = []) {
@@ -109,7 +113,8 @@ export function StepWorld() {
       const result = await generateWorldEntries({
         projectId: project.id,
         dossierMarkdown: project.dossier.markdown,
-        confirmedEntries,
+        currentWorldInfo,
+        existingWorldEntries: project.worldEntries,
         userRequest: trimmedRequest,
         entryCount,
         signal: controller.signal,
@@ -202,8 +207,8 @@ export function StepWorld() {
           </p>
         </section>
 
-        <section className="echo-readable-shell">
-          <div className="echo-readable-main">
+        <section className="grid gap-6">
+          <div className="grid gap-6">
             <div className="echo-section-card">
               <label className="block">
                 <span className="font-display text-xl font-black text-[var(--echo-paper)]">
@@ -307,21 +312,43 @@ export function StepWorld() {
             </div>
           </div>
 
-          <aside className="echo-side-panel">
-            <BookMarked aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
-            <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
-              已确认 WorldInfo
-            </h2>
-            <p className="mt-3 max-h-[52vh] overflow-auto whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--echo-muted)]">
-              {formatWorldInfoForDossier(project.worldEntries)}
-            </p>
-            <Button type="button" className="mt-5 w-full" onClick={() => void handleNextStep()}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Button type="button" variant="secondary" onClick={() => setIsDebugOpen(true)}>
+              <Bug aria-hidden="true" size={16} />
+              调试
+            </Button>
+            <Button type="button" onClick={() => void handleNextStep()}>
               <WandSparkles aria-hidden="true" size={16} />
               进入开场白
             </Button>
-          </aside>
+          </div>
         </section>
       </div>
+      {isDebugOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(70,58,42,0.42)] p-4">
+          <section className="w-full max-w-5xl border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_8px_24px_rgba(61,52,40,0.18)]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                  世界书 JSON 调试
+                </p>
+                <p className="mt-1 font-mono text-xs text-[var(--echo-muted)]">
+                  当前项目内保存的全部世界书条目。
+                </p>
+              </div>
+              <Button type="button" size="icon" variant="ghost" onClick={() => setIsDebugOpen(false)}>
+                <X aria-hidden="true" size={18} />
+                <span className="sr-only">关闭</span>
+              </Button>
+            </div>
+            <textarea
+              readOnly
+              value={debugWorldEntriesJson}
+              className="mt-4 h-[62vh] w-full resize-none border-2 border-[var(--animal-border-light)] bg-[rgba(255,255,255,0.5)] p-4 font-mono text-xs leading-6 text-[var(--echo-text)] outline-none"
+            />
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

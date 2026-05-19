@@ -10,6 +10,11 @@ export interface GeneratedWorldEntryInput {
   comment: string;
   content: string;
   keywords?: string[];
+  keys?: string[];
+  constant?: boolean;
+  position?: number;
+  depth?: number;
+  insertion_order?: number;
 }
 
 function replaceDossierSection(markdown: string, section: string, content: string) {
@@ -60,7 +65,12 @@ export function createWorldEntryCandidates(
       projectId,
       title: entry.comment,
       content: entry.content,
-      keywords: entry.keywords ?? [],
+      keywords: entry.keys ?? entry.keywords ?? [],
+      keys: entry.keys ?? entry.keywords ?? [],
+      constant: entry.constant,
+      position: entry.position,
+      depth: entry.depth,
+      insertionOrder: entry.insertion_order,
       enabled: false,
       createdAt: now,
       updatedAt: now,

@@ -33,7 +33,10 @@ function selectedGreeting(greetings: GreetingVariant[]) {
 }
 
 function buildWorldEntry(entry: WorldEntry, index: number) {
-  const keys = entry.keywords.length > 0 ? entry.keywords : [entry.title].filter(Boolean);
+  const generatedKeys = entry.keys?.length ? entry.keys : entry.keywords;
+  const keys = generatedKeys.length > 0 ? generatedKeys : [entry.title].filter(Boolean);
+  const position = entry.position ?? 1;
+  const depth = entry.depth ?? 4;
 
   return {
     id: index,
@@ -41,19 +44,19 @@ function buildWorldEntry(entry: WorldEntry, index: number) {
     secondary_keys: [],
     comment: entry.title,
     content: entry.content,
-    constant: false,
+    constant: entry.constant ?? false,
     selective: keys.length > 0,
-    insertion_order: 100 + index,
+    insertion_order: entry.insertionOrder ?? 100 + index,
     enabled: entry.enabled,
-    position: 1,
+    position,
     use_regex: false,
     extensions: {
-      position: 1,
+      position,
       exclude_recursion: false,
       display_index: index,
       probability: 100,
       useProbability: true,
-      depth: 4,
+      depth,
       selectiveLogic: 0,
       outlet_name: "",
       group: "",

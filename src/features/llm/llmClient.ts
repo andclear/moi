@@ -439,7 +439,8 @@ export async function generateDossierTextRewrite(input: {
 export async function generateWorldEntries(input: {
   projectId: string;
   dossierMarkdown: string;
-  confirmedEntries: WorldEntry[];
+  currentWorldInfo: string;
+  existingWorldEntries: WorldEntry[];
   userRequest: string;
   entryCount: number;
   signal?: AbortSignal;
@@ -447,7 +448,13 @@ export async function generateWorldEntries(input: {
   const result = await callLlm({
     projectId: input.projectId,
     type: "world",
-    messages: buildWorldEntryMessages(input),
+    messages: buildWorldEntryMessages({
+      dossierMarkdown: input.dossierMarkdown,
+      currentWorldInfo: input.currentWorldInfo,
+      existingWorldEntries: input.existingWorldEntries,
+      userRequest: input.userRequest,
+      entryCount: input.entryCount,
+    }),
     inputSummary: `生成 ${input.entryCount} 条 WorldInfo：${input.userRequest.slice(0, 80)}`,
     signal: input.signal,
   });
