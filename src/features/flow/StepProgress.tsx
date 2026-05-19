@@ -41,7 +41,6 @@ export function StepProgress({
         </div>
         <ol className="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label="创作流程进度">
           {steps.map((step, index) => {
-            const Icon = step.icon;
             const isDone = completedStepIds.includes(step.id) || index < currentIndex;
             const isCurrent = step.id === currentStepId;
             return (
@@ -60,7 +59,7 @@ export function StepProgress({
                   }}
                   aria-disabled={!isDone && !isCurrent}
                   className={cn(
-                    "inline-flex min-h-0 items-center gap-2 rounded-[var(--animal-radius-pill)] border-2 px-3 py-2 text-xs font-black transition-all duration-200",
+                    "inline-flex min-h-0 items-center rounded-[var(--animal-radius-pill)] border-2 px-3 py-2 text-xs font-black transition-all duration-200",
                     isDone || isCurrent ? "cursor-pointer" : "cursor-default",
                     isCurrent
                       ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]"
@@ -70,9 +69,7 @@ export function StepProgress({
                       "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-text)]",
                   )}
                 >
-                  <Icon aria-hidden="true" size={14} />
                   <span className="whitespace-nowrap">{step.label}</span>
-                  {isDone ? <Check aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={11} />}
                 </Link>
               </li>
             );
