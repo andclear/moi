@@ -24,17 +24,24 @@ export function StepProgress({
   const [pendingTarget, setPendingTarget] = useState<FlowStep | null>(null);
 
   if (compact) {
+    const unlockedSteps = steps.filter((step, index) => {
+      const isDone = completedStepIds.includes(step.id) || index < currentIndex;
+      const isCurrent = step.id === currentStepId;
+      return isDone || isCurrent;
+    });
+
     return (
       <>
         <ol
-          className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+          className="flex gap-2 overflow-x-auto pb-1"
           aria-label="创作流程进度"
         >
-          {steps.map((step, index) => {
+          {unlockedSteps.map((step) => {
+            const index = steps.findIndex((item) => item.id === step.id);
             const isDone = completedStepIds.includes(step.id) || index < currentIndex;
             const isCurrent = step.id === currentStepId;
             return (
-              <li key={step.id}>
+              <li key={step.id} className="shrink-0">
                 <Link
                   to={`/workspace/current/${step.id}`}
                   onClick={(event) => {
@@ -49,14 +56,14 @@ export function StepProgress({
                   }}
                   aria-disabled={!isDone && !isCurrent}
                   className={cn(
-                    "flex min-h-9 w-full items-center justify-center rounded-[var(--animal-radius-pill)] border-2 px-3 py-1.5 text-center text-[11px] font-black transition-all duration-200 sm:text-xs",
+                    "flex min-h-9 min-w-28 items-center justify-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-1.5 text-center text-xs font-black transition-all duration-200",
                     isDone || isCurrent ? "cursor-pointer" : "cursor-default",
                     isCurrent
                       ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]"
-                      : "border-[var(--animal-border)] bg-[rgba(255,255,255,0.28)] text-[var(--animal-text-disabled)]",
+                      : "border-[var(--animal-border)] bg-[rgba(255,255,255,0.28)] text-[var(--animal-border)]",
                     isDone &&
                       !isCurrent &&
-                      "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-text-muted)]",
+                      "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-primary-active)]",
                   )}
                 >
                   <span className="min-w-0 truncate whitespace-nowrap leading-tight">{step.label}</span>
