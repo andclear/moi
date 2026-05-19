@@ -115,6 +115,9 @@ export function StepQuestionnaire() {
   const designNote = streamedContent
     ? extractStreamingDesignNote(streamedContent)
     : questionnaire?.designNote || "";
+  const isQuestionnaireRunning =
+    questionnaireTask.status === "running" || questionnaireTask.status === "pending";
+  const shouldReplayDesignNote = Boolean(designNote) && !streamedContent && !isQuestionnaireRunning;
 
   const normalizedAnswers = useMemo(() => {
     if (!questionnaire) {
@@ -344,10 +347,12 @@ export function StepQuestionnaire() {
             className="echo-questionnaire-collapse"
             answer={
               <div className="min-h-20 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
-                {designNote ? (
+                {shouldReplayDesignNote ? (
                   <Typewriter speed={18} trigger={designNote}>
                     {designNote}
                   </Typewriter>
+                ) : designNote ? (
+                  designNote
                 ) : (
                   "正在登岛，领取小问卷中...."
                 )}
@@ -476,6 +481,7 @@ export function StepQuestionnaire() {
                   errorMessage={errorMessage ?? questionnaireTask.errorMessage}
                   onGenerate={handleGenerateQuestionnaire}
                   onCancel={() => cancel(questionnaireKey)}
+                  useAnimalLoadingButton
                 />
               </div>
             </section>

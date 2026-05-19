@@ -132,6 +132,11 @@ input[type="radio"]:focus {
   box-shadow: 0 4px 0 0 var(--animal-shadow-input) !important;
 }
 
+.echo-cancellable-loading-button {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
 .echo-workspace-page {
   min-height: calc(100vh - 9rem);
   padding: clamp(1rem, 2vw, 1.75rem);

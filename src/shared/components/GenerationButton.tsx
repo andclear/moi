@@ -1,3 +1,4 @@
+import { Button as AnimalButton } from "animal-island-ui";
 import { Play, RotateCcw, Square } from "lucide-react";
 
 import { Button, type ButtonProps } from "@/shared/components/ui/button";
@@ -11,6 +12,7 @@ interface GenerationButtonProps extends Omit<ButtonProps, "onClick"> {
   retryLabel?: string;
   onGenerate: () => void;
   onCancel?: () => void;
+  useAnimalLoadingButton?: boolean;
 }
 
 export function GenerationButton({
@@ -21,6 +23,7 @@ export function GenerationButton({
   retryLabel = "重新生成",
   onGenerate,
   onCancel,
+  useAnimalLoadingButton = false,
   className,
   disabled,
   ...props
@@ -28,13 +31,35 @@ export function GenerationButton({
   const isRunning = status === "running" || status === "pending";
   const isFailed = status === "failed";
 
+  if (isRunning && useAnimalLoadingButton) {
+    return (
+      <div className="space-y-2">
+        <AnimalButton
+          htmlType="button"
+          type="primary"
+          loading={true}
+          disabled={disabled || (isRunning && !onCancel)}
+          className={cn("echo-cancellable-loading-button min-w-40", className)}
+          onClick={onCancel}
+        >
+          {onCancel ? "取消生成" : runningLabel}
+        </AnimalButton>
+        {errorMessage && (
+          <p className="max-w-xl font-mono text-xs leading-5 text-[var(--echo-stamp)]">
+            {errorMessage}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <Button
         type="button"
         onClick={isRunning ? onCancel : onGenerate}
         disabled={disabled || (isRunning && !onCancel)}
-        loading={isRunning}
+        loading={isRunning ? true : false}
         className={cn("min-w-40", className)}
         {...props}
       >
