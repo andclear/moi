@@ -42,7 +42,7 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
         end,
         selected_code.usage_limit
       from selected_code
-      returning id, expires_at, usage_limit, usage_count
+      returning id, activation_code_id, expires_at, usage_limit, usage_count
     )
     update activation_codes
     set
@@ -51,9 +51,7 @@ export async function activateCode(code: string, sql = createPostgresClient()) {
       expires_at = inserted_session.expires_at,
       activation_session_id = inserted_session.id
     from inserted_session
-    where activation_codes.id = (
-      select activation_code_id from activation_sessions where id = inserted_session.id
-    )
+    where activation_codes.id = inserted_session.activation_code_id
     returning inserted_session.expires_at, inserted_session.usage_limit, inserted_session.usage_count
   `;
 

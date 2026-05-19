@@ -66,21 +66,26 @@ export async function listActivationCodes(
 
   const rows = await sql`
     select
-      id,
-      code,
+      activation_codes.id,
+      activation_codes.code,
       case
-        when status = 'used' and expires_at is not null and expires_at <= now() then 'expired'
-        else status
+        when activation_codes.status = 'used'
+          and activation_codes.expires_at is not null
+          and activation_codes.expires_at <= now()
+          then 'expired'
+        else activation_codes.status
       end as status,
-      created_at,
-      activated_at,
-      expires_at,
-      duration_hours,
+      activation_codes.created_at,
+      activation_codes.activated_at,
+      activation_codes.expires_at,
+      activation_codes.duration_hours,
       coalesce(activation_sessions.usage_limit, activation_codes.usage_limit) as usage_limit,
       coalesce(activation_sessions.usage_count, activation_codes.usage_count) as usage_count,
       case
-        when status = 'used' and expires_at is not null and expires_at > now()
-          then floor(extract(epoch from (expires_at - now())))::integer
+        when activation_codes.status = 'used'
+          and activation_codes.expires_at is not null
+          and activation_codes.expires_at > now()
+          then floor(extract(epoch from (activation_codes.expires_at - now())))::integer
         else null
       end as remaining_seconds
     from activation_codes
@@ -88,11 +93,11 @@ export async function listActivationCodes(
       on activation_sessions.id = activation_codes.activation_session_id
     where
       (${status} = 'all')
-      or (${status} = 'unused' and status = 'unused')
-      or (${status} = 'used' and status = 'used')
+      or (${status} = 'unused' and activation_codes.status = 'unused')
+      or (${status} = 'used' and activation_codes.status = 'used')
     order by
-      case when status = 'unused' then 0 else 1 end,
-      created_at desc
+      case when activation_codes.status = 'unused' then 0 else 1 end,
+      activation_codes.created_at desc
     limit ${pageSize}
     offset ${offset}
   `;
@@ -101,8 +106,8 @@ export async function listActivationCodes(
     from activation_codes
     where
       (${status} = 'all')
-      or (${status} = 'unused' and status = 'unused')
-      or (${status} = 'used' and status = 'used')
+      or (${status} = 'unused' and activation_codes.status = 'unused')
+      or (${status} = 'used' and activation_codes.status = 'used')
   `;
   const total = Number((totalRows[0] as { total?: number | string } | undefined)?.total ?? 0);
 
