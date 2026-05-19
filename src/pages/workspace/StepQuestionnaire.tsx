@@ -481,7 +481,7 @@ export function StepQuestionnaire() {
             </section>
           )}
         </div>
-        <div className="-mx-5 -mb-5 mt-8 overflow-hidden sm:-mx-9 sm:-mb-9">
+        <div className="echo-questionnaire-footer-wrap -mx-5 -mb-5 mt-8 overflow-hidden sm:-mx-9 sm:-mb-9">
           <Footer type="sea" className="echo-questionnaire-footer" />
         </div>
       </article>

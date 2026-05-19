@@ -116,9 +116,14 @@ input[type="radio"]:focus {
 .echo-questionnaire-footer {
   width: 100% !important;
   min-width: 100% !important;
+  background-color: var(--animal-bg) !important;
   background-position: bottom left !important;
   background-repeat: repeat-x !important;
   background-size: auto 100% !important;
+}
+
+.echo-questionnaire-footer-wrap {
+  background: var(--animal-bg);
 }
 
 .echo-questionnaire-collapse {
