@@ -385,12 +385,13 @@ export async function generateProfileDossierUpdate(input: {
 export async function generateCharacterProfileYaml(input: {
   projectId: string;
   characterProfile: string;
+  previousCharacterInfo?: string;
   signal?: AbortSignal;
 }) {
   const result = await callLlm({
     projectId: input.projectId,
     type: "character_profile",
-    messages: buildCharacterProfileYamlMessages(input.characterProfile),
+    messages: buildCharacterProfileYamlMessages(input.characterProfile, input.previousCharacterInfo),
     inputSummary: "生成角色信息 YAML",
     signal: input.signal,
   });

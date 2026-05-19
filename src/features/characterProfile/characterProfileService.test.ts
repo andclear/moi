@@ -57,4 +57,31 @@ describe("characterProfileService", () => {
       errorMessage: "模型失败",
     });
   });
+
+  it("重新生成角色信息时保留用户已保存的姓名", async () => {
+    const project = await projectRepository.create({ title: "角色信息保名测试" });
+    await projectRepository.update(project.id, {
+      characterProfile: {
+        yaml: '姓名: "陈露"\n别名: "露露"',
+        status: "succeeded",
+        retryCount: 0,
+        updatedAt: project.updatedAt,
+      },
+    });
+    mockedGenerateCharacterProfileYaml.mockResolvedValueOnce({
+      taskId: "generation_name",
+      yaml: '姓名: "林雾"\n别名: "露露"',
+      response: { content: '姓名: "林雾"\n别名: "露露"' },
+    });
+
+    const updatedProject = await generateAndSaveCharacterProfile(project.id, "## 核心人格\n\n沉默");
+
+    expect(mockedGenerateCharacterProfileYaml).toHaveBeenCalledWith(
+      expect.objectContaining({
+        previousCharacterInfo: '姓名: "陈露"\n别名: "露露"',
+      }),
+    );
+    expect(updatedProject?.characterProfile?.yaml).toContain('姓名: "陈露"');
+    expect(updatedProject?.characterProfile?.yaml).not.toContain('姓名: "林雾"');
+  });
 });

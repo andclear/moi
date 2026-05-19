@@ -74,11 +74,22 @@ const CHARACTER_PROFILE_PROMPT_LINES = [
 
 const CHARACTER_PROFILE_PROMPT = CHARACTER_PROFILE_PROMPT_LINES.join("\n");
 
-export function buildCharacterProfileYamlMessages(characterProfile: string): LlmMessage[] {
+export function buildCharacterProfileYamlMessages(
+  characterProfile: string,
+  previousCharacterInfo = "",
+): LlmMessage[] {
   return [
     {
       role: "user",
-      content: CHARACTER_PROFILE_PROMPT.replace("{{character_profile}}", characterProfile),
+      content: [
+        CHARACTER_PROFILE_PROMPT.replace("{{character_profile}}", characterProfile),
+        "",
+        "当前已有的角色信息 YAML：",
+        previousCharacterInfo || "尚未生成",
+        "",
+        "重要保持规则：如果“当前已有的角色信息 YAML”中已经存在 姓名 字段，新的 YAML 必须原样保留这个姓名，不得改名、换名、扩写、翻译或重新取名。用户手动保存过的姓名是最高优先级事实。",
+        "如果已有 YAML 中存在年龄、性别、别名等用户明确保存过的基础字段，也必须优先保留，除非当前角色档案明确给出用户更新后的同一字段。",
+      ].join("\n"),
     },
   ];
 }

@@ -83,10 +83,6 @@ export function StepWorld() {
     };
   }, [hydrateFromProject, projectId]);
 
-  const currentWorldInfo = useMemo(() => {
-    return project ? extractCurrentWorldInfo(project) : "尚未明确";
-  }, [project]);
-
   const debugWorldEntriesJson = useMemo(() => {
     return formatWorldEntriesJson(project?.worldEntries ?? []);
   }, [project]);
@@ -135,17 +131,22 @@ export function StepWorld() {
     setRunning(generationKey, controller);
 
     try {
+      const latestProject = await projectService.resolveProject(project.id);
+      const generationProject = latestProject ?? project;
+      if (latestProject) {
+        setProject(latestProject);
+      }
       const result = await generateWorldEntries({
-        projectId: project.id,
-        dossierMarkdown: project.dossier.markdown,
-        characterInfo: project.characterProfile?.yaml ?? "尚未生成",
-        currentWorldInfo,
-        existingWorldEntries: project.worldEntries,
+        projectId: generationProject.id,
+        dossierMarkdown: generationProject.dossier.markdown,
+        characterInfo: generationProject.characterProfile?.yaml ?? "尚未生成",
+        currentWorldInfo: extractCurrentWorldInfo(generationProject),
+        existingWorldEntries: generationProject.worldEntries,
         userRequest: trimmedRequest,
         entryCount,
         signal: controller.signal,
       });
-      const candidates = createWorldEntryCandidates(project.id, result.data);
+      const candidates = createWorldEntryCandidates(generationProject.id, result.data);
       setPendingEntries((entries) => [...candidates, ...entries]);
       setSucceeded(generationKey, result.taskId);
     } catch (error) {
@@ -177,12 +178,17 @@ export function StepWorld() {
     setRunning(actionKey, controller);
 
     try {
+      const latestProject = await projectService.resolveProject(project.id);
+      const generationProject = latestProject ?? project;
+      if (latestProject) {
+        setProject(latestProject);
+      }
       const result = await generateWorldEntries({
-        projectId: project.id,
-        dossierMarkdown: project.dossier.markdown,
-        characterInfo: project.characterProfile?.yaml ?? "尚未生成",
-        currentWorldInfo,
-        existingWorldEntries: project.worldEntries,
+        projectId: generationProject.id,
+        dossierMarkdown: generationProject.dossier.markdown,
+        characterInfo: generationProject.characterProfile?.yaml ?? "尚未生成",
+        currentWorldInfo: extractCurrentWorldInfo(generationProject),
+        existingWorldEntries: generationProject.worldEntries,
         userRequest:
           mode === "deepen"
             ? buildWorldDeepenRequest(entry)
@@ -203,7 +209,7 @@ export function StepWorld() {
         mode === "deepen"
           ? entry.enabled
             ? syncWorldInfoToDossier(
-                upsertWorldEntry(project, {
+                upsertWorldEntry(generationProject, {
                   ...entry,
                   title: candidate.title,
                   content: candidate.content,
@@ -216,9 +222,9 @@ export function StepWorld() {
                 result.taskId,
               )
             : null
-          : {
-              ...project,
-              worldEntries: entry.enabled ? [candidate, ...project.worldEntries] : project.worldEntries,
+            : {
+              ...generationProject,
+              worldEntries: entry.enabled ? [candidate, ...generationProject.worldEntries] : generationProject.worldEntries,
             };
 
       if (mode === "deepen" && !entry.enabled) {

@@ -5,6 +5,40 @@ import { nowIso } from "@/shared/lib/date";
 
 const MAX_RETRY_COUNT = 3;
 
+function readTopLevelYamlValue(yaml: string, key: string) {
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = new RegExp(`^${escapedKey}:\\s*(.*)$`, "m").exec(yaml);
+  if (!match) {
+    return "";
+  }
+
+  return match[1].trim().replace(/^["']|["']$/g, "");
+}
+
+function quoteYamlValue(value: string) {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+function replaceTopLevelYamlValue(yaml: string, key: string, value: string) {
+  if (!value.trim()) {
+    return yaml;
+  }
+
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const linePattern = new RegExp(`^${escapedKey}:\\s*.*$`, "m");
+  const nextLine = `${key}: ${quoteYamlValue(value.trim())}`;
+  if (linePattern.test(yaml)) {
+    return yaml.replace(linePattern, nextLine);
+  }
+
+  return `${nextLine}\n${yaml}`;
+}
+
+function preserveSavedIdentity(nextYaml: string, previousYaml: string) {
+  const savedName = readTopLevelYamlValue(previousYaml, "姓名");
+  return replaceTopLevelYamlValue(nextYaml, "姓名", savedName);
+}
+
 function createGeneratingState(retryCount: number, yaml = ""): CharacterProfileDocument {
   return {
     yaml,
@@ -36,9 +70,10 @@ export async function generateAndSaveCharacterProfile(
       const result = await generateCharacterProfileYaml({
         projectId,
         characterProfile: dossierMarkdown,
+        previousCharacterInfo: previousYaml,
       });
       return updateCharacterProfile(projectId, {
-        yaml: result.yaml,
+        yaml: preserveSavedIdentity(result.yaml, previousYaml),
         status: "succeeded",
         retryCount: attempt,
         generationId: result.taskId,
