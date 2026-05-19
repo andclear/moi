@@ -33,6 +33,7 @@
   --animal-success: #6fba2c;
   --animal-warning: #f5c31c;
   --animal-error: #e05a5a;
+  --animal-error-hover: #e87878;
   --animal-error-active: #c94444;
   --animal-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --animal-duration-fast: 150ms;

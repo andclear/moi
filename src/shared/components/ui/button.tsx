@@ -51,24 +51,16 @@ export function Button({
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   const resolvedVariant = variant ?? "primary";
-  const dangerStyles =
-    danger && resolvedVariant === "primary"
-      ? "!border-[var(--animal-error)] !bg-[var(--animal-error)] !text-white !shadow-[0_5px_0_0_var(--animal-error-active)] hover:!bg-[var(--animal-error-hover)] hover:!shadow-[0_6px_0_0_var(--animal-error-active)] active:!bg-[var(--animal-error-active)] active:!shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:!outline-[var(--animal-error-active)]"
-      : danger && resolvedVariant === "secondary"
-        ? "!border-[var(--animal-error)] !bg-[var(--animal-bg-content)] !text-[var(--animal-error)] !shadow-[0_4px_0_0_var(--animal-error-active)] hover:!border-[var(--animal-error-hover)] hover:!text-[var(--animal-error-hover)] hover:!shadow-[0_5px_0_0_var(--animal-error-active)] active:!shadow-[0_1px_0_0_var(--animal-error-active)] focus-visible:!outline-[var(--animal-error)]"
-        : danger && resolvedVariant === "ghost"
-          ? "!text-[var(--animal-error)] hover:!bg-[rgba(224,90,90,0.12)] hover:!text-[var(--animal-error-active)] focus-visible:!outline-[var(--animal-error)]"
-          : "";
-
   if (asChild) {
     return (
       <Comp
         className={cn(
           buttonVariants({ variant, size, className }),
-          dangerStyles,
           loading && "animal-button-loading relative",
         )}
         aria-busy={loading || undefined}
+        data-danger={danger || undefined}
+        data-variant={resolvedVariant}
         data-loading={loading || undefined}
         {...props}
       >
@@ -81,10 +73,11 @@ export function Button({
     <Comp
       className={cn(
         buttonVariants({ variant, size, className }),
-        dangerStyles,
         loading && "animal-button-loading relative",
       )}
       aria-busy={loading || undefined}
+      data-danger={danger || undefined}
+      data-variant={resolvedVariant}
       disabled={disabled}
       data-loading={loading || undefined}
       {...props}
