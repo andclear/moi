@@ -25,7 +25,7 @@ export async function proxyPresetLlm(input: { sessionToken: string; messages: Ll
 
   const apiBaseUrl = getEnv("PRESET_API_BASE_URL");
   const apiKey = getEnv("PRESET_API_KEY");
-  const model = channel.model || getEnv("PRESET_MODEL");
+  const model = getEnv("PRESET_MODEL");
   if (!apiBaseUrl || !apiKey || !model) {
     throw new Error("服务端预置模型配置不完整。");
   }

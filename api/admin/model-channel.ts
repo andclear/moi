@@ -18,7 +18,7 @@ export default async function handler(request: Request) {
     const payload = (await request.json()) as { presetEnabled?: boolean; model?: string };
     const settings = await saveModelChannelSettings({
       presetEnabled: Boolean(payload.presetEnabled),
-      model: payload.model?.trim() || "preset-model",
+      model: payload.model?.trim() || "预置调用",
       updatedBy: "admin",
     });
     await writeAdminAuditLog({

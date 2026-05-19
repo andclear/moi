@@ -44,7 +44,7 @@ export function AdminLoginPage() {
   const [codes, setCodes] = useState<ActivationCodeRow[]>([]);
   const [newCodes, setNewCodes] = useState<string[]>([]);
   const [presetEnabled, setPresetEnabled] = useState(false);
-  const [model, setModel] = useState("preset-model");
+  const [model, setModel] = useState("预置调用");
   const [quantity, setQuantity] = useState(1);
   const [durationHours, setDurationHours] = useState(72);
   const [usageLimit, setUsageLimit] = useState(100);
@@ -258,12 +258,15 @@ export function AdminLoginPage() {
         </h1>
         <div className="mt-6 grid gap-4">
           <label className="grid gap-2 font-mono text-sm text-[var(--echo-muted)]">
-            模型名称
+            预设名称
             <input
               value={model}
               onChange={(event) => setModel(event.target.value)}
               className="h-11 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.44)] px-3 text-[var(--echo-paper)] outline-none"
             />
+            <span className="text-xs text-[var(--echo-muted)]">
+              仅用于前端展示，真实模型名称读取服务端 PRESET_MODEL。
+            </span>
           </label>
           <button
             type="button"
