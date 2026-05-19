@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 import type { DossierBlockMeta, Project } from "@/db/types";
-import { projectRepository } from "@/db/repositories/projectRepository";
+import { projectService } from "@/db/services/projectService";
 import { autoSaveService } from "@/db/services/autoSaveService";
 import { nowIso } from "@/shared/lib/date";
 import {
@@ -37,7 +37,7 @@ export const useDossierStore = create<DossierState>((set, get) => ({
 
   async loadProject(projectId) {
     set({ saveStatus: "loading", errorMessage: null });
-    const project = await projectRepository.getById(projectId);
+    const project = await projectService.resolveProject(projectId);
     if (!project) {
       set({ saveStatus: "error", errorMessage: "没有找到这份岛民记录。" });
       return;
@@ -50,7 +50,7 @@ export const useDossierStore = create<DossierState>((set, get) => ({
         : buildDossierBlockMeta(project.dossier.markdown, [], "ai_inferred", now);
 
     set({
-      projectId,
+      projectId: project.id,
       markdown: project.dossier.markdown,
       blocks,
       saveStatus: "saved",

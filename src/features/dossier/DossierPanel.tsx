@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import type { Project } from "@/db/types";
-import { projectRepository } from "@/db/repositories/projectRepository";
+import { projectService } from "@/db/services/projectService";
 import { CharacterProfileModal } from "@/features/characterProfile/CharacterProfileModal";
 import {
   generateAndSaveCharacterProfile,
@@ -33,7 +33,7 @@ export function DossierPanel() {
         setProject(null);
         return;
       }
-      const nextProject = await projectRepository.getById(projectId);
+      const nextProject = await projectService.resolveProject(projectId);
       if (!ignored) {
         setProject(nextProject ?? null);
       }
