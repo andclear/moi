@@ -17,7 +17,11 @@ import {
   syncWorldInfoToDossier,
   upsertWorldEntry,
 } from "@/features/world/worldStore";
-import { extractCurrentWorldInfo } from "@/prompts/worldPrompts";
+import {
+  buildWorldAssociationRequest,
+  buildWorldDeepenRequest,
+  extractCurrentWorldInfo,
+} from "@/prompts/worldPrompts";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
@@ -36,6 +40,7 @@ export function StepWorld() {
   const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
   const generationKey = project ? `world:${project.id}:entries` : "world:pending";
   const generationTask = useGenerationStore((state) => state.getTask(generationKey));
+  const generationTasks = useGenerationStore((state) => state.tasks);
   const setRunning = useGenerationStore((state) => state.setRunning);
   const setSucceeded = useGenerationStore((state) => state.setSucceeded);
   const setFailed = useGenerationStore((state) => state.setFailed);
@@ -135,6 +140,78 @@ export function StepWorld() {
       const message = error instanceof Error ? error.message : "世界书生成失败。";
       setErrorMessage(message);
       setFailed(generationKey, message);
+    }
+  }
+
+  async function handleRefineEntry(entry: WorldEntry, mode: "deepen" | "associate") {
+    if (!project) {
+      return;
+    }
+
+    const availability = getAvailability();
+    if (!availability.available) {
+      setErrorMessage("尚未连接模型。请先在设置中配置自有 API，或激活预置调用模式。");
+      return;
+    }
+
+    const actionKey = `world:${project.id}:${mode}:${entry.id}`;
+    const controller = new AbortController();
+    setErrorMessage(null);
+    setRunning(actionKey, controller);
+
+    try {
+      const result = await generateWorldEntries({
+        projectId: project.id,
+        dossierMarkdown: project.dossier.markdown,
+        characterInfo: project.characterProfile?.yaml ?? "尚未生成",
+        currentWorldInfo,
+        existingWorldEntries: project.worldEntries,
+        userRequest:
+          mode === "deepen"
+            ? buildWorldDeepenRequest(entry)
+            : buildWorldAssociationRequest(entry),
+        entryCount: 1,
+        signal: controller.signal,
+      });
+      const [candidate] = createWorldEntryCandidates(project.id, result.data);
+      if (!candidate) {
+        throw new Error("没有生成可用的 WorldInfo 条目。");
+      }
+
+      const nextProject =
+        mode === "deepen"
+          ? syncWorldInfoToDossier(
+              upsertWorldEntry(project, {
+                ...entry,
+                title: candidate.title,
+                content: candidate.content,
+                keywords: candidate.keywords,
+                keys: candidate.keys,
+                constant: candidate.constant,
+                position: candidate.position,
+                depth: candidate.depth,
+                insertionOrder: candidate.insertionOrder,
+              }),
+              result.taskId,
+            )
+          : {
+              ...project,
+              worldEntries: [candidate, ...project.worldEntries],
+            };
+
+      await persistProject(
+        nextProject,
+        mode === "deepen" ? `深挖 WorldInfo：${entry.title}` : `联想 WorldInfo：${entry.title}`,
+        [result.taskId],
+      );
+      setSucceeded(actionKey, result.taskId);
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+      const message = error instanceof Error ? error.message : "世界书生成失败。";
+      setErrorMessage(message);
+      setFailed(actionKey, message);
     }
   }
 
@@ -254,6 +331,15 @@ export function StepWorld() {
 
             <div className="grid gap-4">
               {project.worldEntries.map((entry) => (
+                (() => {
+                  const deepenKey = `world:${project.id}:deepen:${entry.id}`;
+                  const associationKey = `world:${project.id}:associate:${entry.id}`;
+                  const deepenTask = generationTasks[deepenKey];
+                  const associationTask = generationTasks[associationKey];
+                  const isDeepening = deepenTask?.status === "running" || deepenTask?.status === "pending";
+                  const isAssociating =
+                    associationTask?.status === "running" || associationTask?.status === "pending";
+                  return (
                 <article
                   key={entry.id}
                   className="echo-text-card"
@@ -296,13 +382,27 @@ export function StepWorld() {
                       <Plus aria-hidden="true" size={15} />
                       确认
                     </Button>
-                    <Button type="button" size="sm" variant="secondary" onClick={() => setUserRequest(`深挖「${entry.title}」：补出它的维护代价、历史伤痕与和 TA 的牵连。`)}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      loading={isDeepening}
+                      disabled={isAssociating}
+                      onClick={() => void handleRefineEntry(entry, "deepen")}
+                    >
                       <Lightbulb aria-hidden="true" size={15} />
-                      深挖
+                      {isDeepening ? "深挖中" : "深挖"}
                     </Button>
-                    <Button type="button" size="sm" variant="secondary" onClick={() => setUserRequest(`从「${entry.title}」联想一个缺失但必要的 WorldInfo 条目。`)}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      loading={isAssociating}
+                      disabled={isDeepening}
+                      onClick={() => void handleRefineEntry(entry, "associate")}
+                    >
                       <GitMerge aria-hidden="true" size={15} />
-                      联想
+                      {isAssociating ? "联想中" : "联想"}
                     </Button>
                     <Button type="button" size="sm" variant="ghost" danger onClick={() => void handleDiscardEntry(entry)}>
                       <Trash2 aria-hidden="true" size={15} />
@@ -310,6 +410,8 @@ export function StepWorld() {
                     </Button>
                   </div>
                 </article>
+                  );
+                })()
               ))}
             </div>
           </div>

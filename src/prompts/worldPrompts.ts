@@ -51,6 +51,47 @@ function formatExistingWorldEntriesJson(entries: WorldEntry[]) {
   );
 }
 
+function formatWorldEntryJson(entry: WorldEntry) {
+  return JSON.stringify(
+    {
+      comment: entry.title,
+      content: entry.content,
+      constant: entry.constant ?? false,
+      keys: entry.keys ?? entry.keywords,
+      position: entry.position ?? 1,
+      depth: entry.depth ?? "",
+      insertion_order: entry.insertionOrder ?? 100,
+    },
+    null,
+    2,
+  );
+}
+
+export function buildWorldDeepenRequest(entry: WorldEntry) {
+  return [
+    "任务类型：深挖并替换当前世界书条目。",
+    "",
+    `current_entry_json:\n${formatWorldEntryJson(entry)}`,
+    "",
+    "请把 current_entry_json 视为一个已经生成但质量还不够好的草稿：它可能过于概括、缺少具体场景、缺少来源、代价、磨损痕迹，或没有和角色档案形成足够清楚的联系。",
+    "你需要在不偏离原条目主题的前提下，重写为一条更具体、更有生活质感、更适合进入 SillyTavern WorldInfo 的条目。",
+    "只生成 1 条，用于替换 current_entry_json。不要扩展成新主题，不要生成额外条目。",
+    "可以优化 comment、content、keys、constant、position、depth、insertion_order，但必须保持它仍然是同一个世界设定方向的深化版本。",
+  ].join("\n");
+}
+
+export function buildWorldAssociationRequest(entry: WorldEntry) {
+  return [
+    "任务类型：根据当前世界书条目联想扩展，生成一个新的补充条目。",
+    "",
+    `current_entry_json:\n${formatWorldEntryJson(entry)}`,
+    "",
+    "请从 current_entry_json 中寻找尚未被写清的外延：它背后的制度来源、相关地点、负责维护的人、受影响的群体、遗留物、禁忌、例外规则、代价链条，或会影响角色行动的新矛盾。",
+    "生成的新条目必须和 current_entry_json 强相关，但不能复述或改写当前条目；它应该补上一个缺失但必要的世界设定拼图。",
+    "只生成 1 条新世界书条目。不要替换 current_entry_json，不要输出多个候选。",
+  ].join("\n");
+}
+
 export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMessage[] {
   const existingWorldEntriesJson = formatExistingWorldEntriesJson(input.existingWorldEntries);
 

@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { createProjectDraft } from "@/db/defaults";
-import { buildWorldEntryMessages, extractCurrentWorldInfo } from "@/prompts/worldPrompts";
+import {
+  buildWorldAssociationRequest,
+  buildWorldDeepenRequest,
+  buildWorldEntryMessages,
+  extractCurrentWorldInfo,
+} from "@/prompts/worldPrompts";
 import { worldEntryResponseSchema } from "@/schemas/llmResponseSchemas";
 import {
   confirmWorldEntry,
@@ -100,5 +105,25 @@ describe("worldStore", () => {
     expect(messages[0].content).not.toContain("enabled");
     expect(messages[1].content).toContain("姓名: 陈露");
     expect(messages[1].content).toContain("## 核心人格");
+  });
+
+  it("深挖和联想提示词分别要求替换原条目与生成新条目", () => {
+    const [entry] = createWorldEntryCandidates("project_world", [
+      {
+        comment: "雨港信号灯",
+        content: "【旧规矩还在运转】：信号灯每晚闪三次。",
+        keys: ["雨港", "信号灯"],
+      },
+    ]);
+
+    const deepenRequest = buildWorldDeepenRequest(entry);
+    const associationRequest = buildWorldAssociationRequest(entry);
+
+    expect(deepenRequest).toContain("替换当前世界书条目");
+    expect(deepenRequest).toContain("质量还不够好");
+    expect(deepenRequest).toContain("只生成 1 条，用于替换");
+    expect(associationRequest).toContain("生成一个新的补充条目");
+    expect(associationRequest).toContain("不能复述或改写当前条目");
+    expect(associationRequest).toContain("不要替换 current_entry_json");
   });
 });
