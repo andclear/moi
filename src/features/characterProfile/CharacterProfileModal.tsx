@@ -1,5 +1,6 @@
 import { Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Button as AnimalButton } from "animal-island-ui";
 
 import {
   parseCharacterProfileYaml,
@@ -319,15 +320,16 @@ export function CharacterProfileModal({
           <Button type="button" variant="ghost" onClick={onClose}>
             取消
           </Button>
-          <Button
-            type="button"
+          <AnimalButton
+            htmlType="button"
+            type="primary"
             loading={isRefreshing}
             disabled={isRefreshing}
             className="min-w-44 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)]"
             onClick={() => void onRefresh()}
           >
             {isRefreshing ? "更新中..." : "根据岛民档案更新"}
-          </Button>
+          </AnimalButton>
           <Button
             type="button"
             loading={isSaving}
