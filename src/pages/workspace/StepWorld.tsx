@@ -88,7 +88,9 @@ export function StepWorld() {
   }, [project]);
 
   const visibleWorldEntries = useMemo(() => {
-    return [...pendingEntries, ...(project?.worldEntries ?? [])];
+    const savedEntries = project?.worldEntries ?? [];
+    const savedEntryIds = new Set(savedEntries.map((entry) => entry.id));
+    return [...pendingEntries.filter((entry) => !savedEntryIds.has(entry.id)), ...savedEntries];
   }, [pendingEntries, project?.worldEntries]);
 
   async function persistProject(nextProject: Project, snapshotTitle?: string, generationIds: string[] = []) {
@@ -224,7 +226,7 @@ export function StepWorld() {
             : null
             : {
               ...generationProject,
-              worldEntries: entry.enabled ? [candidate, ...generationProject.worldEntries] : generationProject.worldEntries,
+              worldEntries: generationProject.worldEntries,
             };
 
       if (mode === "deepen" && !entry.enabled) {
@@ -245,6 +247,8 @@ export function StepWorld() {
           ),
         );
       } else if (mode === "associate" && !entry.enabled) {
+        setPendingEntries((entries) => [candidate, ...entries]);
+      } else if (mode === "associate") {
         setPendingEntries((entries) => [candidate, ...entries]);
       } else {
         if (!nextProject) {
@@ -291,14 +295,12 @@ export function StepWorld() {
 
     if (!entry.enabled) {
       const confirmedEntry = { ...entry, enabled: true };
+      setPendingEntries((entries) => entries.filter((item) => item.id !== entry.id));
       const nextProject = syncWorldInfoToDossier({
         ...project,
         worldEntries: [confirmedEntry, ...project.worldEntries],
       });
-      const updatedProject = await persistProject(nextProject, `确认 WorldInfo：${entry.title}`);
-      if (updatedProject) {
-        setPendingEntries((entries) => entries.filter((item) => item.id !== entry.id));
-      }
+      await persistProject(nextProject, `确认 WorldInfo：${entry.title}`);
       return;
     }
 
@@ -427,7 +429,13 @@ export function StepWorld() {
                       onChange={(event) => void handleEditEntry(entry, { title: event.target.value })}
                       className="min-w-0 flex-1 bg-transparent font-display text-2xl font-black text-[var(--echo-paper)] outline-none"
                     />
-                    <span className="border border-[var(--echo-line)] px-2 py-1 font-mono text-[0.68rem] text-[var(--echo-muted)]">
+                    <span
+                      className={
+                        entry.enabled
+                          ? "border border-[var(--animal-primary)] bg-[rgba(35,196,180,0.14)] px-2 py-1 font-mono text-[0.68rem] font-black text-[var(--animal-primary-active)]"
+                          : "border border-[var(--echo-line)] px-2 py-1 font-mono text-[0.68rem] text-[var(--echo-muted)]"
+                      }
+                    >
                       {entry.enabled ? "已确认" : "待确认"}
                     </span>
                   </div>

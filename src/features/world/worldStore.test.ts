@@ -148,8 +148,10 @@ describe("worldStore", () => {
     expect(deepenRequest).toContain("替换当前世界书条目");
     expect(deepenRequest).toContain("质量还不够好");
     expect(deepenRequest).toContain("只生成 1 条，用于替换");
+    expect(deepenRequest).toContain("语言必须简单、直接、精确");
     expect(associationRequest).toContain("生成一个新的补充条目");
     expect(associationRequest).toContain("不能复述或改写当前条目");
+    expect(associationRequest).toContain("不要追求文学性");
     expect(associationRequest).toContain("不要替换 current_entry_json");
   });
 });
