@@ -16,6 +16,7 @@ import { StepProgress } from "@/features/flow/StepProgress";
 import type { FlowStep } from "@/features/flow/flowTypes";
 import { StepPost } from "@/pages/workspace/StepPost";
 import { StepQuestionnaire } from "@/pages/workspace/StepQuestionnaire";
+import { StepQuestionnaireLoading } from "@/pages/workspace/StepQuestionnaireLoading";
 import { StepProfile } from "@/pages/workspace/StepProfile";
 import { StepExport } from "@/pages/workspace/StepExport";
 import { StepGreeting } from "@/pages/workspace/StepGreeting";
@@ -40,14 +41,15 @@ function resolveStepId(step: string | undefined): FlowStepId {
 
 export function WorkspacePage() {
   const { step } = useParams();
+  const isQuestionnaireLoading = step === "questionnaire-loading";
   const currentStepId = resolveStepId(step);
   const { completedStepIds, setCurrentStep } = useFlowStore();
 
   useEffect(() => {
-    setCurrentStep(currentStepId);
-  }, [currentStepId, setCurrentStep]);
+    setCurrentStep(isQuestionnaireLoading ? "questionnaire" : currentStepId);
+  }, [currentStepId, isQuestionnaireLoading, setCurrentStep]);
 
-  const shouldShowStepNav = currentStepId !== "post";
+  const shouldShowStepNav = currentStepId !== "post" && !isQuestionnaireLoading;
 
   return (
     <WorkspaceLayout>
@@ -72,14 +74,16 @@ export function WorkspacePage() {
         )}
         <AnimatePresence mode="wait">
           <motion.section
-            key={currentStepId}
+            key={isQuestionnaireLoading ? "questionnaire-loading" : currentStepId}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.22 }}
             className="min-h-[calc(100vh-9rem)]"
           >
-            {currentStepId === "post" ? (
+            {isQuestionnaireLoading ? (
+              <StepQuestionnaireLoading />
+            ) : currentStepId === "post" ? (
               <StepPost />
             ) : currentStepId === "questionnaire" ? (
               <StepQuestionnaire />
