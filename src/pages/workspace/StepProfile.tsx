@@ -117,7 +117,7 @@ function DiaryDecodePanel({
   disabled = false,
   onChange,
 }: DiaryDecodePanelProps) {
-  const [openedBlankKey, setOpenedBlankKey] = useState(draft.blanks[0]?.key ?? "");
+  const [openedBlankKey, setOpenedBlankKey] = useState("");
   const parts = draft.diaryText.split(/(\[\[(?:blank_\d+|[^\]]+)\]\])/g);
 
   return (
@@ -142,8 +142,8 @@ function DiaryDecodePanel({
         </p>
       )}
 
-      <div className="mt-6 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-5 shadow-[0_3px_0_0_var(--animal-shadow-input)]">
-        <p className="echo-long-text max-w-none text-[var(--animal-text-body)]">
+      <div className="mt-6 overflow-visible rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-5 shadow-[0_3px_0_0_var(--animal-shadow-input)]">
+        <div className="echo-long-text max-w-none overflow-visible text-[var(--animal-text-body)]">
           {parts.map((part, index) => {
             const match = /^\[\[(.+)\]\]$/.exec(part);
             if (!match) {
@@ -155,74 +155,56 @@ function DiaryDecodePanel({
             const selectedOption = blank?.options.find(
               (option) => option.key === selections[blankKey],
             );
+            const isOpen = openedBlankKey === blankKey;
 
             return (
-              <button
+              <span
                 key={blankKey}
-                type="button"
-                disabled={disabled || !blank}
-                onClick={() => setOpenedBlankKey(blankKey)}
-                className={cn(
-                  "mx-1 inline-flex min-h-9 items-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-1 align-baseline text-sm font-black transition-all",
-                  selectedOption
-                    ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
-                    : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-muted)] shadow-[0_3px_0_0_var(--animal-shadow-input)] hover:-translate-y-0.5 hover:border-[var(--animal-primary)]",
-                )}
+                className="relative mx-1 inline-flex items-center align-baseline"
               >
-                {selectedOption?.label ?? blank?.label ?? "未破译"}
-              </button>
+                <button
+                  type="button"
+                  disabled={disabled || !blank}
+                  onClick={() => setOpenedBlankKey(isOpen ? "" : blankKey)}
+                  className={cn(
+                    "inline-flex min-h-9 items-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-1 align-baseline text-sm font-black transition-all",
+                    selectedOption
+                      ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
+                      : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-muted)] shadow-[0_3px_0_0_var(--animal-shadow-input)] hover:-translate-y-0.5 hover:border-[var(--animal-primary)]",
+                  )}
+                >
+                  {selectedOption?.label ?? blank?.label ?? "点击破译"}
+                </button>
+
+                {blank && isOpen ? (
+                  <span className="absolute left-0 top-full z-30 mt-3 grid w-[min(78vw,22rem)] gap-3 rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_10px_22px_rgba(61,52,40,0.18)]">
+                    <span className="text-sm font-black leading-6 text-[var(--animal-text)]">
+                      {blank.label}
+                    </span>
+                    <Select
+                      options={blank.options.map((option) => ({
+                        key: option.key,
+                        label: option.label,
+                      }))}
+                      value={selections[blank.key] ?? ""}
+                      onChange={(optionKey) => {
+                        onChange(blank.key, optionKey);
+                        setOpenedBlankKey("");
+                      }}
+                      placeholder="请选择"
+                      disabled={disabled}
+                    />
+                    {selectedOption ? (
+                      <span className="text-sm font-bold leading-6 text-[var(--animal-text-muted)]">
+                        {selectedOption.meaning}
+                      </span>
+                    ) : null}
+                  </span>
+                ) : null}
+              </span>
             );
           })}
-        </p>
-      </div>
-
-      <div className="mt-6 grid gap-4">
-        {draft.blanks.map((blank, index) => {
-          const isOpen = openedBlankKey === blank.key || Boolean(selections[blank.key]);
-          const selectedOption = blank.options.find(
-            (option) => option.key === selections[blank.key],
-          );
-
-          return (
-            <section
-              key={blank.key}
-              className="rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 shadow-[0_3px_0_0_var(--animal-shadow-input)]"
-            >
-              <button
-                type="button"
-                className="flex w-full items-center justify-between gap-3 text-left"
-                onClick={() => setOpenedBlankKey(isOpen ? "" : blank.key)}
-              >
-                <span className="font-display text-lg font-black text-[var(--animal-text)]">
-                  遮挡 {index + 1}：{blank.label}
-                </span>
-                <span className="text-sm font-black text-[var(--animal-primary)]">
-                  {selectedOption ? "已选择" : "点击选择"}
-                </span>
-              </button>
-
-              {isOpen && (
-                <div className="mt-4 grid gap-3">
-                  <Select
-                    options={blank.options.map((option) => ({
-                      key: option.key,
-                      label: option.label,
-                    }))}
-                    value={selections[blank.key] ?? ""}
-                    onChange={(optionKey) => onChange(blank.key, optionKey)}
-                    placeholder="请选择"
-                    disabled={disabled}
-                  />
-                  {selectedOption && (
-                    <p className="text-sm font-bold leading-7 text-[var(--animal-text-muted)]">
-                      {selectedOption.meaning}
-                    </p>
-                  )}
-                </div>
-              )}
-            </section>
-          );
-        })}
+        </div>
       </div>
     </article>
   );
@@ -616,10 +598,23 @@ export function StepProfile() {
 
           {!isDiaryStage && currentStage.choices.length > 0 ? (
             <>
-              <div className="rounded-[var(--animal-radius)] border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] p-4 text-sm font-black leading-7 text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]">
-                {currentStageId === "exclusion"
-                  ? "请注意：这一轮不是选最像 TA 的，而是选一个最不可能是 TA 的方向。"
-                  : "请选择最像 TA、最能补充 TA 的那一项。"}
+              <div
+                className={cn(
+                  "rounded-[var(--animal-radius)] border-2 p-4 text-sm font-black leading-7 shadow-[0_3px_0_0_var(--animal-shadow-input)]",
+                  currentStageId === "exclusion"
+                    ? "border-[var(--animal-error)] bg-[rgba(224,90,90,0.12)] text-[var(--animal-error-active)]"
+                    : "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]",
+                )}
+              >
+                {currentStageId === "exclusion" ? (
+                  <span>
+                    请注意：这一轮选一个
+                    <strong>最不可能是 TA</strong>
+                    的方向。
+                  </span>
+                ) : (
+                  "请选择最像 TA、最能补充 TA 的那一项。"
+                )}
               </div>
               <div className="grid gap-4">
                 {currentStage.choices.map((choice) => (
