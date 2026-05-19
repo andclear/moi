@@ -121,6 +121,12 @@ input[type="radio"]:focus {
   background-size: auto 100% !important;
 }
 
+.echo-questionnaire-collapse {
+  border-color: var(--animal-border) !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  box-shadow: 0 4px 0 0 var(--animal-shadow-input) !important;
+}
+
 .echo-workspace-page {
   min-height: calc(100vh - 9rem);
   padding: clamp(1rem, 2vw, 1.75rem);

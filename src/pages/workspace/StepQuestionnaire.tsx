@@ -1,5 +1,5 @@
 import { ClipboardList, KeyRound, MapPinned, MessageCircleQuestion } from "lucide-react";
-import { Footer, Typewriter } from "animal-island-ui";
+import { Collapse, Footer, Typewriter } from "animal-island-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
@@ -338,14 +338,12 @@ export function StepQuestionnaire() {
         </p>
 
         <div className="mt-8 grid gap-6">
-            <details
-              className="rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-4 shadow-[0_4px_0_0_var(--animal-shadow-input)]"
-              open
-            >
-              <summary className="cursor-pointer text-sm font-black text-[var(--animal-text)]">
-                思维链
-              </summary>
-              <div className="mt-3 min-h-20 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
+          <Collapse
+            question="思维链"
+            defaultExpanded
+            className="echo-questionnaire-collapse"
+            answer={
+              <div className="min-h-20 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
                 {designNote ? (
                   <Typewriter speed={18} trigger={designNote}>
                     {designNote}
@@ -354,133 +352,134 @@ export function StepQuestionnaire() {
                   "正在登岛，领取小问卷中...."
                 )}
               </div>
-            </details>
+            }
+          />
 
-            {questionnaire ? (
-              <div className="grid gap-5">
-                <h2 className="font-display text-3xl font-black text-[var(--animal-text)]">
-                  {questionnaire.title}
-                </h2>
-                {questionnaire.questions.map((question, index) => {
-                  const selectedOption = question.options.find(
-                    (option) => option.id === answers[question.id]?.optionId,
-                  );
-                  return (
-                    <fieldset
-                      key={question.id}
-                      className="rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.48)] p-4"
-                    >
-                      <legend className="px-2 text-base font-black text-[var(--animal-text)]">
-                        {index + 1}. {question.title}
-                      </legend>
-                      {question.description && (
-                        <p className="mt-2 font-mono text-xs leading-5 text-[var(--animal-text-muted)]">
-                          {question.description}
-                        </p>
-                      )}
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        {question.options.map((option) => {
-                          const isSelected = answers[question.id]?.optionId === option.id;
-                          return (
-                            <label
-                              key={option.id}
-                              className={cn(
-                                "inline-flex cursor-pointer items-center gap-2 rounded-[var(--animal-radius-pill)] border-2 px-4 py-2 text-sm font-bold shadow-[0_3px_0_0_var(--animal-shadow-input)] transition-all",
-                                isSelected
-                                  ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
-                                  : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-body)] hover:-translate-y-0.5 hover:border-[var(--animal-primary)]",
-                              )}
-                            >
-                              <input
-                                type="radio"
-                                name={question.id}
-                                value={option.id}
-                                checked={isSelected}
-                                onChange={() =>
-                                  setAnswers((current) => ({
-                                    ...current,
-                                    [question.id]: {
-                                      optionId: option.id,
-                                      customValue: current[question.id]?.customValue ?? "",
-                                    },
-                                  }))
-                                }
-                                className="h-4 w-4 accent-[var(--animal-primary)]"
-                              />
-                              {option.label}
-                            </label>
-                          );
-                        })}
-                      </div>
-                      {selectedOption?.allowCustom && (
-                        <input
-                          type="text"
-                          value={answers[question.id]?.customValue ?? ""}
-                          onChange={(event) =>
-                            setAnswers((current) => ({
-                              ...current,
-                              [question.id]: {
-                                optionId: current[question.id]?.optionId ?? selectedOption.id,
-                                customValue: event.target.value,
-                              },
-                            }))
-                          }
-                          className="mt-4 h-12 w-full rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-5 text-base font-bold text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
-                          placeholder="写下你的补充"
-                        />
-                      )}
-                    </fieldset>
-                  );
-                })}
-
-                {errorMessage && (
-                  <p className="flex flex-wrap items-start gap-2 font-mono text-sm leading-6 text-[var(--echo-stamp)]">
-                    <MessageCircleQuestion aria-hidden="true" size={17} className="mt-1 shrink-0" />
-                    {errorMessage}
-                    {errorMessage.includes("尚未连接模型") && (
-                      <Button asChild variant="ghost" className="h-auto px-1 py-0">
-                        <Link to="/settings">
-                          <KeyRound aria-hidden="true" size={15} />
-                          前往设置
-                        </Link>
-                      </Button>
+          {questionnaire ? (
+            <div className="grid gap-5">
+              <h2 className="font-display text-3xl font-black text-[var(--animal-text)]">
+                {questionnaire.title}
+              </h2>
+              {questionnaire.questions.map((question, index) => {
+                const selectedOption = question.options.find(
+                  (option) => option.id === answers[question.id]?.optionId,
+                );
+                return (
+                  <fieldset
+                    key={question.id}
+                    className="rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.48)] p-4"
+                  >
+                    <legend className="px-2 text-base font-black text-[var(--animal-text)]">
+                      {index + 1}. {question.title}
+                    </legend>
+                    {question.description && (
+                      <p className="mt-2 font-mono text-xs leading-5 text-[var(--animal-text-muted)]">
+                        {question.description}
+                      </p>
                     )}
-                  </p>
-                )}
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      {question.options.map((option) => {
+                        const isSelected = answers[question.id]?.optionId === option.id;
+                        return (
+                          <label
+                            key={option.id}
+                            className={cn(
+                              "inline-flex cursor-pointer items-center gap-2 rounded-[var(--animal-radius-pill)] border-2 px-4 py-2 text-sm font-bold shadow-[0_3px_0_0_var(--animal-shadow-input)] transition-all",
+                              isSelected
+                                ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
+                                : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-body)] hover:-translate-y-0.5 hover:border-[var(--animal-primary)]",
+                            )}
+                          >
+                            <input
+                              type="radio"
+                              name={question.id}
+                              value={option.id}
+                              checked={isSelected}
+                              onChange={() =>
+                                setAnswers((current) => ({
+                                  ...current,
+                                  [question.id]: {
+                                    optionId: option.id,
+                                    customValue: current[question.id]?.customValue ?? "",
+                                  },
+                                }))
+                              }
+                              className="h-4 w-4 accent-[var(--animal-primary)]"
+                            />
+                            {option.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {selectedOption?.allowCustom && (
+                      <input
+                        type="text"
+                        value={answers[question.id]?.customValue ?? ""}
+                        onChange={(event) =>
+                          setAnswers((current) => ({
+                            ...current,
+                            [question.id]: {
+                              optionId: current[question.id]?.optionId ?? selectedOption.id,
+                              customValue: event.target.value,
+                            },
+                          }))
+                        }
+                        className="mt-4 h-12 w-full rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-5 text-base font-bold text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
+                        placeholder="写下你的补充"
+                      />
+                    )}
+                  </fieldset>
+                );
+              })}
 
+              {errorMessage && (
+                <p className="flex flex-wrap items-start gap-2 font-mono text-sm leading-6 text-[var(--echo-stamp)]">
+                  <MessageCircleQuestion aria-hidden="true" size={17} className="mt-1 shrink-0" />
+                  {errorMessage}
+                  {errorMessage.includes("尚未连接模型") && (
+                    <Button asChild variant="ghost" className="h-auto px-1 py-0">
+                      <Link to="/settings">
+                        <KeyRound aria-hidden="true" size={15} />
+                        前往设置
+                      </Link>
+                    </Button>
+                  )}
+                </p>
+              )}
+
+              <GenerationButton
+                idleLabel="带着问卷去认识 TA"
+                runningLabel="正在整理回答"
+                retryLabel="重新整理回答"
+                status={profileTask.status}
+                errorMessage={profileTask.errorMessage}
+                onGenerate={handleCreateProfile}
+                onCancel={() => cancel(profileKey)}
+                className="h-14 w-full max-w-sm border-[var(--animal-primary-active)] bg-[var(--animal-primary)] px-7 text-base text-white shadow-[0_6px_0_0_var(--animal-primary-active)]"
+              />
+            </div>
+          ) : (
+            <section className="rounded-[var(--animal-radius-lg)] border-2 border-dashed border-[var(--animal-border)] bg-[rgba(255,255,255,0.34)] p-6">
+              <MapPinned aria-hidden="true" size={26} className="text-[var(--animal-primary)]" />
+              <h2 className="mt-4 font-display text-3xl font-black text-[var(--animal-text)]">
+                正在领取登岛小问卷
+              </h2>
+              <p className="mt-3 font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
+                岛务处正在根据线索准备题目。如果等待太久，可以重新领取一次。
+              </p>
+              <div className="mt-5">
                 <GenerationButton
-                  idleLabel="带着问卷去认识 TA"
-                  runningLabel="正在整理回答"
-                  retryLabel="重新整理回答"
-                  status={profileTask.status}
-                  errorMessage={profileTask.errorMessage}
-                  onGenerate={handleCreateProfile}
-                  onCancel={() => cancel(profileKey)}
-                  className="h-14 w-full max-w-sm border-[var(--animal-primary-active)] bg-[var(--animal-primary)] px-7 text-base text-white shadow-[0_6px_0_0_var(--animal-primary-active)]"
+                  idleLabel="重新领取问卷"
+                  runningLabel="正在领取问卷"
+                  retryLabel="重新领取问卷"
+                  status={questionnaireTask.status}
+                  errorMessage={errorMessage ?? questionnaireTask.errorMessage}
+                  onGenerate={handleGenerateQuestionnaire}
+                  onCancel={() => cancel(questionnaireKey)}
                 />
               </div>
-            ) : (
-              <section className="rounded-[var(--animal-radius-lg)] border-2 border-dashed border-[var(--animal-border)] bg-[rgba(255,255,255,0.34)] p-6">
-                <MapPinned aria-hidden="true" size={26} className="text-[var(--animal-primary)]" />
-                <h2 className="mt-4 font-display text-3xl font-black text-[var(--animal-text)]">
-                  正在领取登岛小问卷
-                </h2>
-                <p className="mt-3 font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
-                  岛务处正在根据线索准备题目。如果等待太久，可以重新领取一次。
-                </p>
-                <div className="mt-5">
-                  <GenerationButton
-                    idleLabel="重新领取问卷"
-                    runningLabel="正在领取问卷"
-                    retryLabel="重新领取问卷"
-                    status={questionnaireTask.status}
-                    errorMessage={errorMessage ?? questionnaireTask.errorMessage}
-                    onGenerate={handleGenerateQuestionnaire}
-                    onCancel={() => cancel(questionnaireKey)}
-                  />
-                </div>
-              </section>
-            )}
+            </section>
+          )}
         </div>
         <div className="-mx-5 -mb-5 mt-8 overflow-hidden sm:-mx-9 sm:-mb-9">
           <Footer type="sea" className="echo-questionnaire-footer" />
