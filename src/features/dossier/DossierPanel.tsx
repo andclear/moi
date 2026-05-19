@@ -17,6 +17,7 @@ export function DossierPanel() {
   const { projectId } = useParams();
   const [project, setProject] = useState<Project | null>(null);
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
+  const [isRefreshingCharacterProfile, setIsRefreshingCharacterProfile] = useState(false);
   const {
     markdown,
     saveStatus,
@@ -105,6 +106,20 @@ export function DossierPanel() {
     setProject(updatedProject ?? null);
   }
 
+  async function handleRefreshCharacterProfile() {
+    if (!projectId || !project) {
+      return;
+    }
+
+    setIsRefreshingCharacterProfile(true);
+    try {
+      const updatedProject = await generateAndSaveCharacterProfile(projectId, project.dossier.markdown);
+      setProject(updatedProject ?? null);
+    } finally {
+      setIsRefreshingCharacterProfile(false);
+    }
+  }
+
   return (
     <aside className="flex h-full flex-col border-l-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)]">
       <div className="p-5">
@@ -187,7 +202,9 @@ export function DossierPanel() {
       <CharacterProfileModal
         open={isCharacterModalOpen}
         yaml={characterProfile?.yaml ?? ""}
+        isRefreshing={isRefreshingCharacterProfile}
         onClose={() => setIsCharacterModalOpen(false)}
+        onRefresh={handleRefreshCharacterProfile}
         onSave={handleSaveCharacterProfile}
       />
     </aside>

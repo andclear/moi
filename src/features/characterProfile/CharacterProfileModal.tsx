@@ -12,7 +12,9 @@ import { Button } from "@/shared/components/ui/button";
 interface CharacterProfileModalProps {
   open: boolean;
   yaml: string;
+  isRefreshing?: boolean;
   onClose: () => void;
+  onRefresh: () => Promise<void>;
   onSave: (yaml: string) => Promise<void>;
 }
 
@@ -213,7 +215,9 @@ function FieldEditor({ label, value, path, depth = 0, onChange }: FieldEditorPro
 export function CharacterProfileModal({
   open,
   yaml,
+  isRefreshing = false,
   onClose,
+  onRefresh,
   onSave,
 }: CharacterProfileModalProps) {
   const [formValue, setFormValue] = useState<CharacterYamlObject>({});
@@ -269,16 +273,18 @@ export function CharacterProfileModal({
         className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg)] text-[var(--animal-text-body)] shadow-[0_18px_50px_rgba(61,52,40,0.28)]"
       >
         <header className="flex items-start justify-between gap-4 border-b-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-6 py-5">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--animal-primary)]">
               Character Profile
             </p>
-            <h2
-              id="character-profile-title"
-              className="mt-1 font-display text-2xl font-black text-[var(--animal-text)]"
-            >
-              角色信息
-            </h2>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <h2
+                id="character-profile-title"
+                className="font-display text-2xl font-black text-[var(--animal-text)]"
+              >
+                角色信息
+              </h2>
+            </div>
             <p className="mt-2 text-sm font-bold leading-6 text-[var(--animal-text-muted)]">
               可以直接编辑任意字段。长文本字段会使用文本区域，方便整理完整设定。
             </p>
@@ -289,24 +295,24 @@ export function CharacterProfileModal({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-        {errorMessage ? (
-          <p className="mb-4 rounded-[var(--animal-radius)] border-2 border-[var(--animal-error)] bg-[rgba(224,90,90,0.1)] p-3 text-sm font-bold leading-6 text-[var(--animal-error-active)]">
-            {errorMessage}
-          </p>
-        ) : null}
-        <div className="grid gap-5">
-          {Object.entries(formValue).map(([key, value]) => (
-            <FieldEditor
-              key={key}
-              label={key}
-              value={value}
-              path={[key]}
-              onChange={(path, nextValue) =>
-                setFormValue((current) => cloneWithUpdate(current, path, () => nextValue))
-              }
-            />
-          ))}
-        </div>
+          {errorMessage ? (
+            <p className="mb-4 rounded-[var(--animal-radius)] border-2 border-[var(--animal-error)] bg-[rgba(224,90,90,0.1)] p-3 text-sm font-bold leading-6 text-[var(--animal-error-active)]">
+              {errorMessage}
+            </p>
+          ) : null}
+          <div className="grid gap-5">
+            {Object.entries(formValue).map(([key, value]) => (
+              <FieldEditor
+                key={key}
+                label={key}
+                value={value}
+                path={[key]}
+                onChange={(path, nextValue) =>
+                  setFormValue((current) => cloneWithUpdate(current, path, () => nextValue))
+                }
+              />
+            ))}
+          </div>
         </div>
 
         <footer className="flex flex-wrap justify-end gap-3 border-t-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-6 py-4">
@@ -315,7 +321,17 @@ export function CharacterProfileModal({
           </Button>
           <Button
             type="button"
+            loading={isRefreshing}
+            disabled={isRefreshing}
+            className="min-w-44 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)]"
+            onClick={() => void onRefresh()}
+          >
+            {isRefreshing ? "更新中..." : "根据岛民档案更新"}
+          </Button>
+          <Button
+            type="button"
             loading={isSaving}
+            disabled={isSaving}
             className="min-w-44 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)]"
             onClick={() => void handleSave()}
           >
