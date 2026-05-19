@@ -297,7 +297,7 @@ export function StepWorld() {
                       <GitMerge aria-hidden="true" size={15} />
                       联想
                     </Button>
-                    <Button type="button" size="sm" variant="ghost" onClick={() => void handleDiscardEntry(entry)}>
+                    <Button type="button" size="sm" variant="ghost" danger onClick={() => void handleDiscardEntry(entry)}>
                       <Trash2 aria-hidden="true" size={15} />
                       舍弃
                     </Button>

@@ -388,14 +388,16 @@ export function AdminLoginPage() {
                   <p className="break-all text-sm font-black">{code.code}</p>
                   <p>{formatCodeStatus(code)}</p>
                 </div>
-                <button
+                <Button
                   type="button"
+                  size="icon"
+                  variant="ghost"
+                  danger
                   onClick={() => void deleteCode(code.id)}
-                  className="inline-flex h-9 w-9 items-center justify-center border border-[var(--echo-ink)]"
                   aria-label="删除激活码"
                 >
                   <Trash2 aria-hidden="true" size={16} />
-                </button>
+                </Button>
               </div>
               <p>
                 时长：{formatDuration(code.duration_hours)} · 调用：

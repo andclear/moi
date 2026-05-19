@@ -193,7 +193,7 @@ export function LibraryPage() {
                     <RefreshCw aria-hidden="true" size={15} />
                     重新导出
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => setDeleteTarget(project)}>
+                  <Button type="button" size="sm" variant="ghost" danger onClick={() => setDeleteTarget(project)}>
                     <Trash2 aria-hidden="true" size={15} />
                     删除
                   </Button>
@@ -254,6 +254,7 @@ export function LibraryPage() {
         title="确认删除这个记录？"
         description="删除后会清理这个记录关联的历史、生成记录和导出记录，无法从本地恢复。"
         confirmLabel="删除"
+        dangerConfirm
         onConfirm={() => void handleDelete()}
         onCancel={() => setDeleteTarget(undefined)}
       />

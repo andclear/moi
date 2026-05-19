@@ -233,7 +233,14 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
                       <Button type="button" size="icon" variant="secondary" onClick={() => void handleConfirm(node.id)} aria-label="确认配角">
                         <UserCheck aria-hidden="true" size={16} />
                       </Button>
-                      <Button type="button" size="icon" variant="ghost" onClick={() => void deleteNode(node.id)} aria-label="删除配角">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        danger
+                        onClick={() => void deleteNode(node.id)}
+                        aria-label="删除配角"
+                      >
                         <Trash2 aria-hidden="true" size={16} />
                       </Button>
                     </div>
