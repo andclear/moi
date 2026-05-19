@@ -19,13 +19,18 @@ import { cn } from "@/shared/lib/utils";
 
 function extractStreamingDesignNote(content: string) {
   const startMatch = /<cot>/i.exec(content);
-  if (!startMatch) {
-    return "";
+  if (startMatch) {
+    const afterStart = content.slice(startMatch.index + startMatch[0].length);
+    const endMatch = /<\/cot>/i.exec(afterStart);
+    return (endMatch ? afterStart.slice(0, endMatch.index) : afterStart).trim();
   }
 
-  const afterStart = content.slice(startMatch.index + startMatch[0].length);
-  const endMatch = /<\/cot>/i.exec(afterStart);
-  return (endMatch ? afterStart.slice(0, endMatch.index) : afterStart).trim();
+  const jsonStart = content.indexOf("{");
+  const leadingText = (jsonStart >= 0 ? content.slice(0, jsonStart) : content)
+    .replace(/<\/?cot>/gi, "")
+    .trim();
+
+  return leadingText.startsWith("{") ? "" : leadingText;
 }
 
 function answersToMarkdown(questions: IntakeQuestion[], answers: IntakeAnswer[]) {
@@ -342,7 +347,7 @@ export function StepQuestionnaire() {
 
         <div className="mt-8 grid gap-6">
           <Collapse
-            question="思维链"
+            question="设计说明"
             defaultExpanded
             className="echo-questionnaire-collapse"
             answer={

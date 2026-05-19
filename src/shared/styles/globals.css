@@ -132,11 +132,6 @@ input[type="radio"]:focus {
   box-shadow: 0 4px 0 0 var(--animal-shadow-input) !important;
 }
 
-.echo-cancellable-loading-button {
-  pointer-events: auto !important;
-  cursor: pointer !important;
-}
-
 .echo-workspace-page {
   min-height: calc(100vh - 9rem);
   padding: clamp(1rem, 2vw, 1.75rem);
@@ -290,5 +285,10 @@ code {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
+  }
+
+  [class*="animal-btn-loading"] {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
   }
 }

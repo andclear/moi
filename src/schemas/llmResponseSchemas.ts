@@ -55,12 +55,10 @@ export const intakeQuestionnaireResponseSchema = z.object({
               allowCustom: z.boolean().optional(),
             }),
           )
-          .min(2)
-          .max(6),
+          .min(2),
       }),
     )
-    .min(5)
-    .max(7),
+    .min(5),
 });
 
 export const profileChoiceResponseSchema = z.object({
