@@ -461,9 +461,14 @@ export async function generateWorldEntries(input: {
     signal: input.signal,
   });
 
+  const data = parseLlmJson(result.response.content, worldEntryResponseSchema);
+  if (data.length !== input.entryCount) {
+    throw new Error(`模型返回了 ${data.length} 条 WorldInfo，但本次要求必须是 ${input.entryCount} 条。请重新生成。`);
+  }
+
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, worldEntryResponseSchema),
+    data,
     response: result.response,
   };
 }

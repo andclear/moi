@@ -1,5 +1,5 @@
 import { Bug, GitMerge, Lightbulb, Plus, Trash2, WandSparkles, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import type { Project, WorldEntry } from "@/db/types";
@@ -31,11 +31,13 @@ export function StepWorld() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
+  const [pendingEntries, setPendingEntries] = useState<WorldEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userRequest, setUserRequest] = useState("");
   const [entryCount, setEntryCount] = useState(3);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
+  const isGeneratingRef = useRef(false);
   const { load: loadSettings, getAvailability } = useSettingsStore();
   const { hydrateFromProject } = useDossierStore();
   const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
@@ -58,10 +60,19 @@ export function StepWorld() {
       setIsLoading(true);
       const resolvedProject = await projectService.resolveProject(projectId);
       if (!ignored) {
-        if (resolvedProject) {
-          hydrateFromProject(resolvedProject);
+        let nextProject = resolvedProject ?? null;
+        if (nextProject) {
+          const savedEntries = nextProject.worldEntries.filter((entry) => entry.enabled);
+          if (savedEntries.length !== nextProject.worldEntries.length) {
+            const updatedProject = await projectService.updateProject(nextProject.id, {
+              worldEntries: savedEntries,
+            });
+            nextProject = updatedProject ?? { ...nextProject, worldEntries: savedEntries };
+          }
+          hydrateFromProject(nextProject);
         }
-        setProject(resolvedProject ?? null);
+        setPendingEntries([]);
+        setProject(nextProject);
         setIsLoading(false);
       }
     }
@@ -79,6 +90,10 @@ export function StepWorld() {
   const debugWorldEntriesJson = useMemo(() => {
     return formatWorldEntriesJson(project?.worldEntries ?? []);
   }, [project]);
+
+  const visibleWorldEntries = useMemo(() => {
+    return [...pendingEntries, ...(project?.worldEntries ?? [])];
+  }, [pendingEntries, project?.worldEntries]);
 
   async function persistProject(nextProject: Project, snapshotTitle?: string, generationIds: string[] = []) {
     const { id, createdAt, ...patch } = nextProject;
@@ -98,6 +113,9 @@ export function StepWorld() {
     if (!project) {
       return;
     }
+    if (isGeneratingRef.current || generationTask.status === "running" || generationTask.status === "pending") {
+      return;
+    }
 
     const trimmedRequest = userRequest.trim();
     if (!trimmedRequest) {
@@ -113,6 +131,7 @@ export function StepWorld() {
 
     const controller = new AbortController();
     setErrorMessage(null);
+    isGeneratingRef.current = true;
     setRunning(generationKey, controller);
 
     try {
@@ -126,17 +145,8 @@ export function StepWorld() {
         entryCount,
         signal: controller.signal,
       });
-      if (result.data.length !== entryCount) {
-        throw new Error(`模型返回了 ${result.data.length} 条 WorldInfo，但本次要求必须是 ${entryCount} 条。请重新生成。`);
-      }
-
       const candidates = createWorldEntryCandidates(project.id, result.data);
-      const nextProject = {
-        ...project,
-        worldEntries: [...candidates, ...project.worldEntries],
-      };
-
-      await persistProject(nextProject, `生成 ${candidates.length} 条 WorldInfo`, [result.taskId]);
+      setPendingEntries((entries) => [...candidates, ...entries]);
       setSucceeded(generationKey, result.taskId);
     } catch (error) {
       if (controller.signal.aborted) {
@@ -145,6 +155,8 @@ export function StepWorld() {
       const message = error instanceof Error ? error.message : "世界书生成失败。";
       setErrorMessage(message);
       setFailed(generationKey, message);
+    } finally {
+      isGeneratingRef.current = false;
     }
   }
 
@@ -189,29 +201,55 @@ export function StepWorld() {
 
       const nextProject =
         mode === "deepen"
-          ? syncWorldInfoToDossier(
-              upsertWorldEntry(project, {
-                ...entry,
-                title: candidate.title,
-                content: candidate.content,
-                keys: candidate.keys,
-                constant: candidate.constant,
-                position: candidate.position,
-                depth: candidate.depth,
-                insertionOrder: candidate.insertionOrder,
-              }),
-              result.taskId,
-            )
+          ? entry.enabled
+            ? syncWorldInfoToDossier(
+                upsertWorldEntry(project, {
+                  ...entry,
+                  title: candidate.title,
+                  content: candidate.content,
+                  keys: candidate.keys,
+                  constant: candidate.constant,
+                  position: candidate.position,
+                  depth: candidate.depth,
+                  insertionOrder: candidate.insertionOrder,
+                }),
+                result.taskId,
+              )
+            : null
           : {
               ...project,
-              worldEntries: [candidate, ...project.worldEntries],
+              worldEntries: entry.enabled ? [candidate, ...project.worldEntries] : project.worldEntries,
             };
 
-      await persistProject(
-        nextProject,
-        mode === "deepen" ? `深挖 WorldInfo：${entry.title}` : `联想 WorldInfo：${entry.title}`,
-        [result.taskId],
-      );
+      if (mode === "deepen" && !entry.enabled) {
+        setPendingEntries((entries) =>
+          entries.map((item) =>
+            item.id === entry.id
+              ? {
+                  ...item,
+                  title: candidate.title,
+                  content: candidate.content,
+                  keys: candidate.keys,
+                  constant: candidate.constant,
+                  position: candidate.position,
+                  depth: candidate.depth,
+                  insertionOrder: candidate.insertionOrder,
+                }
+              : item,
+          ),
+        );
+      } else if (mode === "associate" && !entry.enabled) {
+        setPendingEntries((entries) => [candidate, ...entries]);
+      } else {
+        if (!nextProject) {
+          throw new Error("没有可保存的 WorldInfo 条目。");
+        }
+        await persistProject(
+          nextProject,
+          mode === "deepen" ? `深挖 WorldInfo：${entry.title}` : `联想 WorldInfo：${entry.title}`,
+          [result.taskId],
+        );
+      }
       setSucceeded(actionKey, result.taskId);
     } catch (error) {
       if (controller.signal.aborted) {
@@ -228,6 +266,13 @@ export function StepWorld() {
       return;
     }
 
+    if (!entry.enabled) {
+      setPendingEntries((entries) =>
+        entries.map((item) => (item.id === entry.id ? { ...item, ...patch } : item)),
+      );
+      return;
+    }
+
     const updated = upsertWorldEntry(project, { ...entry, ...patch });
     const synced = syncWorldInfoToDossier(updated);
     await persistProject(synced);
@@ -238,11 +283,29 @@ export function StepWorld() {
       return;
     }
 
+    if (!entry.enabled) {
+      const confirmedEntry = { ...entry, enabled: true };
+      const nextProject = syncWorldInfoToDossier({
+        ...project,
+        worldEntries: [confirmedEntry, ...project.worldEntries],
+      });
+      const updatedProject = await persistProject(nextProject, `确认 WorldInfo：${entry.title}`);
+      if (updatedProject) {
+        setPendingEntries((entries) => entries.filter((item) => item.id !== entry.id));
+      }
+      return;
+    }
+
     await persistProject(confirmWorldEntry(project, entry.id), `确认 WorldInfo：${entry.title}`);
   }
 
   async function handleDiscardEntry(entry: WorldEntry) {
     if (!project) {
+      return;
+    }
+
+    if (!entry.enabled) {
+      setPendingEntries((entries) => entries.filter((item) => item.id !== entry.id));
       return;
     }
 
@@ -338,7 +401,7 @@ export function StepWorld() {
             </div>
 
             <div className="grid gap-4">
-              {project.worldEntries.map((entry) => (
+              {visibleWorldEntries.map((entry) => (
                 (() => {
                   const deepenKey = `world:${project.id}:deepen:${entry.id}`;
                   const associationKey = `world:${project.id}:associate:${entry.id}`;

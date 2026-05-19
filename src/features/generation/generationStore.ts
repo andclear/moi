@@ -34,6 +34,7 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
   controllers: {},
 
   setRunning(key, controller, taskId) {
+    get().controllers[key]?.abort();
     set((state) => ({
       tasks: { ...state.tasks, [key]: { status: "running", taskId } },
       controllers: { ...state.controllers, [key]: controller },

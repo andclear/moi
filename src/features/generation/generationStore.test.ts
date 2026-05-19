@@ -35,4 +35,16 @@ describe("generationStore", () => {
     expect(abortSpy).toHaveBeenCalledTimes(1);
     expect(useGenerationStore.getState().getTask("profile").status).toBe("cancelled");
   });
+
+  it("同一个生成任务重新运行时会中止上一次请求", () => {
+    const firstController = new AbortController();
+    const secondController = new AbortController();
+    const abortSpy = vi.spyOn(firstController, "abort");
+
+    useGenerationStore.getState().setRunning("world", firstController);
+    useGenerationStore.getState().setRunning("world", secondController);
+
+    expect(abortSpy).toHaveBeenCalledTimes(1);
+    expect(useGenerationStore.getState().controllers.world).toBe(secondController);
+  });
 });
