@@ -6,6 +6,7 @@ import {
   buildWorldDeepenRequest,
   buildWorldEntryMessages,
   extractCurrentWorldInfo,
+  formatWorldEntriesJson,
 } from "@/prompts/worldPrompts";
 import { worldEntryResponseSchema } from "@/schemas/llmResponseSchemas";
 import {
@@ -57,6 +58,22 @@ describe("worldStore", () => {
     expect(candidate.insertionOrder).toBe(106);
   });
 
+  it("常驻世界书条目不保存触发关键词", () => {
+    const [candidate] = createWorldEntryCandidates("project_world", [
+      {
+        comment: "潮汐铁律",
+        content: "退潮时所有桥洞都会露出旧编号。",
+        constant: true,
+        keys: ["潮汐", "桥洞"],
+      },
+    ]);
+
+    expect(candidate.constant).toBe(true);
+    expect(candidate.keys).toEqual([]);
+    expect(candidate.keywords).toEqual([]);
+    expect(formatWorldEntriesJson([candidate])).toContain('"keys": []');
+  });
+
   it("从登岛问卷答案中提取当前世界信息", () => {
     const project = createProjectDraft({ id: "project_world" });
     project.intake = {
@@ -94,7 +111,11 @@ describe("worldStore", () => {
     });
 
     expect(messages[0].content).toContain("角色档案");
-    expect(messages[0].content).toContain("角色信息");
+    expect(messages[0].content).toContain("用户信息 character_info");
+    expect(messages[0].content).toContain("真实姓名");
+    expect(messages[0].content).toContain("小于或等于 entry_count");
+    expect(messages[0].content).toContain("constant/keys 判断规则");
+    expect(messages[0].content).toContain("keys 必须输出空数组");
     expect(messages[0].content).toContain("不要用几句概括带过");
     expect(messages[0].content).toContain("运转代价");
     expect(messages[0].content).toContain("不设置最大长度");
@@ -103,6 +124,7 @@ describe("worldStore", () => {
     expect(messages[0].content).toContain("不要输出 keywords 字段");
     expect(messages[0].content).toContain("不要让每个条目都机械套用同一批标题");
     expect(messages[0].content).not.toContain("enabled");
+    expect(messages[1].content).toContain("character_info");
     expect(messages[1].content).toContain("姓名: 陈露");
     expect(messages[1].content).toContain("## 核心人格");
   });

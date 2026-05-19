@@ -60,13 +60,15 @@ export function createWorldEntryCandidates(
   now = nowIso(),
 ) {
   return entries.map((entry) => {
+    const keys = entry.constant ? [] : (entry.keys ?? entry.keywords ?? []);
+
     return {
       id: createId("world"),
       projectId,
       title: entry.comment,
       content: entry.content,
-      keywords: entry.keys ?? entry.keywords ?? [],
-      keys: entry.keys ?? entry.keywords ?? [],
+      keywords: keys,
+      keys,
       constant: entry.constant,
       position: entry.position,
       depth: entry.depth,

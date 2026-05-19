@@ -21,6 +21,7 @@ import {
   buildWorldAssociationRequest,
   buildWorldDeepenRequest,
   extractCurrentWorldInfo,
+  formatWorldEntriesJson,
 } from "@/prompts/worldPrompts";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { GenerationButton } from "@/shared/components/GenerationButton";
@@ -76,7 +77,7 @@ export function StepWorld() {
   }, [project]);
 
   const debugWorldEntriesJson = useMemo(() => {
-    return JSON.stringify(project?.worldEntries ?? [], null, 2);
+    return formatWorldEntriesJson(project?.worldEntries ?? []);
   }, [project]);
 
   async function persistProject(nextProject: Project, snapshotTitle?: string, generationIds: string[] = []) {
@@ -125,7 +126,7 @@ export function StepWorld() {
         entryCount,
         signal: controller.signal,
       });
-      const candidates = createWorldEntryCandidates(project.id, result.data);
+      const candidates = createWorldEntryCandidates(project.id, result.data.slice(0, entryCount));
       const nextProject = {
         ...project,
         worldEntries: [...candidates, ...project.worldEntries],

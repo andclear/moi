@@ -204,7 +204,7 @@ export const worldEntryResponseSchema = z
     }),
   )
   .min(1)
-  .max(3);
+  .max(10);
 
 export const greetingVariantResponseSchema = z
   .array(

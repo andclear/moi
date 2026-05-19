@@ -35,13 +35,13 @@ export function extractCurrentWorldInfo(project: Project) {
   return getAnswerLabel(project, worldQuestion.id) || "尚未明确";
 }
 
-function formatExistingWorldEntriesJson(entries: WorldEntry[]) {
+export function formatWorldEntriesJson(entries: WorldEntry[]) {
   return JSON.stringify(
     entries.map((entry) => ({
       comment: entry.title,
       content: entry.content,
       constant: entry.constant ?? false,
-      keys: entry.keys ?? entry.keywords,
+      keys: entry.constant ? [] : (entry.keys ?? entry.keywords),
       position: entry.position ?? 1,
       depth: entry.depth ?? "",
       insertion_order: entry.insertionOrder ?? 100,
@@ -57,7 +57,7 @@ function formatWorldEntryJson(entry: WorldEntry) {
       comment: entry.title,
       content: entry.content,
       constant: entry.constant ?? false,
-      keys: entry.keys ?? entry.keywords,
+      keys: entry.constant ? [] : (entry.keys ?? entry.keywords),
       position: entry.position ?? 1,
       depth: entry.depth ?? "",
       insertion_order: entry.insertionOrder ?? 100,
@@ -73,7 +73,7 @@ export function buildWorldDeepenRequest(entry: WorldEntry) {
     "",
     `current_entry_json:\n${formatWorldEntryJson(entry)}`,
     "",
-    "请把 current_entry_json 视为一个已经生成但质量还不够好的草稿：它可能过于概括、缺少具体场景、缺少来源、代价、磨损痕迹，或没有和角色档案形成足够清楚的联系。",
+    "请把 current_entry_json 视为一个已经生成但质量还不够好的草稿：它可能过于概括、缺少具体场景等等，或没有和角色档案形成足够清楚的联系。",
     "你需要在不偏离原条目主题的前提下，重写为一条更具体、更有生活质感、更适合进入 SillyTavern WorldInfo 的条目。",
     "只生成 1 条，用于替换 current_entry_json。不要扩展成新主题，不要生成额外条目。",
     "可以优化 comment、content、keys、constant、position、depth、insertion_order，但必须保持它仍然是同一个世界设定方向的深化版本。",
@@ -86,14 +86,15 @@ export function buildWorldAssociationRequest(entry: WorldEntry) {
     "",
     `current_entry_json:\n${formatWorldEntryJson(entry)}`,
     "",
-    "请从 current_entry_json 中寻找尚未被写清的外延：它背后的制度来源、相关地点、负责维护的人、受影响的群体、遗留物、禁忌、例外规则、代价链条，或会影响角色行动的新矛盾。",
+    "请从 current_entry_json 中寻找尚未被写清的外延：例如它背后的制度来源、相关地点、负责维护的人、受影响的群体等等，或会影响角色行动的新矛盾。",
     "生成的新条目必须和 current_entry_json 强相关，但不能复述或改写当前条目；它应该补上一个缺失但必要的世界设定拼图。",
+    "生成的条目必须具备comment、content、keys、constant、position、depth、insertion_order这7个字段，不允许生成额外的其他字段",
     "只生成 1 条新世界书条目。不要替换 current_entry_json，不要输出多个候选。",
   ].join("\n");
 }
 
 export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMessage[] {
-  const existingWorldEntriesJson = formatExistingWorldEntriesJson(input.existingWorldEntries);
+  const existingWorldEntriesJson = formatWorldEntriesJson(input.existingWorldEntries);
 
   return [
     {
@@ -102,11 +103,16 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
         "你是一名横跨维度的客观记录者。你的职责是构建物理上可触、逻辑上自洽、历史上深厚的世界档案。你对“悬浮设定”零容忍：无代价的力量、无来源的资源、无矛盾的社会结构，都不被接受。",
         "",
         "## 上下文",
-        `* 角色档案：${input.dossierMarkdown}`,
-        `* 角色信息：${input.characterInfo || "尚未生成"}`,
+        `* 角色档案 character_profile：${input.dossierMarkdown}`,
+        `* 用户信息 character_info：${input.characterInfo || "尚未生成"}`,
         `* 当前世界信息：${input.currentWorldInfo}`,
         `* 生成目标：请基于${input.userRequest}，最多生成 ${input.entryCount} 条档案。`,
         `* 已生成的所有世界书条目 JSON：${existingWorldEntriesJson}`,
+        "",
+        "## 角色与数量硬规则",
+        "1. 用户信息 character_info 是 YAML 角色信息，优先级高于你的自由命名习惯；如果其中存在“姓名”字段，必须把它视为 {{char}} 的真实姓名。生成任何角色相关世界书条目时，不得擅自改名、另起主角名或使用与该姓名冲突的人名。",
+        "2. 角色档案 character_profile 是已经确认的角色资料；如果它与用户信息存在细节差异，以用户信息里的姓名、年龄、性别等结构化字段为准，以角色档案里的性格、经历和关系为补充。",
+        "3. 输出 JSON 数组长度必须小于或等于 entry_count。entry_count=3 时只能输出 1 到 3 个条目，不能因为联想到了更多主题而输出第 4 个或第 5 个条目。",
         "",
         "## 世界信息生成准则",
         "生成时，你必须严格遵守下列律法（违反即为数据腐坏）：",
@@ -171,6 +177,7 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
         "6. 字段要求：每个条目只能包含 comment、content、constant、keys、position、depth、insertion_order 这七个字段；没有列在这里的字段一律不要输出。",
         "7. 不要输出 keywords 字段。SillyTavern 角色卡使用 keys 字段作为关键词列表。",
         "8. constant 是布尔值；keys 是 string[]；position 是 0-4 的数字；depth 在 position 为 4 时必须为数字，其他情况可为空字符串；insertion_order 是数字，建议从 100 开始。",
+        "9. constant/keys 判断规则：会长期影响所有回复的核心世界规则、角色所处世界的基础事实、必须始终生效的身份环境、全局制度或物理法则，constant 必须为 true，且 keys 必须输出空数组 []；只有局部地点、人物、物品、事件、称呼或需要关键词触发的资料，constant 才为 false，并生成 2 到 5 个 keys。不要把所有条目都设为 false。",
         "",
         "## 输出结构示例",
         '[{"comment":"<条目名称1>","content":"【旧规矩还在运转】：具体描述……\\n\\n【代价落到谁身上】：具体描述……","constant":true,"keys":[],"position":4,"depth":4,"insertion_order":102},{"comment":"<条目名称2>","content":"……","constant":false,"keys":["关键词1","关键词2"],"position":2,"depth":"","insertion_order":101}]',
@@ -186,8 +193,8 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
     {
       role: "user",
       content: [
-        `角色档案：\n${input.dossierMarkdown}`,
-        `角色信息：\n${input.characterInfo || "尚未生成"}`,
+        `character_profile:\n${input.dossierMarkdown}`,
+        `character_info:\n${input.characterInfo || "尚未生成"}`,
         `current_world_info:\n${input.currentWorldInfo}`,
         `user_request:\n${input.userRequest}`,
         `entry_count:\n${input.entryCount}`,
