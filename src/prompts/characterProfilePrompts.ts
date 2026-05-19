@@ -85,6 +85,7 @@ export function buildCharacterProfileYamlMessages(characterProfile: string): Llm
 
 export function buildCharacterProfileTextRewriteMessages(input: {
   dossierMarkdown: string;
+  characterInfo: string;
   selectedFragment: string;
   revisionNotes: string;
 }): LlmMessage[] {
@@ -101,17 +102,18 @@ export function buildCharacterProfileTextRewriteMessages(input: {
     {
       role: "user",
       content: [
-        "当前的角色档案是：",
-        input.dossierMarkdown,
-        "",
-        "当前用户需要修改的文本内容是：",
-        input.selectedFragment,
-        "",
-        "用户的修改意见是：",
-        input.revisionNotes,
-        "",
-        "请参考当前角色档案的内容，根据用户的修改要求，直接修改这段文字。",
+        "当前的角色档案是：{{charater_profile}}",
+        "角色信息是：{{character_info}}",
+        "当前用户需要修改的文本内容是：{{text_to_edit}}",
+        "用户的修改意见是：{{revision_notes}}",
+        "请参考角色档案、角色信息中的内容，依据用户的修改要求，直接修改这段文字。",
         "最终只输出修改后的内容即可。",
+        "",
+        `{{charater_profile}} = ${input.dossierMarkdown}`,
+        `{{character_info}} = ${input.characterInfo}`,
+        `{{charater_info}} = ${input.characterInfo}`,
+        `{{text_to_edit}} = ${input.selectedFragment}`,
+        `{{revision_notes}} = ${input.revisionNotes}`,
       ].join("\n"),
     },
   ];

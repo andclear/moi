@@ -408,6 +408,7 @@ export async function generateCharacterProfileYaml(input: {
 export async function generateDossierTextRewrite(input: {
   projectId: string;
   dossierMarkdown: string;
+  characterInfo: string;
   selectedFragment: string;
   revisionNotes: string;
   signal?: AbortSignal;
@@ -417,6 +418,7 @@ export async function generateDossierTextRewrite(input: {
     type: "dossier_edit",
     messages: buildCharacterProfileTextRewriteMessages({
       dossierMarkdown: input.dossierMarkdown,
+      characterInfo: input.characterInfo,
       selectedFragment: input.selectedFragment,
       revisionNotes: input.revisionNotes,
     }),

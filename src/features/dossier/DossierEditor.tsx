@@ -17,6 +17,7 @@ import { Button } from "@/shared/components/ui/button";
 
 interface DossierEditorProps {
   projectId: string | null;
+  characterInfo: string;
   markdown: string;
   saveStatus: DossierSaveStatus;
   onChange: (markdown: string) => void;
@@ -152,6 +153,7 @@ function MarkdownPreview({ markdown }: { markdown: string }) {
 
 export function DossierEditor({
   projectId,
+  characterInfo,
   markdown,
   saveStatus,
   onChange,
@@ -233,6 +235,7 @@ export function DossierEditor({
       const result = await generateDossierTextRewrite({
         projectId,
         dossierMarkdown: markdown,
+        characterInfo,
         selectedFragment: selection.fragment,
         revisionNotes: revisionNotes.trim(),
       });

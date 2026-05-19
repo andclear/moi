@@ -155,6 +155,7 @@ export function DossierPanel() {
       {projectId ? (
         <DossierEditor
           projectId={projectId}
+          characterInfo={characterProfile?.yaml ?? ""}
           markdown={markdown}
           saveStatus={saveStatus}
           onChange={(nextMarkdown) => void updateMarkdown(nextMarkdown)}
