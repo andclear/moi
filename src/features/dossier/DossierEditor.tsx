@@ -8,6 +8,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import { useState } from "react";
 import type { SyntheticEvent } from "react";
 
@@ -28,8 +29,8 @@ interface SelectionState {
   fragment: string;
   start: number;
   end: number;
-  left: number;
-  top: number;
+  x: number;
+  y: number;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -53,19 +54,21 @@ function getSelectionRect(
   const textBefore = textarea.value.slice(0, start);
   const selectedText = textarea.value.slice(start, end) || "\u200b";
   const computed = window.getComputedStyle(textarea);
+  const textareaRect = textarea.getBoundingClientRect();
   const mirror = document.createElement("div");
 
   mirror.style.position = "fixed";
-  mirror.style.top = `${-textarea.scrollTop}px`;
-  mirror.style.left = `${-textarea.scrollLeft}px`;
+  mirror.style.top = `${textareaRect.top}px`;
+  mirror.style.left = `${textareaRect.left}px`;
+  mirror.style.width = `${textareaRect.width}px`;
+  mirror.style.height = `${textareaRect.height}px`;
   mirror.style.visibility = "hidden";
   mirror.style.pointerEvents = "none";
   mirror.style.zIndex = "-1";
   mirror.style.whiteSpace = "pre-wrap";
   mirror.style.wordBreak = "break-word";
-  mirror.style.overflow = "hidden";
+  mirror.style.overflow = "auto";
   mirror.style.boxSizing = computed.boxSizing;
-  mirror.style.width = `${textarea.clientWidth}px`;
   mirror.style.fontFamily = computed.fontFamily;
   mirror.style.fontSize = computed.fontSize;
   mirror.style.fontWeight = computed.fontWeight;
@@ -81,6 +84,8 @@ function getSelectionRect(
 
   mirror.innerHTML = `${escapeHtml(textBefore)}<span data-selection-target>${escapeHtml(selectedText)}</span>`;
   document.body.appendChild(mirror);
+  mirror.scrollTop = textarea.scrollTop;
+  mirror.scrollLeft = textarea.scrollLeft;
   const target = mirror.querySelector<HTMLSpanElement>("[data-selection-target]");
   const rect = target?.getBoundingClientRect();
   mirror.remove();
@@ -207,19 +212,19 @@ export function DossierEditor({
     }
 
     const rect = getSelectionRect(target, start, end);
-    const left = rect
-      ? clamp(rect.left + rect.width / 2 - 52, 16, window.innerWidth - 190)
-      : clamp(target.getBoundingClientRect().left + target.getBoundingClientRect().width - 160, 16, window.innerWidth - 190);
-    const top = rect
-      ? clamp(rect.top - 52 > 16 ? rect.top - 52 : rect.bottom + 10, 16, window.innerHeight - 120)
-      : clamp(target.getBoundingClientRect().top + 24, 16, window.innerHeight - 120);
+    const baseRect = rect ?? target.getBoundingClientRect();
+    const x = clamp(baseRect.left + baseRect.width / 2, 20, window.innerWidth - 20);
+    const y =
+      baseRect.top - 10 >= 20
+        ? baseRect.top - 10
+        : Math.min(window.innerHeight - 20, baseRect.bottom + 10);
 
     setSelection({
       fragment,
       start,
       end,
-      left,
-      top,
+      x,
+      y,
     });
   }
 
@@ -304,7 +309,8 @@ export function DossierEditor({
           </Button>
         </div>
 
-        <div className="min-h-0 flex-[1_1_auto] overflow-auto p-4">
+      <div className="min-h-0 flex-[1_1_auto] overflow-auto p-4">
+        <div className="relative min-h-[46rem]">
           {mode === "edit" ? (
             <textarea
               value={markdown}
@@ -321,26 +327,34 @@ export function DossierEditor({
           )}
         </div>
       </div>
+      </div>
 
-      {mode === "edit" && selection ? (
-        <div
-          className="fixed z-40"
-          style={{ left: selection.left, top: selection.top }}
-          onMouseDown={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <Button
-            type="button"
-            size="sm"
-            className="min-w-20 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_4px_0_0_var(--animal-primary-active)] hover:shadow-[0_5px_0_0_var(--animal-primary-active)]"
-            onClick={() => setIsRevisionDialogOpen(true)}
-          >
-            <PencilLine aria-hidden="true" size={15} />
-            修改
-          </Button>
-        </div>
-      ) : null}
+      {mode === "edit" && selection && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className="fixed z-40"
+              style={{
+                left: `${selection.x}px`,
+                top: `${selection.y}px`,
+                transform: "translate(-50%, -100%)",
+              }}
+              onMouseDown={(event) => {
+                event.preventDefault();
+              }}
+            >
+              <Button
+                type="button"
+                size="sm"
+                className="min-w-20 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_4px_0_0_var(--animal-primary-active)] hover:shadow-[0_5px_0_0_var(--animal-primary-active)]"
+                onClick={() => setIsRevisionDialogOpen(true)}
+              >
+                <PencilLine aria-hidden="true" size={15} />
+                修改
+              </Button>
+            </div>,
+            document.body,
+          )
+        : null}
 
       {mode === "edit" && isRevisionDialogOpen && selection ? (
         <div
