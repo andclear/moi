@@ -82,3 +82,37 @@ export function buildCharacterProfileYamlMessages(characterProfile: string): Llm
     },
   ];
 }
+
+export function buildCharacterProfileTextRewriteMessages(input: {
+  dossierMarkdown: string;
+  selectedFragment: string;
+  revisionNotes: string;
+}): LlmMessage[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "你是虚拟角色资料整理助手。你的任务是按照用户要求，直接改写一小段角色档案内容。",
+        "必须使用简体中文，只输出修改后的内容，不要解释，不要总结，不要输出 Markdown 代码块。",
+        "保持原有语气、视角和档案风格，不要把这段文字扩写成新的段落结构。",
+        "如果用户要求的是局部替换，就只返回那一段应该被替换成的新文本。",
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: [
+        "当前的角色档案是：",
+        input.dossierMarkdown,
+        "",
+        "当前用户需要修改的文本内容是：",
+        input.selectedFragment,
+        "",
+        "用户的修改意见是：",
+        input.revisionNotes,
+        "",
+        "请参考当前角色档案的内容，根据用户的修改要求，直接修改这段文字。",
+        "最终只输出修改后的内容即可。",
+      ].join("\n"),
+    },
+  ];
+}

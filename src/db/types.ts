@@ -5,6 +5,7 @@ export type GenerationStatus = "pending" | "running" | "succeeded" | "failed" | 
 export type GenerationType =
   | "intake_questionnaire"
   | "character_profile"
+  | "dossier_edit"
   | "profile"
   | "world"
   | "greeting"

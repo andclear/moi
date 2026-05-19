@@ -22,7 +22,10 @@ import { buildCompanionMessages } from "@/prompts/companionPrompts";
 import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
 import { buildWorldEntryMessages } from "@/prompts/worldPrompts";
 import { buildIntakeQuestionnaireMessages } from "@/prompts/intakePrompts";
-import { buildCharacterProfileYamlMessages } from "@/prompts/characterProfilePrompts";
+import {
+  buildCharacterProfileTextRewriteMessages,
+  buildCharacterProfileYamlMessages,
+} from "@/prompts/characterProfilePrompts";
 import { withGlobalPrompt } from "@/prompts/globalPrompt";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
 import { parseLlmJson } from "@/features/llm/jsonResponse";
@@ -396,6 +399,35 @@ export async function generateCharacterProfileYaml(input: {
     taskId: result.taskId,
     yaml: result.response.content
       .replace(/^```(?:yaml)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim(),
+    response: result.response,
+  };
+}
+
+export async function generateDossierTextRewrite(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  selectedFragment: string;
+  revisionNotes: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "dossier_edit",
+    messages: buildCharacterProfileTextRewriteMessages({
+      dossierMarkdown: input.dossierMarkdown,
+      selectedFragment: input.selectedFragment,
+      revisionNotes: input.revisionNotes,
+    }),
+    inputSummary: `岛民档案局部修改：${input.selectedFragment.slice(0, 60)}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    text: result.response.content
+      .replace(/^```(?:txt|text)?\s*/i, "")
       .replace(/\s*```$/i, "")
       .trim(),
     response: result.response,

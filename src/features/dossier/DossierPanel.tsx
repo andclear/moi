@@ -154,6 +154,7 @@ export function DossierPanel() {
 
       {projectId ? (
         <DossierEditor
+          projectId={projectId}
           markdown={markdown}
           saveStatus={saveStatus}
           onChange={(nextMarkdown) => void updateMarkdown(nextMarkdown)}
