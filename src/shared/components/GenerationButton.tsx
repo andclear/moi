@@ -33,13 +33,14 @@ export function GenerationButton({
 
   if (isRunning && useAnimalLoadingButton) {
     return (
-      <div className="space-y-2" onClick={onCancel}>
+      <div className="space-y-2">
         <AnimalButton
           htmlType="button"
           type="primary"
           loading={true}
           disabled={disabled || (isRunning && !onCancel)}
           className={cn("min-w-40", className)}
+          onClick={onCancel}
         >
           {onCancel ? "取消生成" : runningLabel}
         </AnimalButton>

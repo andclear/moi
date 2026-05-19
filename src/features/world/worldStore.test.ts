@@ -93,6 +93,9 @@ describe("worldStore", () => {
     expect(messages[0].content).toContain("不要用几句概括带过");
     expect(messages[0].content).toContain("运转代价");
     expect(messages[0].content).toContain("不设置最大长度");
+    expect(messages[0].content).toContain("entry_count 是本次生成数量上限");
+    expect(messages[0].content).toContain("不要输出 keywords 字段");
+    expect(messages[0].content).toContain("不要让每个条目都机械套用同一批标题");
     expect(messages[1].content).toContain("姓名: 陈露");
     expect(messages[1].content).toContain("## 核心人格");
   });

@@ -247,6 +247,7 @@ export function StepWorld() {
                   errorMessage={errorMessage ?? generationTask.errorMessage}
                   onGenerate={handleGenerateWorld}
                   onCancel={() => cancel(generationKey)}
+                  useAnimalLoadingButton
                 />
               </div>
             </div>
