@@ -149,7 +149,7 @@ export function StepWorld() {
         signal: controller.signal,
       });
       const candidates = createWorldEntryCandidates(generationProject.id, result.data);
-      setPendingEntries((entries) => [...candidates, ...entries]);
+      setPendingEntries((entries) => [...entries, ...candidates]);
       setSucceeded(generationKey, result.taskId);
     } catch (error) {
       if (controller.signal.aborted) {
@@ -247,9 +247,9 @@ export function StepWorld() {
           ),
         );
       } else if (mode === "associate" && !entry.enabled) {
-        setPendingEntries((entries) => [candidate, ...entries]);
+        setPendingEntries((entries) => [...entries, candidate]);
       } else if (mode === "associate") {
-        setPendingEntries((entries) => [candidate, ...entries]);
+        setPendingEntries((entries) => [...entries, candidate]);
       } else {
         if (!nextProject) {
           throw new Error("没有可保存的 WorldInfo 条目。");
@@ -421,13 +421,17 @@ export function StepWorld() {
                   return (
                 <article
                   key={entry.id}
-                  className="echo-text-card"
+                  className={
+                    entry.enabled
+                      ? "echo-text-card border-[var(--animal-primary)] bg-[rgba(230,249,246,0.72)] shadow-[0_8px_24px_rgba(25,200,185,0.18)]"
+                      : "echo-text-card"
+                  }
                 >
                   <div className="flex items-start justify-between gap-3">
                     <input
                       value={entry.title}
                       onChange={(event) => void handleEditEntry(entry, { title: event.target.value })}
-                      className="min-w-0 flex-1 bg-transparent font-display text-2xl font-black text-[var(--echo-paper)] outline-none"
+                      className="min-h-16 min-w-0 flex-1 rounded-[24px] border-2 border-transparent bg-[rgba(255,255,255,0.28)] px-4 py-3 font-display text-2xl font-black leading-9 text-[var(--echo-paper)] outline-none focus:border-[var(--animal-primary)]"
                     />
                     <span
                       className={
@@ -444,19 +448,21 @@ export function StepWorld() {
                     onChange={(event) => void handleEditEntry(entry, { content: event.target.value })}
                     className="mt-4 min-h-72 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-base leading-8 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                   />
-                  <input
-                    value={entry.keys.join("、")}
-                    onChange={(event) =>
-                      void handleEditEntry(entry, {
-                        keys: event.target.value
-                          .split(/[、,\s]+/)
-                          .map((keyword) => keyword.trim())
-                          .filter(Boolean),
-                      })
-                    }
-                    placeholder="关键词，用顿号分隔"
-                    className="mt-3 w-full border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 py-2 font-mono text-xs text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
-                  />
+                  {entry.keys.length > 0 ? (
+                    <input
+                      value={entry.keys.join("、")}
+                      onChange={(event) =>
+                        void handleEditEntry(entry, {
+                          keys: event.target.value
+                            .split(/[、,\s]+/)
+                            .map((keyword) => keyword.trim())
+                            .filter(Boolean),
+                        })
+                      }
+                      placeholder="关键词，用顿号分隔"
+                      className="mt-3 w-full border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 py-2 font-mono text-xs text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                    />
+                  ) : null}
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Button
                       type="button"
