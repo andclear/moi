@@ -66,10 +66,10 @@ export function StepProgress({
                     isDone || isCurrent ? "cursor-pointer" : "cursor-default",
                     isCurrent
                       ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]"
-                      : "border-[var(--animal-border)] bg-[rgba(255,255,255,0.28)] text-[var(--animal-border)]",
+                      : "border-[var(--animal-border)] bg-[rgba(255,255,255,0.28)] !text-[var(--animal-border)]",
                     isDone &&
                       !isCurrent &&
-                      "hover:-translate-y-0.5 hover:border-[var(--animal-border)] hover:text-[var(--animal-border)]",
+                      "hover:-translate-y-0.5 hover:border-[var(--animal-border)] hover:!text-[var(--animal-border)]",
                   )}
                 >
                   <span className="min-w-0 whitespace-nowrap leading-tight">
