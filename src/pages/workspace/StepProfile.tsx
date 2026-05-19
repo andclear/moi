@@ -591,6 +591,7 @@ export function StepProfile() {
                   errorMessage={errorMessage ?? generationTask.errorMessage}
                   onGenerate={handleGenerateStage}
                   onCancel={() => cancel(generationKey)}
+                  useAnimalLoadingButton
                 />
               }
             />
@@ -643,6 +644,7 @@ export function StepProfile() {
                 errorMessage={errorMessage ?? generationTask.errorMessage}
                 onGenerate={handleGenerateStage}
                 onCancel={() => cancel(generationKey)}
+                useAnimalLoadingButton
               />
               <p className="font-mono text-xs leading-5 text-[var(--echo-muted)]">
                 选择后会写入岛民档案，让 TA 的轮廓更清楚。
@@ -664,6 +666,7 @@ export function StepProfile() {
                   errorMessage={errorMessage ?? generationTask.errorMessage}
                   onGenerate={handleGenerateStage}
                   onCancel={() => cancel(generationKey)}
+                  useAnimalLoadingButton
                 />
               }
             />
@@ -688,6 +691,7 @@ export function StepProfile() {
                   onCancel={() => cancel(updateGenerationKey)}
                   disabled={!completedDiaryText}
                   className="min-w-[13rem]"
+                  useAnimalLoadingButton
                 />
                 <p className="max-w-xl text-sm font-bold leading-7 text-[var(--animal-text-muted)]">
                   需要先补全 3 处遮挡。更新后会把本阶段确认的信息写入岛民档案。
