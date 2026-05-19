@@ -127,11 +127,12 @@ export function DossierPanel() {
           {shouldShowCharacterProfileButton ? (
             <AnimalButton
               htmlType="button"
-              type="primary"
-              size="middle"
+              type="text"
+              size="small"
               loading={isCharacterProfileGenerating}
               disabled={isCharacterProfileGenerating}
               danger={characterProfile?.status === "failed"}
+              className="echo-character-link-button"
               icon={<IdCard aria-hidden="true" size={16} />}
               onClick={() => void handleCharacterProfileClick()}
             >

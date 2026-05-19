@@ -121,6 +121,41 @@ input[type="radio"]:focus {
   animation: echo-dossier-ripple 1.8s ease-out infinite;
 }
 
+.echo-character-link-button {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--animal-primary-active) !important;
+  box-shadow: none !important;
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+  text-decoration: none !important;
+  text-underline-offset: 4px;
+}
+
+.echo-character-link-button:hover:not(:disabled),
+.echo-character-link-button:focus-visible {
+  background: transparent !important;
+  color: var(--animal-primary) !important;
+  box-shadow: none !important;
+  text-decoration: underline !important;
+}
+
+.echo-character-link-button[data-danger="true"] {
+  color: var(--animal-error-active) !important;
+}
+
+.echo-character-link-button[data-danger="true"]:hover:not(:disabled),
+.echo-character-link-button[data-danger="true"]:focus-visible {
+  color: var(--animal-error) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 [data-danger="true"] {
   color: white !important;
   border-color: var(--animal-error) !important;
