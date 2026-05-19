@@ -12,7 +12,6 @@ import { useGenerationStore } from "@/features/generation/generationStore";
 import { generateIntakeQuestionnaire, generateProfileDraft } from "@/features/llm/llmClient";
 import { createEmptyProfileSession } from "@/features/profile/profileSession";
 import { useSettingsStore } from "@/features/settings/settingsStore";
-import { EmptyState } from "@/shared/components/EmptyState";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
 import { nowIso } from "@/shared/lib/date";
@@ -116,7 +115,6 @@ export function StepQuestionnaire() {
   const designNote = streamedContent
     ? extractStreamingDesignNote(streamedContent)
     : questionnaire?.designNote || "";
-  const isQuestionnaireRunning = questionnaireTask.status === "running";
 
   const normalizedAnswers = useMemo(() => {
     if (!questionnaire) {
@@ -299,71 +297,68 @@ export function StepQuestionnaire() {
 
   if (isLoading) {
     return (
-      <div className="p-6 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-        正在整理登岛资料……
-      </div>
+      <main className="min-h-screen bg-[var(--animal-bg)] px-4 py-10">
+        <section className="mx-auto w-full max-w-3xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-7 shadow-[0_8px_0_0_var(--animal-shadow-input)]">
+          <p className="font-mono text-sm leading-6 text-[var(--animal-text-muted)]">
+            正在整理登岛资料……
+          </p>
+        </section>
+      </main>
     );
   }
 
   if (!project?.intake) {
     return (
-      <div className="p-6">
-        <EmptyState
-          icon={ClipboardList}
-          title="还没有登岛便笺"
-          description="先写下一点关于 TA 的线索，才可以领取问卷。"
-          action={
-            <Button type="button" onClick={() => navigate("/workspace/current/post")}>
-              返回岛民便笺
-            </Button>
-          }
-        />
-      </div>
+      <main className="min-h-screen bg-[var(--animal-bg)] px-4 py-10">
+        <section className="mx-auto w-full max-w-3xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-7 text-[var(--animal-text)] shadow-[0_8px_0_0_var(--animal-shadow-input)] sm:p-10">
+          <ClipboardList aria-hidden="true" size={28} className="text-[var(--animal-primary)]" />
+          <h1 className="mt-4 font-display text-4xl font-black">还没有登岛便笺</h1>
+          <p className="mt-3 font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
+            先写下一点关于 TA 的线索，才可以领取问卷。
+          </p>
+          <Button type="button" className="mt-6" onClick={() => navigate("/workspace/current/post")}>
+            返回岛民便笺
+          </Button>
+        </section>
+      </main>
     );
   }
 
   return (
-    <main className="echo-workspace-page">
-      <div className="echo-workspace-inner">
-        <section className="echo-section-card">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
-            登岛小问卷
-          </p>
-          <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
-            先问几个小问题，再去认识 TA
-          </h1>
-          <p className="mt-3 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            根据你刚写下的线索，系统会准备一份选择题，把世界观、相处感和关键反差先确认清楚。
-          </p>
-        </section>
+    <main className="min-h-screen bg-[var(--animal-bg)] px-4 py-8 text-[var(--animal-text)] sm:py-12">
+      <article className="mx-auto w-full max-w-4xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_10px_0_0_var(--animal-shadow-input)] sm:p-9">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
+          登岛小问卷
+        </p>
+        <h1 className="mt-3 font-display text-4xl font-black sm:text-5xl">
+          先问几个小问题，再去认识 TA
+        </h1>
+        <p className="mt-4 max-w-3xl font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
+          这张问卷会根据你刚写下的线索自动生成，用来确认世界观、相处感和关键反差。
+        </p>
 
-        <section className="echo-readable-shell mt-6">
-          <div className="echo-readable-main">
+        <div className="mt-8 grid gap-6">
             <details
-              className="rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 shadow-[0_4px_0_0_var(--animal-shadow-input)]"
+              className="rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-4 shadow-[0_4px_0_0_var(--animal-shadow-input)]"
               open
             >
               <summary className="cursor-pointer text-sm font-black text-[var(--animal-text)]">
-                问卷准备说明
+                思维链
               </summary>
               <div className="mt-3 min-h-20 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
                 {designNote ? (
-                  isQuestionnaireRunning ? (
-                    designNote
-                  ) : (
-                    <Typewriter speed={18} trigger={designNote}>
-                      {designNote}
-                    </Typewriter>
-                  )
+                  <Typewriter speed={18} trigger={designNote}>
+                    {designNote}
+                  </Typewriter>
                 ) : (
-                  "正在靠岸，领取登岛小问卷中...."
+                  "正在登岛，领取小问卷中...."
                 )}
               </div>
             </details>
 
             {questionnaire ? (
-              <div className="mt-6 grid gap-5">
-                <h2 className="font-display text-3xl font-black text-[var(--echo-paper)]">
+              <div className="grid gap-5">
+                <h2 className="font-display text-3xl font-black text-[var(--animal-text)]">
                   {questionnaire.title}
                 </h2>
                 {questionnaire.questions.map((question, index) => {
@@ -439,7 +434,7 @@ export function StepQuestionnaire() {
                 })}
 
                 {errorMessage && (
-                  <p className="flex items-start gap-2 font-mono text-sm leading-6 text-[var(--echo-stamp)]">
+                  <p className="flex flex-wrap items-start gap-2 font-mono text-sm leading-6 text-[var(--echo-stamp)]">
                     <MessageCircleQuestion aria-hidden="true" size={17} className="mt-1 shrink-0" />
                     {errorMessage}
                     {errorMessage.includes("尚未连接模型") && (
@@ -465,11 +460,15 @@ export function StepQuestionnaire() {
                 />
               </div>
             ) : (
-              <EmptyState
-                icon={MapPinned}
-                title="正在领取登岛小问卷"
-                description="如果等待太久，可以重新领取一次。"
-                action={
+              <section className="rounded-[var(--animal-radius-lg)] border-2 border-dashed border-[var(--animal-border)] bg-[rgba(255,255,255,0.34)] p-6">
+                <MapPinned aria-hidden="true" size={26} className="text-[var(--animal-primary)]" />
+                <h2 className="mt-4 font-display text-3xl font-black text-[var(--animal-text)]">
+                  正在领取登岛小问卷
+                </h2>
+                <p className="mt-3 font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
+                  岛务处正在根据线索准备题目。如果等待太久，可以重新领取一次。
+                </p>
+                <div className="mt-5">
                   <GenerationButton
                     idleLabel="重新领取问卷"
                     runningLabel="正在领取问卷"
@@ -479,22 +478,11 @@ export function StepQuestionnaire() {
                     onGenerate={handleGenerateQuestionnaire}
                     onCancel={() => cancel(questionnaireKey)}
                   />
-                }
-              />
+                </div>
+              </section>
             )}
-          </div>
-
-          <aside className="echo-side-panel">
-            <ClipboardList aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
-            <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
-              最初便笺
-            </h2>
-            <p className="mt-3 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--echo-muted)]">
-              {project.intake.brief}
-            </p>
-          </aside>
-        </section>
-      </div>
+        </div>
+      </article>
     </main>
   );
 }

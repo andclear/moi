@@ -1,52 +1,47 @@
-import { ClipboardList } from "lucide-react";
-import { useEffect } from "react";
+import { Loading } from "animal-island-ui";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import { AnimalIcon } from "@/shared/components/AnimalIcon";
-
 const QUESTIONNAIRE_LOADING_DURATION_MS = 2000;
+const QUESTIONNAIRE_LOADING_REVEAL_MS = 420;
 
 export function StepQuestionnaireLoading() {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const [active, setActive] = useState(true);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      navigate(`/workspace/${projectId ?? "current"}/questionnaire`, { replace: true });
+    const revealTimer = window.setTimeout(() => {
+      setActive(false);
+    }, Math.max(0, QUESTIONNAIRE_LOADING_DURATION_MS - QUESTIONNAIRE_LOADING_REVEAL_MS));
+    const navigateTimer = window.setTimeout(() => {
+      navigate(`/questionnaire/${projectId ?? "current"}`, { replace: true });
     }, QUESTIONNAIRE_LOADING_DURATION_MS);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(revealTimer);
+      window.clearTimeout(navigateTimer);
+    };
   }, [navigate, projectId]);
 
   return (
-    <main className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-4 py-16">
-      <section
-        className="w-full max-w-xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-7 text-center shadow-[0_8px_0_0_var(--animal-shadow-input)] sm:p-10"
-        aria-live="polite"
-        aria-busy="true"
-      >
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] shadow-[0_5px_0_0_var(--animal-primary-active)]">
-          <div className="relative h-16 w-16">
-            <span className="absolute inset-0 rounded-full border-4 border-[rgba(25,200,185,0.24)]" />
-            <span className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-[var(--animal-primary)] border-r-[var(--animal-warning)]" />
-            <AnimalIcon
-              name="icon-map"
-              size={28}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[var(--animal-text)]"
-            />
+    <main className="relative min-h-screen overflow-hidden bg-[var(--animal-bg)]">
+      <div className="absolute inset-0 flex items-center justify-center px-4 py-12">
+        <section className="w-full max-w-3xl rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-7 shadow-[0_8px_0_0_var(--animal-shadow-input)] sm:p-10">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
+            登岛小问卷
+          </p>
+          <h1 className="mt-3 font-display text-4xl font-black text-[var(--animal-text)]">
+            问卷纸正在铺开
+          </h1>
+          <div className="mt-8 grid gap-4">
+            <span className="h-5 w-3/5 rounded-full bg-[rgba(159,146,125,0.22)]" />
+            <span className="h-5 w-4/5 rounded-full bg-[rgba(159,146,125,0.16)]" />
+            <span className="h-5 w-2/3 rounded-full bg-[rgba(159,146,125,0.16)]" />
           </div>
-        </div>
-        <p className="mt-7 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
-          登岛准备中
-        </p>
-        <h1 className="mt-3 font-display text-4xl font-black text-[var(--animal-text)]">
-          正在领取登岛小问卷
-        </h1>
-        <p className="mx-auto mt-4 flex max-w-md items-center justify-center gap-2 font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
-          <ClipboardList aria-hidden="true" size={18} className="shrink-0 text-[var(--animal-primary)]" />
-          岛务处正在准备几个小问题，马上就能继续。
-        </p>
-      </section>
+        </section>
+      </div>
+      <Loading active={active} style={{ position: "absolute", inset: 0, height: "100%" }} />
     </main>
   );
 }

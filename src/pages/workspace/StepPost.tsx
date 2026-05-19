@@ -78,7 +78,7 @@ export function StepPost() {
       }
 
       markStepCompleted("post");
-      navigate(`/workspace/${updatedProject.id}/questionnaire-loading`);
+      navigate(`/questionnaire-loading/${updatedProject.id}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "登岛问卷准备失败。";
       setErrorMessage(message);

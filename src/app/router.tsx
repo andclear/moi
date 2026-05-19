@@ -5,11 +5,15 @@ import { AdminLoginPage } from "@/pages/admin/AdminLoginPage";
 import { LandingGate } from "@/pages/landing/LandingGate";
 import { LibraryPage } from "@/pages/library/LibraryPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
+import { StepQuestionnaire } from "@/pages/workspace/StepQuestionnaire";
+import { StepQuestionnaireLoading } from "@/pages/workspace/StepQuestionnaireLoading";
 import { WorkspacePage } from "@/pages/workspace/WorkspacePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <LandingGate /> },
+  { path: "questionnaire-loading/:projectId?", element: <StepQuestionnaireLoading /> },
+  { path: "questionnaire/:projectId?", element: <StepQuestionnaire /> },
   {
     element: <AppShell />,
     children: [
