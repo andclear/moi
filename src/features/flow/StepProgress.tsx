@@ -69,7 +69,7 @@ export function StepProgress({
                       : "border-[var(--animal-border)] bg-[rgba(255,255,255,0.28)] text-[var(--animal-border)]",
                     isDone &&
                       !isCurrent &&
-                      "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-primary-active)]",
+                      "hover:-translate-y-0.5 hover:border-[var(--animal-border)] hover:text-[var(--animal-border)]",
                   )}
                 >
                   <span className="min-w-0 whitespace-nowrap leading-tight">
