@@ -25,11 +25,62 @@
 - `${input.questionnaireMarkdown}`：相处测试问卷正文。
 - `${input.originalText}`：美化功能的原始文本。
 
+## 英文 Prompt 原文与中文翻译索引
+
+当前项目没有整段纯英文自然语言 prompt；英文主要以 JSON 字段名、格式名、第三方工具名、HTML/CSS/JS 片段、占位符和少量英文指令词的形式出现在中文 prompt 中。下表保留这些英文原文或含英文的完整 prompt 行，并给出同步中文翻译；字段名、标签名和占位符在实际 prompt 中必须继续保留英文原文。
+
+| 所在模板 | 英文原文或含英文的完整 prompt 行 | 中文翻译 |
+| --- | --- | --- |
+| 初始档案 System | `必须使用简体中文。不得输出 Markdown 代码块。只输出 JSON。` | 必须使用简体中文。不得输出 Markdown 代码块。只输出 JSON。 |
+| 初始档案 System | `角色最终可能导出为中文 YAML/JSON，所以字段内容必须保持中文表达，并在叙事字段中使用 {{user}} 和 {{char}}。` | 角色最终可能导出为中文 YAML/JSON，所以字段内容必须保持中文表达，并在叙事字段中使用 `{{user}}` 表示用户、`{{char}}` 表示角色。 |
+| 初始档案 User | `{"title":"18字以内的记录标题","dossierMarkdown":"完整 Markdown 记录"}` | 返回 JSON：`title` 是 18 字以内的记录标题，`dossierMarkdown` 是完整 Markdown 记录。 |
+| 初始档案 User | `Markdown 必须按这些二级标题组织：...` | Markdown 内容必须按指定二级标题组织。 |
+| 认识岛民子阶段 System | `所有内容使用简体中文。不要输出 Markdown 代码块。只输出 JSON。` | 所有内容使用简体中文。不要输出 Markdown 代码块。只输出 JSON。 |
+| 认识岛民子阶段 User | `{"choices":[{"title":"候选标题","content":"用户可见主文本","detail":"补充说明","dossierAddition":"选择后写入角色记录的一段中文 Markdown 内容"}]}` | 返回 JSON：`choices` 是候选数组；每项包含 `title` 标题、`content` 用户可见主文本、`detail` 补充说明、`dossierAddition` 选择后写入角色记录的一段中文 Markdown 内容。 |
+| 认识岛民子阶段 User | `choices 必须正好 3 个。` | `choices` 候选必须正好 3 个。 |
+| 认识岛民子阶段 User | `dossierAddition 只写当前阶段要补入的角色核心内容，不要包含 Markdown 标题。` | `dossierAddition` 只写当前阶段要补入的角色核心内容，不要包含 Markdown 标题。 |
+| WorldInfo System | `你是世界书整理助手，负责为角色卡创建 WorldInfo 世界书条目。` | 你是世界书整理助手，负责为角色卡创建 WorldInfo 世界书条目。 |
+| WorldInfo System | `输出只能是标准 JSON 数组，必须以 \`[\` 开头并以 \`]\` 结尾，数组长度必须等于用户要求的条目数，最多三条。` | 输出只能是标准 JSON 数组，必须以 `[` 开头并以 `]` 结尾，数组长度必须等于用户要求的条目数，最多三条。 |
+| WorldInfo System | `每个数组元素必须包含 comment、content、keywords。comment 是条目名，content 是正文，keywords 是关键词数组。` | 每个数组元素必须包含 `comment`、`content`、`keywords`。`comment` 是条目名，`content` 是正文，`keywords` 是关键词数组。 |
+| WorldInfo System | `每条新 WorldInfo 必须同时回应用户描述，并引用角色记录或已确认 WorldInfo 中至少一个已知元素。` | 每条新 WorldInfo 必须同时回应用户描述，并引用角色记录或已确认 WorldInfo 中至少一个已知元素。 |
+| WorldInfo System | `不要输出 Markdown，不要输出解释，不要输出 JSON 以外的内容，不要把 JSON 放进代码块。` | 不要输出 Markdown，不要输出解释，不要输出 JSON 以外的内容，不要把 JSON 放进代码块。 |
+| WorldInfo User | `已确认 WorldInfo：` | 已确认的 WorldInfo 世界书条目。 |
+| WorldInfo User | `本次请生成 EXACTLY ${input.entryCount} 条 WorldInfo。` | 本次请准确生成 `${input.entryCount}` 条 WorldInfo。 |
+| WorldInfo 格式片段 | `WorldInfo - ${entry.title}` | WorldInfo 条目 - `${entry.title}`。 |
+| 开场白 System | `输出只能是标准 JSON 数组，长度为 2 到 3。每个元素包含 title、content、atmosphere。` | 输出只能是标准 JSON 数组，长度为 2 到 3。每个元素包含 `title` 标题、`content` 正文、`atmosphere` 氛围。 |
+| 开场白 System | `不要输出 Markdown，不要输出 <cot>，不要输出 JSON 以外的内容。` | 不要输出 Markdown，不要输出 `<cot>` 思维链标签，不要输出 JSON 以外的内容。 |
+| 相处测试问卷 System | `输出只能是标准 JSON 对象，包含 title 和 questionnaireMarkdown。` | 输出只能是标准 JSON 对象，包含 `title` 标题和 `questionnaireMarkdown` 问卷 Markdown 正文。 |
+| 相处测试问卷 System | `questionnaireMarkdown 必须是中文 Markdown，包含 6 个问题，并标明提问者或场景。` | `questionnaireMarkdown` 必须是中文 Markdown，包含 6 个问题，并标明提问者或场景。 |
+| 相处测试回答 System | `你将扮演角色 {{char}} 完成相处测试问卷，同时给出可供创作者判断的内心独白与 OOC 风险。` | 你将扮演角色 `{{char}}` 完成相处测试问卷，同时给出可供创作者判断的内心独白与 OOC 风险。 |
+| 相处测试回答 System | `严格使用简体中文。必须保留 {{char}} 与 {{user}} 字面占位符。` | 严格使用简体中文。必须保留 `{{char}}` 与 `{{user}}` 字面占位符。 |
+| 相处测试回答 System | `输出只能是标准 JSON 对象，包含 resultMarkdown、formalReplies、innerMonologues、riskNotes。` | 输出只能是标准 JSON 对象，包含 `resultMarkdown` 结果 Markdown、`formalReplies` 正式回复、`innerMonologues` 内心独白、`riskNotes` 风险记录。 |
+| 相处测试回答 System | `resultMarkdown 需要以对话形式展示每个问题、正式回复、内心独白。riskNotes 若无风险则返回空数组。` | `resultMarkdown` 需要以对话形式展示每个问题、正式回复、内心独白。`riskNotes` 若无风险则返回空数组。 |
+| 美化 System | `你是 SillyTavern 前端美化与 WorldInfo 架构师。` | 你是 SillyTavern 前端美化与 WorldInfo 架构师。 |
+| 美化 System | `你要基于用户提供的原始文本，同时生成四个产物：WorldInfo 格式说明、正则脚本、美化 HTML/CSS/JS、需要插入开场白或回复中的格式文本。` | 你要基于用户提供的原始文本，同时生成四个产物：WorldInfo 格式说明、正则脚本、美化 HTML/CSS/JS、需要插入开场白或回复中的格式文本。 |
+| 美化 System | `严格输出 JSON object，不能输出 Markdown 代码块、解释文本或额外字段。` | 严格输出 JSON 对象，不能输出 Markdown 代码块、解释文本或额外字段。 |
+| 美化 System | `字段必须是：worldinfo、regex、html、original_text、formatted_original_text。` | 字段必须是：`worldinfo` 世界书信息、`regex` 正则表达式、`html` 格式化 HTML/CSS/JS、`original_text` 原始文本、`formatted_original_text` 格式化后的原始文本。 |
+| 美化 System | `如果原始文本只是简单触发词，worldinfo 必须为 null；如果包含变量、数值、状态、字段列表，必须生成 worldinfo。` | 如果原始文本只是简单触发词，`worldinfo` 必须为 `null`；如果包含变量、数值、状态、字段列表，必须生成 `worldinfo`。 |
+| 美化 System | `复杂状态栏默认使用 <details><summary>标题</summary><statusblock>内容</statusblock></details>。` | 复杂状态栏默认使用 `<details><summary>标题</summary><statusblock>内容</statusblock></details>` 结构。 |
+| 美化 System | `正则必须只匹配 <statusblock>...</statusblock> 内部，不能匹配外层 details。` | 正则必须只匹配 `<statusblock>...</statusblock>` 内部，不能匹配外层 `details`。 |
+| 美化 System | `HTML 必须包含唯一父级 class、style 与 script；容器 pointer-events: none，交互子元素 pointer-events: auto。` | HTML 必须包含唯一父级 `class`、`style` 与 `script`；容器 `pointer-events: none`，交互子元素 `pointer-events: auto`。 |
+| 美化 System | `禁止使用 vh 单位，禁止使用 transition；动态效果使用 @keyframes 或 JS 切换 class。` | 禁止使用 `vh` 单位，禁止使用 `transition`；动态效果使用 `@keyframes` 或 JS 切换 `class`。 |
+| 美化 User | `Original Text：` | 原始文本。 |
+| 美化 User | `User Request：` | 用户要求。 |
+| 美化 User | `{"worldinfo":{"key":"条目名称","content":"中文说明内容"},"regex":"正则表达式","html":"格式化 HTML/CSS/JS","original_text":"示例输出格式","formatted_original_text":"严格匹配正则的原始文本"}` | 返回 JSON：`worldinfo.key` 是条目名称，`worldinfo.content` 是中文说明内容，`regex` 是正则表达式，`html` 是格式化 HTML/CSS/JS，`original_text` 是示例输出格式，`formatted_original_text` 是严格匹配正则的原始文本。 |
+| 关系网 System | `每个配角都必须有独立欲望、与主角双向关系、可写入 WorldInfo 的生活痕迹。` | 每个配角都必须有独立欲望、与主角双向关系、可写入 WorldInfo 的生活痕迹。 |
+| 关系网 System | `严格输出 JSON object，字段为 silhouettes、exclusions、fragment。` | 严格输出 JSON 对象，字段为 `silhouettes` 可能方向、`exclusions` 不合适方向、`fragment` 碎片文本。 |
+| 关系网 User | `silhouettes 必须恰好 3 个，每个包含 name、role、summary、personality、relationToMain。` | `silhouettes` 必须恰好 3 个，每个包含 `name` 名字、`role` 身份、`summary` 摘要、`personality` 性格、`relationToMain` 与主角的关系。 |
+| 关系网 User | `exclusions 必须恰好 2 个，每个包含 title、reason。` | `exclusions` 必须恰好 2 个，每个包含 `title` 标题、`reason` 理由。 |
+| 兼容包装 | `system prompt` | 系统提示词。 |
+| 导出角色卡 | `system_prompt` | 系统提示词字段。 |
+| 导出角色卡 | `post_history_instructions` | 历史消息后的补充指令字段。 |
+| 导出角色卡 | `depth_prompt.prompt` | 深度提示词内容字段。 |
+
 ## 英文字段与术语总翻译表
 
-项目提示词中有一部分英文是 JSON 字段名、格式名或第三方工具专名。字段名必须保持原样返回，下面给出同步中文含义。
+下面是英文原文和中文含义的快速索引。字段名必须保持原样返回。
 
-| 英文 | 中文含义 |
+| 英文原文 | 中文翻译 |
 | --- | --- |
 | `JSON` | JSON 数据格式 |
 | `JSON object` | JSON 对象 |
