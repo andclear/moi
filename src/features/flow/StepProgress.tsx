@@ -1,5 +1,5 @@
-import { ArrowRight, Check, Circle } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Check, Circle } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router";
 
 import type { FlowStep } from "@/features/flow/flowTypes";
@@ -26,46 +26,42 @@ export function StepProgress({
   if (compact) {
     return (
       <>
-        <ol className="grid grid-cols-2 gap-2" aria-label="创作流程进度">
+        <ol
+          className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+          aria-label="创作流程进度"
+        >
           {steps.map((step, index) => {
             const isDone = completedStepIds.includes(step.id) || index < currentIndex;
             const isCurrent = step.id === currentStepId;
             return (
-              <Fragment key={step.id}>
-                <li>
-                  <Link
-                    to={`/workspace/current/${step.id}`}
-                    onClick={(event) => {
-                      if (!isDone && !isCurrent) {
-                        event.preventDefault();
-                        return;
-                      }
-                      if (isDone && !isCurrent) {
-                        event.preventDefault();
-                        setPendingTarget(step);
-                      }
-                    }}
-                    aria-disabled={!isDone && !isCurrent}
-                    className={cn(
-                      "flex w-full items-center justify-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-2 text-center text-xs font-black transition-all duration-200",
-                      isDone || isCurrent ? "cursor-pointer" : "cursor-default",
-                      isCurrent
-                        ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]"
-                        : "border-[var(--animal-border)] bg-[rgba(255,255,255,0.38)] text-[var(--animal-text-muted)]",
-                      isDone &&
-                        !isCurrent &&
-                        "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-text)]",
-                    )}
-                  >
-                    <span className="block truncate whitespace-nowrap">{step.label}</span>
-                  </Link>
-                </li>
-                {index < steps.length - 1 ? (
-                  <li className="col-span-2 flex justify-center py-0.5 text-[var(--animal-text-disabled)]">
-                    <ArrowRight aria-hidden="true" size={14} />
-                  </li>
-                ) : null}
-              </Fragment>
+              <li key={step.id}>
+                <Link
+                  to={`/workspace/current/${step.id}`}
+                  onClick={(event) => {
+                    if (!isDone && !isCurrent) {
+                      event.preventDefault();
+                      return;
+                    }
+                    if (isDone && !isCurrent) {
+                      event.preventDefault();
+                      setPendingTarget(step);
+                    }
+                  }}
+                  aria-disabled={!isDone && !isCurrent}
+                  className={cn(
+                    "flex min-h-9 w-full items-center justify-center rounded-[var(--animal-radius-pill)] border-2 px-3 py-1.5 text-center text-[11px] font-black transition-all duration-200 sm:text-xs",
+                    isDone || isCurrent ? "cursor-pointer" : "cursor-default",
+                    isCurrent
+                      ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)]"
+                      : "border-[var(--animal-border)] bg-[rgba(255,255,255,0.28)] text-[var(--animal-text-disabled)]",
+                    isDone &&
+                      !isCurrent &&
+                      "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-text-muted)]",
+                  )}
+                >
+                  <span className="min-w-0 truncate whitespace-nowrap leading-tight">{step.label}</span>
+                </Link>
+              </li>
             );
           })}
         </ol>
