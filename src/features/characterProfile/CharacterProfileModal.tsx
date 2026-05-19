@@ -1,5 +1,5 @@
 import { Plus, Save, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import {
   parseCharacterProfileYaml,
@@ -42,11 +42,49 @@ function cloneWithUpdate(
 }
 
 function shouldUseTextarea(key: string, value: string) {
+  const likelySentence = /[，。；：、,.!?！？]/.test(value);
   return (
-    value.length > 40 ||
+    value.length > 16 ||
+    likelySentence ||
     ["气味", "核心驱动力", "恐惧与弱点", "创伤与转折点", "说话风格", "习惯性小动作", "其他", "经历"].includes(
       key,
     )
+  );
+}
+
+interface AutoResizeTextareaProps {
+  value: string;
+  minRows?: number;
+  className?: string;
+  onChange: (value: string) => void;
+}
+
+function AutoResizeTextarea({
+  value,
+  minRows = 2,
+  className,
+  onChange,
+}: AutoResizeTextareaProps) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      rows={minRows}
+      onChange={(event) => onChange(event.target.value)}
+      className={className}
+    />
   );
 }
 
@@ -61,7 +99,7 @@ interface FieldEditorProps {
 function FieldEditor({ label, value, path, depth = 0, onChange }: FieldEditorProps) {
   if (Array.isArray(value)) {
     return (
-      <section className="rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-4">
+      <section className="echo-character-array rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-4">
         <div className="flex items-center justify-between gap-3">
           <h4 className="font-display text-base font-black text-[var(--animal-text)]">{label}</h4>
           <Button
@@ -81,16 +119,17 @@ function FieldEditor({ label, value, path, depth = 0, onChange }: FieldEditorPro
           {value.map((item, index) => (
             <div
               key={`${path.join(".")}-${index}`}
-              className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2"
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3"
             >
-              <textarea
+              <AutoResizeTextarea
                 value={item}
-                onChange={(event) => {
+                minRows={2}
+                className="echo-character-textarea"
+                onChange={(nextValue) => {
                   const nextItems = [...value];
-                  nextItems[index] = event.target.value;
+                  nextItems[index] = nextValue;
                   onChange(path, nextItems);
                 }}
-                className="min-h-20 resize-y"
               />
               <Button
                 type="button"
@@ -110,17 +149,29 @@ function FieldEditor({ label, value, path, depth = 0, onChange }: FieldEditorPro
   }
 
   if (typeof value === "string") {
+    const useTextarea = shouldUseTextarea(label, value);
     return (
-      <label className={shouldUseTextarea(label, value) ? "grid gap-2 md:col-span-2" : "grid gap-2"}>
+      <label
+        className={
+          useTextarea
+            ? "echo-character-field echo-character-field--wide"
+            : "echo-character-field"
+        }
+      >
         <span className="text-sm font-black text-[var(--animal-text)]">{label}</span>
-        {shouldUseTextarea(label, value) ? (
-          <textarea
+        {useTextarea ? (
+          <AutoResizeTextarea
             value={value}
-            onChange={(event) => onChange(path, event.target.value)}
-            className="min-h-28 resize-y"
+            minRows={2}
+            onChange={(nextValue) => onChange(path, nextValue)}
+            className="echo-character-textarea"
           />
         ) : (
-          <input value={value} onChange={(event) => onChange(path, event.target.value)} />
+          <input
+            value={value}
+            onChange={(event) => onChange(path, event.target.value)}
+            className="echo-character-input"
+          />
         )}
       </label>
     );
@@ -131,7 +182,7 @@ function FieldEditor({ label, value, path, depth = 0, onChange }: FieldEditorPro
       className={
         depth === 0
           ? "rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_3px_0_0_var(--animal-shadow-input)]"
-          : "rounded-[var(--animal-radius)] border border-[var(--animal-border)] bg-[rgba(255,255,255,0.34)] p-4 md:col-span-2"
+          : "echo-character-nested rounded-[var(--animal-radius)] border border-[var(--animal-border)] bg-[rgba(255,255,255,0.34)] p-4"
       }
     >
       <h3
@@ -143,7 +194,7 @@ function FieldEditor({ label, value, path, depth = 0, onChange }: FieldEditorPro
       >
         {label}
       </h3>
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <div className="echo-character-fields-grid mt-4">
         {Object.entries(value).map(([childKey, childValue]) => (
           <FieldEditor
             key={[...path, childKey].join(".")}
@@ -243,7 +294,7 @@ export function CharacterProfileModal({
             {errorMessage}
           </p>
         ) : null}
-        <div className="grid gap-4">
+        <div className="grid gap-5">
           {Object.entries(formValue).map(([key, value]) => (
             <FieldEditor
               key={key}

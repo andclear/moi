@@ -156,6 +156,63 @@ input[type="radio"]:focus {
   box-shadow: none !important;
 }
 
+.echo-character-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.echo-character-field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.echo-character-field--wide,
+.echo-character-array,
+.echo-character-nested {
+  grid-column: 1 / -1;
+}
+
+.echo-character-input,
+.echo-character-textarea {
+  width: 100%;
+  min-width: 0;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: var(--animal-border) !important;
+  border-radius: var(--animal-radius) !important;
+  background: var(--animal-bg-input) !important;
+  color: var(--animal-text-body) !important;
+  font-size: 0.96rem;
+  font-weight: 700;
+  line-height: 1.65 !important;
+  box-shadow: 0 3px 0 0 var(--animal-shadow-input) !important;
+}
+
+.echo-character-input {
+  min-height: 3.35rem;
+  padding: 0.78rem 1rem !important;
+}
+
+.echo-character-textarea {
+  min-height: 4.75rem;
+  overflow: hidden;
+  resize: none;
+  padding: 0.95rem 1rem !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.echo-character-input:focus,
+.echo-character-textarea:focus {
+  border-color: var(--animal-focus-yellow) !important;
+  box-shadow:
+    0 3px 0 0 var(--animal-focus-yellow-dark),
+    0 0 0 3px rgba(255, 204, 0, 0.15) !important;
+}
+
 [data-danger="true"] {
   color: white !important;
   border-color: var(--animal-error) !important;
