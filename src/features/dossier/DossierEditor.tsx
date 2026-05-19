@@ -434,7 +434,7 @@ export function DossierEditor({
                 className="min-w-40 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)]"
                 onClick={() => void handleRewriteSelection()}
               >
-                确认修改
+                {isRewriting ? "正在修改中..." : "使用AI进行修改"}
               </Button>
             </div>
           </section>
