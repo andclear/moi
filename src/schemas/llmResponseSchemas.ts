@@ -11,6 +11,7 @@ export const generationTaskSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
   type: z.enum([
+    "character_profile",
     "profile",
     "intake_questionnaire",
     "world",

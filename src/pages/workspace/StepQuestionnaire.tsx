@@ -3,13 +3,14 @@ import { Collapse, Footer, Typewriter } from "animal-island-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
-import type { IntakeAnswer, IntakeQuestion, Project } from "@/db/types";
+import type { Project } from "@/db/types";
 import { projectService } from "@/db/services/projectService";
 import { buildDossierBlockMeta } from "@/features/dossier/dossierSections";
 import { useDossierStore } from "@/features/dossier/dossierStore";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { useGenerationStore } from "@/features/generation/generationStore";
 import { generateIntakeQuestionnaire, generateProfileDraft } from "@/features/llm/llmClient";
+import { buildProfileBrief } from "@/features/profile/profileBrief";
 import { createEmptyProfileSession } from "@/features/profile/profileSession";
 import { useSettingsStore } from "@/features/settings/settingsStore";
 import { GenerationButton } from "@/shared/components/GenerationButton";
@@ -31,33 +32,6 @@ function extractStreamingDesignNote(content: string) {
     .trim();
 
   return leadingText.startsWith("{") ? "" : leadingText;
-}
-
-function answersToMarkdown(questions: IntakeQuestion[], answers: IntakeAnswer[]) {
-  const answerByQuestion = new Map(answers.map((answer) => [answer.questionId, answer]));
-
-  return questions
-    .map((question) => {
-      const answer = answerByQuestion.get(question.id);
-      const option = question.options.find((item) => item.id === answer?.optionId);
-      const value = answer?.customValue?.trim() || option?.label || "未选择";
-      return `- ${question.title}\n  - ${value}`;
-    })
-    .join("\n");
-}
-
-function buildProfileBrief(project: Project, answers: IntakeAnswer[]) {
-  const intake = project.intake;
-  const questionnaire = intake?.questionnaire;
-  const lines = [
-    "用户最初写下的角色线索：",
-    intake?.brief ?? project.dossier.markdown,
-    "",
-    "用户补充回答：",
-    questionnaire ? answersToMarkdown(questionnaire.questions, answers) : "暂无",
-  ];
-
-  return lines.join("\n");
 }
 
 function createInitialAnswers(project: Project | null | undefined) {

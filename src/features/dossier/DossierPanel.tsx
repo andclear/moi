@@ -1,12 +1,22 @@
-import { CheckCircle2, Clock3, LockKeyhole, PenLine, TriangleAlert } from "lucide-react";
-import { useEffect } from "react";
+import { Button as AnimalButton } from "animal-island-ui";
+import { CheckCircle2, Clock3, IdCard, LockKeyhole, PenLine, TriangleAlert } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
+import type { Project } from "@/db/types";
+import { projectRepository } from "@/db/repositories/projectRepository";
+import { CharacterProfileModal } from "@/features/characterProfile/CharacterProfileModal";
+import {
+  generateAndSaveCharacterProfile,
+  saveCharacterProfileYaml,
+} from "@/features/characterProfile/characterProfileService";
 import { DossierEditor } from "@/features/dossier/DossierEditor";
 import { useDossierStore } from "@/features/dossier/dossierStore";
 
 export function DossierPanel() {
   const { projectId } = useParams();
+  const [project, setProject] = useState<Project | null>(null);
+  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
   const {
     markdown,
     saveStatus,
@@ -16,9 +26,32 @@ export function DossierPanel() {
   } = useDossierStore();
 
   useEffect(() => {
+    let ignored = false;
+
+    async function loadCharacterProject() {
+      if (!projectId) {
+        setProject(null);
+        return;
+      }
+      const nextProject = await projectRepository.getById(projectId);
+      if (!ignored) {
+        setProject(nextProject ?? null);
+      }
+    }
+
     if (projectId) {
       void loadProject(projectId);
+      void loadCharacterProject();
     }
+
+    const intervalId = window.setInterval(() => {
+      void loadCharacterProject();
+    }, 2000);
+
+    return () => {
+      ignored = true;
+      window.clearInterval(intervalId);
+    };
   }, [projectId, loadProject]);
 
   const statusText =
@@ -31,6 +64,46 @@ export function DossierPanel() {
           : "等待记录";
   const StatusIcon =
     saveStatus === "saving" ? Clock3 : saveStatus === "error" ? TriangleAlert : CheckCircle2;
+  const characterProfile = project?.characterProfile;
+  const isCharacterProfileGenerating = characterProfile?.status === "generating";
+  const shouldShowCharacterProfileButton = Boolean(projectId && characterProfile);
+  const characterButtonText = isCharacterProfileGenerating
+    ? "正在创建角色信息"
+    : characterProfile?.status === "failed"
+      ? "角色信息生成失败"
+      : characterProfile?.yaml
+        ? "角色信息"
+        : "生成角色信息";
+
+  async function handleCharacterProfileClick() {
+    if (!projectId || !project) {
+      return;
+    }
+
+    if (characterProfile?.status === "succeeded" && characterProfile.yaml) {
+      setIsCharacterModalOpen(true);
+      return;
+    }
+
+    setProject({
+      ...project,
+      characterProfile: {
+        yaml: characterProfile?.yaml ?? "",
+        status: "generating",
+        retryCount: 0,
+      },
+    });
+    const updatedProject = await generateAndSaveCharacterProfile(projectId, project.dossier.markdown);
+    setProject(updatedProject ?? null);
+  }
+
+  async function handleSaveCharacterProfile(nextYaml: string) {
+    if (!projectId) {
+      return;
+    }
+    const updatedProject = await saveCharacterProfileYaml(projectId, nextYaml);
+    setProject(updatedProject ?? null);
+  }
 
   return (
     <aside className="flex h-full flex-col border-l-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)]">
@@ -46,15 +119,36 @@ export function DossierPanel() {
           </div>
           <LockKeyhole aria-hidden="true" size={20} className="text-[var(--echo-muted)]" />
         </div>
-        <div className="mt-4 flex items-center gap-2 font-mono text-xs text-[var(--echo-muted)]">
-          <StatusIcon aria-hidden="true" size={15} />
-          <span>{statusText}</span>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 font-mono text-xs text-[var(--echo-muted)]">
+            <StatusIcon aria-hidden="true" size={15} />
+            <span>{statusText}</span>
+          </div>
+          {shouldShowCharacterProfileButton ? (
+            <AnimalButton
+              htmlType="button"
+              type="primary"
+              size="middle"
+              loading={isCharacterProfileGenerating}
+              disabled={isCharacterProfileGenerating}
+              danger={characterProfile?.status === "failed"}
+              icon={<IdCard aria-hidden="true" size={16} />}
+              onClick={() => void handleCharacterProfileClick()}
+            >
+              {characterButtonText}
+            </AnimalButton>
+          ) : null}
         </div>
         {errorMessage && (
           <p className="mt-3 font-mono text-xs leading-5 text-[var(--echo-stamp)]">
             {errorMessage}
           </p>
         )}
+        {characterProfile?.status === "failed" && characterProfile.errorMessage ? (
+          <p className="mt-3 text-xs font-bold leading-5 text-[var(--animal-error-active)]">
+            {characterProfile.errorMessage}
+          </p>
+        ) : null}
       </div>
 
       {projectId ? (
@@ -87,6 +181,12 @@ export function DossierPanel() {
           </div>
         </div>
       )}
+      <CharacterProfileModal
+        open={isCharacterModalOpen}
+        yaml={characterProfile?.yaml ?? ""}
+        onClose={() => setIsCharacterModalOpen(false)}
+        onSave={handleSaveCharacterProfile}
+      />
     </aside>
   );
 }

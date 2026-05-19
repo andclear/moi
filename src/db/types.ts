@@ -4,6 +4,7 @@ export type DossierBlockSource = "ai_inferred" | "user_confirmed";
 export type GenerationStatus = "pending" | "running" | "succeeded" | "failed" | "cancelled";
 export type GenerationType =
   | "intake_questionnaire"
+  | "character_profile"
   | "profile"
   | "world"
   | "greeting"
@@ -185,6 +186,15 @@ export interface ProjectIntake {
   generationId?: string;
 }
 
+export interface CharacterProfileDocument {
+  yaml: string;
+  status: "idle" | "generating" | "succeeded" | "failed";
+  retryCount: number;
+  errorMessage?: string;
+  generationId?: string;
+  updatedAt?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -198,6 +208,7 @@ export interface Project {
   companionRelations: CompanionRelation[];
   profileSession?: ProfileSession;
   intake?: ProjectIntake;
+  characterProfile?: CharacterProfileDocument;
   createdAt: string;
   updatedAt: string;
   archivedAt?: string;
@@ -217,6 +228,7 @@ export interface HistorySnapshot {
   companionRelations: CompanionRelation[];
   profileSession?: ProfileSession;
   intake?: ProjectIntake;
+  characterProfile?: CharacterProfileDocument;
   generationIds: string[];
   createdAt: string;
 }

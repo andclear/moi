@@ -18,6 +18,7 @@ import {
   parseDossierSections,
 } from "@/features/dossier/dossierSections";
 import { useDossierStore } from "@/features/dossier/dossierStore";
+import { generateAndSaveCharacterProfile } from "@/features/characterProfile/characterProfileService";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { useGenerationStore } from "@/features/generation/generationStore";
 import {
@@ -486,6 +487,7 @@ export function StepProfile() {
       setSucceeded(updateGenerationKey, result.taskId);
 
       if (updatedProject) {
+        void generateAndSaveCharacterProfile(updatedProject.id, result.data.dossierMarkdown);
         markStepCompleted("profile");
         navigate(`/workspace/${updatedProject.id}/world`);
       }
@@ -682,6 +684,18 @@ export function StepProfile() {
               />
               <div className="flex flex-wrap items-center gap-4">
                 <GenerationButton
+                  idleLabel="重新生成日记"
+                  runningLabel="正在重新生成日记"
+                  retryLabel="重新生成日记"
+                  variant="secondary"
+                  status={generationTask.status}
+                  errorMessage={errorMessage ?? generationTask.errorMessage}
+                  onGenerate={handleGenerateStage}
+                  onCancel={() => cancel(generationKey)}
+                  disabled={updateGenerationTask.status === "running"}
+                  useAnimalLoadingButton
+                />
+                <GenerationButton
                   idleLabel="更新岛民档案"
                   runningLabel="正在更新档案"
                   retryLabel="重新更新"
@@ -689,7 +703,7 @@ export function StepProfile() {
                   errorMessage={errorMessage ?? activeTask.errorMessage}
                   onGenerate={handleUpdateDossier}
                   onCancel={() => cancel(updateGenerationKey)}
-                  disabled={!completedDiaryText}
+                  disabled={!completedDiaryText || generationTask.status === "running"}
                   className="min-w-[13rem]"
                   useAnimalLoadingButton
                 />

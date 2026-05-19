@@ -28,6 +28,10 @@ export function createHistoryRepository(db: EchoDatabase = echoDb) {
         profileSession: input.project.profileSession
           ? structuredClone(input.project.profileSession)
           : undefined,
+        intake: input.project.intake ? structuredClone(input.project.intake) : undefined,
+        characterProfile: input.project.characterProfile
+          ? structuredClone(input.project.characterProfile)
+          : undefined,
         generationIds: input.generationIds ?? [],
         createdAt: nowIso(),
       };

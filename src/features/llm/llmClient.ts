@@ -22,6 +22,7 @@ import { buildCompanionMessages } from "@/prompts/companionPrompts";
 import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
 import { buildWorldEntryMessages } from "@/prompts/worldPrompts";
 import { buildIntakeQuestionnaireMessages } from "@/prompts/intakePrompts";
+import { buildCharacterProfileYamlMessages } from "@/prompts/characterProfilePrompts";
 import { withGlobalPrompt } from "@/prompts/globalPrompt";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
 import { parseLlmJson } from "@/features/llm/jsonResponse";
@@ -374,6 +375,29 @@ export async function generateProfileDossierUpdate(input: {
   return {
     taskId: result.taskId,
     data: parseLlmJson(result.response.content, profileDossierUpdateResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateCharacterProfileYaml(input: {
+  projectId: string;
+  characterProfile: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "character_profile",
+    messages: buildCharacterProfileYamlMessages(input.characterProfile),
+    inputSummary: "生成角色信息 YAML",
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    yaml: result.response.content
+      .replace(/^```(?:yaml)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim(),
     response: result.response,
   };
 }

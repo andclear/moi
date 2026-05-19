@@ -22,6 +22,10 @@ export function createHistoryService(db: EchoDatabase = echoDb) {
       companions: structuredClone(snapshot.companions ?? []),
       companionRelations: structuredClone(snapshot.companionRelations ?? []),
       profileSession: snapshot.profileSession ? structuredClone(snapshot.profileSession) : project.profileSession,
+      intake: snapshot.intake ? structuredClone(snapshot.intake) : project.intake,
+      characterProfile: snapshot.characterProfile
+        ? structuredClone(snapshot.characterProfile)
+        : project.characterProfile,
       updatedAt: now,
     };
   }
@@ -81,6 +85,10 @@ export function createHistoryService(db: EchoDatabase = echoDb) {
         companions: structuredClone(snapshot.companions ?? []),
         companionRelations: structuredClone(snapshot.companionRelations ?? []),
         profileSession: snapshot.profileSession ? structuredClone(snapshot.profileSession) : undefined,
+        intake: snapshot.intake ? structuredClone(snapshot.intake) : undefined,
+        characterProfile: snapshot.characterProfile
+          ? structuredClone(snapshot.characterProfile)
+          : undefined,
         createdAt: now,
         updatedAt: now,
         archivedAt: undefined,
