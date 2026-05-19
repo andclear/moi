@@ -2,7 +2,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import { css } from "@codemirror/lang-css";
 import { html as htmlLanguage } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
-import { Check, Code2, FlaskConical, Loader2, WandSparkles } from "lucide-react";
+import { Check, Code2, FlaskConical, WandSparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import type { BeautificationAsset, Project } from "@/db/types";
@@ -97,7 +97,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
   }
 
   return (
-    <section className="border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.36)] p-5">
+    <section className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
@@ -124,7 +124,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
               value={originalText}
               onChange={(event) => setOriginalText(event.target.value)}
               rows={7}
-              className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+              className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
             />
           </label>
           <label className="grid gap-2 text-sm font-bold text-[var(--echo-paper)]">
@@ -133,11 +133,11 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
               value={userRequest}
               onChange={(event) => setUserRequest(event.target.value)}
               rows={4}
-              className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+              className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
             />
           </label>
-          <Button type="button" disabled={isGenerating} onClick={() => void handleGenerate()}>
-            {isGenerating ? <Loader2 aria-hidden="true" size={18} /> : <WandSparkles aria-hidden="true" size={18} />}
+          <Button type="button" loading={isGenerating} disabled={isGenerating} onClick={() => void handleGenerate()}>
+            {isGenerating ? null : <WandSparkles aria-hidden="true" size={18} />}
             生成美化方案
           </Button>
           {error && (
@@ -154,8 +154,8 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                   onClick={() => setSelectedId(asset.id)}
                   className={`w-full border p-3 text-left font-mono text-sm ${
                     selectedAsset?.id === asset.id
-                      ? "border-[var(--echo-paper)] bg-[var(--echo-paper)] text-[var(--echo-ink)]"
-                      : "border-[var(--echo-line)] bg-[rgba(2,16,24,0.5)] text-[var(--echo-muted)]"
+                      ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
+                      : "border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] text-[var(--echo-muted)]"
                   }`}
                 >
                   <span className="block font-bold">{asset.title}</span>
@@ -178,10 +178,10 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                 <input
                   value={selectedAsset.title}
                   onChange={(event) => void updateAsset({ title: event.target.value })}
-                  className="h-10 border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                  className="h-10 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                 />
               </label>
-              <label className="flex items-center gap-2 border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.5)] px-3 py-2 font-mono text-sm text-[var(--echo-muted)]">
+              <label className="flex items-center gap-2 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 py-2 font-mono text-sm text-[var(--echo-muted)]">
                 <input
                   type="checkbox"
                   checked={selectedAsset.enabled}
@@ -233,7 +233,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                 value={selectedAsset.formattedOriginalText}
                 onChange={(event) => void updateAsset({ formattedOriginalText: event.target.value })}
                 rows={6}
-                className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
               />
             </label>
           </div>

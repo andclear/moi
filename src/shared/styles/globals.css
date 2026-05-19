@@ -2,8 +2,8 @@
 @import "./tokens.css";
 
 @theme {
-  --font-display: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Courier Prime", "Courier New", monospace;
+  --font-display: Nunito, "Noto Sans SC", "Zen Maru Gothic", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: Nunito, "Noto Sans SC", "Zen Maru Gothic", ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -12,8 +12,14 @@
 
 html {
   min-width: 320px;
-  background: var(--echo-bg);
-  font-family: var(--font-display);
+  background:
+    radial-gradient(circle at 14% 18%, rgba(130, 213, 187, 0.34), transparent 28%),
+    radial-gradient(circle at 86% 12%, rgba(247, 205, 103, 0.26), transparent 24%),
+    linear-gradient(180deg, #f8f8f0 0%, #f0e8d8 100%);
+  color: var(--echo-text);
+  font-family: var(--animal-font);
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 body {
@@ -28,9 +34,86 @@ select {
   font: inherit;
 }
 
+input,
+textarea,
+select {
+  border-radius: var(--animal-radius-lg) !important;
+  border-color: var(--animal-border) !important;
+  background: var(--animal-bg-content) !important;
+  color: var(--animal-text-body) !important;
+  box-shadow: 0 3px 0 0 var(--animal-shadow-input);
+  transition: all var(--animal-duration) var(--animal-ease);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--animal-text-disabled) !important;
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: var(--animal-border-hover) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--animal-focus-yellow) !important;
+  box-shadow:
+    0 3px 0 0 var(--animal-focus-yellow-dark),
+    0 0 0 3px rgba(255, 204, 0, 0.15) !important;
+}
+
+input[type="range"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"] {
+  box-shadow: none;
+}
+
+.animal-button-loading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.22) 0,
+    rgba(255, 255, 255, 0.22) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  animation: animal-loading-stripes 0.8s linear infinite;
+}
+
+section.border,
+section.border-2,
+article.border,
+article.border-2,
+aside.border,
+aside.border-2,
+div.border,
+div.border-2,
+label.border,
+label.border-2 {
+  border-radius: var(--animal-radius);
+}
+
+section.border-2,
+article.border-2,
+aside.border-2,
+label.border-2 {
+  box-shadow: 0 4px 10px rgba(107, 92, 67, 0.18);
+}
+
+code {
+  color: var(--animal-text);
+}
+
 ::selection {
-  background: var(--echo-focus);
-  color: var(--echo-ink);
+  background: var(--animal-focus-yellow);
+  color: var(--animal-text);
 }
 
 #root {
@@ -41,17 +124,17 @@ select {
   pointer-events: none;
   position: absolute;
   inset: -20%;
-  opacity: 0.65;
-  filter: blur(28px);
+  opacity: 0.55;
+  filter: blur(32px);
   background:
-    radial-gradient(circle at 22% 35%, rgba(211, 197, 170, 0.2), transparent 28%),
-    radial-gradient(circle at 70% 48%, rgba(186, 200, 220, 0.12), transparent 30%),
-    radial-gradient(circle at 50% 80%, rgba(251, 185, 128, 0.1), transparent 26%);
+    radial-gradient(circle at 22% 35%, rgba(25, 200, 185, 0.18), transparent 28%),
+    radial-gradient(circle at 70% 48%, rgba(247, 205, 103, 0.18), transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(225, 140, 111, 0.12), transparent 26%);
   animation: mist-drift 18s ease-in-out infinite alternate;
 }
 
 .mist-layer-b {
-  opacity: 0.45;
+  opacity: 0.36;
   transform: rotate(12deg);
   animation-duration: 24s;
   animation-delay: -6s;
@@ -77,6 +160,12 @@ select {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes animal-loading-stripes {
+  to {
+    background-position: 22px 0;
   }
 }
 

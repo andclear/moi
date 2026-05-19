@@ -3,11 +3,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { exportRepository } from "@/db/repositories/exportRepository";
+import { generationRepository } from "@/db/repositories/generationRepository";
 import { projectService } from "@/db/services/projectService";
 import { historyService } from "@/db/services/historyService";
 import type { ExportRecord, HistorySnapshot, Project } from "@/db/types";
+import { parseDossierSections } from "@/features/dossier/dossierSections";
 import { buildCharacterCard, formatCharacterCardJson } from "@/features/export/characterCardBuilder";
 import { downloadText } from "@/features/export/exportStore";
+import { createEmptyProfileSession } from "@/features/profile/profileSession";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { HistoryTimeline } from "@/shared/components/HistoryTimeline";
 import { Button } from "@/shared/components/ui/button";
@@ -16,6 +19,12 @@ interface ProjectLibraryItem {
   project: Project;
   exports: ExportRecord[];
   histories: HistorySnapshot[];
+}
+
+function hasRecognizableDossier(markdown: string) {
+  return parseDossierSections(markdown).some(
+    (block) => block.section !== "最初的回音" && block.content.trim() && block.content.trim() !== "尚未听见",
+  );
 }
 
 export function LibraryPage() {
@@ -41,11 +50,7 @@ export function LibraryPage() {
     async function loadItems() {
       const projects = await projectService.listActiveProjects();
       const nextItems = await Promise.all(
-        projects.map(async (project) => ({
-          project,
-          exports: await exportRepository.listByProject(project.id),
-          histories: await historyService.listProjectSnapshots(project.id),
-        })),
+        projects.map((project) => buildLibraryItem(project)),
       );
       if (mounted) {
         setItems(nextItems);
@@ -57,13 +62,34 @@ export function LibraryPage() {
     const projects = await projectService.listActiveProjects();
     setItems(
       await Promise.all(
-        projects.map(async (project) => ({
-          project,
-          exports: await exportRepository.listByProject(project.id),
-          histories: await historyService.listProjectSnapshots(project.id),
-        })),
+        projects.map((project) => buildLibraryItem(project)),
       ),
     );
+  }
+
+  async function buildLibraryItem(project: Project): Promise<ProjectLibraryItem> {
+    let normalizedProject = project;
+    const generations = await generationRepository.listByProject(project.id);
+    const hasInitialProfileOutput = generations.some(
+      (task) => task.type === "profile" && task.status === "succeeded",
+    );
+
+    if (
+      project.currentStep === "post" &&
+      (hasRecognizableDossier(project.dossier.markdown) || hasInitialProfileOutput)
+    ) {
+      normalizedProject =
+        (await projectService.updateProject(project.id, {
+          currentStep: "profile",
+          profileSession: project.profileSession ?? createEmptyProfileSession(),
+        })) ?? project;
+    }
+
+    return {
+      project: normalizedProject,
+      exports: await exportRepository.listByProject(project.id),
+      histories: await historyService.listProjectSnapshots(project.id),
+    };
   }
 
   async function handleCopy(project: Project) {
@@ -134,7 +160,7 @@ export function LibraryPage() {
           {items.map(({ project, exports, histories }) => (
             <article
               key={project.id}
-              className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.34)] p-4"
+              className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>

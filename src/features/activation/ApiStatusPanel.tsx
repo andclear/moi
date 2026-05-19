@@ -28,13 +28,13 @@ export function ApiStatusPanel() {
   const isAvailable = availability.available || hasActivePreset;
 
   return (
-    <aside className="h-full border-l border-[var(--echo-line)] bg-[rgba(18,33,42,0.96)] p-5">
+    <aside className="h-full border-l-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
             API 状态
           </p>
-          <h2 className="mt-2 font-display text-2xl font-black text-[var(--echo-paper)]">
+          <h2 className="mt-2 font-display text-2xl font-black text-[var(--animal-text)]">
             {isAvailable ? "模型已经接通" : "尚未连接模型"}
           </h2>
         </div>
@@ -47,8 +47,8 @@ export function ApiStatusPanel() {
             ? "你可以配置自己的 OpenAI 兼容接口，或使用激活码开启预置调用模式。"
             : "你可以配置自己的 OpenAI 兼容接口。"}
       </p>
-      <div className="mt-5 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.36)] p-4 font-mono text-xs leading-6 text-[var(--echo-muted)]">
-        <div className="flex items-center gap-2 text-[var(--echo-paper)]">
+      <div className="mt-5 rounded-[var(--animal-radius)] border border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-xs leading-6 text-[var(--animal-text-muted)]">
+        <div className="flex items-center gap-2 text-[var(--animal-text)]">
           <CircleCheck aria-hidden="true" size={15} />
           <span>{isAvailable ? "可用" : "不可用"}</span>
         </div>

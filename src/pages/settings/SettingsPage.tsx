@@ -84,7 +84,7 @@ export function SettingsPage() {
                   mode: event.target.value as typeof current.mode,
                 }))
               }
-              className="h-11 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.44)] px-3 text-[var(--echo-paper)] outline-none focus:border-[var(--echo-paper)]"
+              className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none focus:border-[var(--echo-paper)]"
             >
               <option value="none">暂不连接</option>
               <option value="custom">自配 OpenAI 兼容接口</option>
@@ -100,7 +100,7 @@ export function SettingsPage() {
                 setForm((current) => ({ ...current, apiBaseUrl: event.target.value }))
               }
               placeholder="https://api.openai.com/v1"
-              className="h-11 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.44)] px-3 text-[var(--echo-paper)] outline-none placeholder:text-[rgba(211,197,170,0.38)] focus:border-[var(--echo-paper)]"
+              className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--echo-paper)]"
             />
           </label>
 
@@ -113,7 +113,7 @@ export function SettingsPage() {
               }
               type="password"
               placeholder="sk-..."
-              className="h-11 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.44)] px-3 text-[var(--echo-paper)] outline-none placeholder:text-[rgba(211,197,170,0.38)] focus:border-[var(--echo-paper)]"
+              className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--echo-paper)]"
             />
           </label>
 
@@ -126,7 +126,7 @@ export function SettingsPage() {
                   setForm((current) => ({ ...current, model: event.target.value }))
                 }
                 placeholder="gpt-4o-mini"
-                className="h-11 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.44)] px-3 text-[var(--echo-paper)] outline-none placeholder:text-[rgba(211,197,170,0.38)] focus:border-[var(--echo-paper)]"
+                className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--echo-paper)]"
               />
             </label>
 
@@ -141,7 +141,7 @@ export function SettingsPage() {
                 min={0}
                 max={2}
                 step={0.1}
-                className="h-11 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.44)] px-3 text-[var(--echo-paper)] outline-none focus:border-[var(--echo-paper)]"
+                className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none focus:border-[var(--echo-paper)]"
               />
             </label>
           </div>
@@ -154,7 +154,7 @@ export function SettingsPage() {
                 supportsSystemPrompt: !current.supportsSystemPrompt,
               }))
             }
-            className="flex items-center justify-between gap-3 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.34)] px-4 py-3 text-left font-mono text-sm text-[var(--echo-muted)]"
+            className="flex items-center justify-between gap-3 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-4 py-3 text-left font-mono text-sm text-[var(--echo-muted)]"
           >
             <span>接口支持 system prompt</span>
             {form.supportsSystemPrompt ? (
@@ -168,8 +168,8 @@ export function SettingsPage() {
             <p className="font-mono text-sm text-[var(--echo-stamp)]">{errorMessage}</p>
           )}
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={status === "saving"}>
-              <Save aria-hidden="true" size={18} />
+            <Button type="submit" loading={status === "saving"} disabled={status === "saving"}>
+              {status === "saving" ? null : <Save aria-hidden="true" size={18} />}
               {status === "saving" ? "正在保存" : "保存设置"}
             </Button>
             {status === "saved" && (
@@ -180,7 +180,7 @@ export function SettingsPage() {
       </article>
 
       {channel.presetEnabled && (
-        <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-paper)] p-6 text-[var(--echo-ink)]">
+        <article className="border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-6 text-[var(--echo-ink)]">
           <KeyRound aria-hidden="true" size={24} />
           <h2 className="mt-4 font-display text-2xl font-black">预置调用激活</h2>
           <p className="mt-4 font-mono text-sm leading-6">

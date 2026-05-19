@@ -13,8 +13,8 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
   const { activePanel, isSidebarOpen, closePanel, openPanel } = useUiStore();
 
   return (
-    <div className="relative min-h-[calc(100vh-9rem)] overflow-hidden border border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] shadow-[inset_0_0_0_1px_rgba(211,197,170,0.06)]">
-      <div className="border-b border-[var(--echo-line)] bg-[rgba(2,16,24,0.28)] px-4 py-3">
+    <div className="relative min-h-[calc(100vh-9rem)] overflow-hidden rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(247,243,223,0.78)] shadow-[0_8px_24px_0_rgba(61,52,40,0.12)]">
+      <div className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.46)] px-4 py-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ApiStatusBadge />
           <Button
@@ -54,7 +54,7 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
               <motion.button
                 type="button"
                 aria-label="点击空白处关闭侧边抽屉"
-                className="fixed inset-0 z-30 cursor-default bg-[rgba(2,16,24,0.34)]"
+                className="fixed inset-0 z-30 cursor-default bg-[rgba(114,93,66,0.28)]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -66,10 +66,10 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 32 }}
                 transition={{ duration: 0.22 }}
-                className="fixed inset-y-0 right-0 z-40 w-[min(92vw,380px)] border-l border-[var(--echo-line)] shadow-[-14px_0_0_rgba(2,16,24,0.36)]"
+                className="fixed inset-y-0 right-0 z-40 w-[min(92vw,380px)] border-l-2 border-[var(--animal-border)] shadow-[-12px_0_24px_rgba(61,52,40,0.14)]"
               >
-                <div className="flex h-full flex-col bg-[rgba(18,33,42,0.98)]">
-                  <div className="flex justify-end border-b border-[var(--echo-line)] p-3">
+                <div className="flex h-full flex-col bg-[var(--animal-bg-content)]">
+                  <div className="flex justify-end border-b-2 border-[var(--animal-border)] p-3">
                     <Button
                       type="button"
                       size="icon"

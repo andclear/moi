@@ -1,4 +1,4 @@
-import { LoaderCircle, Play, RotateCcw, Square } from "lucide-react";
+import { Play, RotateCcw, Square } from "lucide-react";
 
 import { Button, type ButtonProps } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
@@ -34,12 +34,11 @@ export function GenerationButton({
         type="button"
         onClick={isRunning ? onCancel : onGenerate}
         disabled={disabled || (isRunning && !onCancel)}
+        loading={isRunning}
         className={cn("min-w-40", className)}
         {...props}
       >
-        {isRunning ? (
-          <LoaderCircle aria-hidden="true" size={18} className="animate-spin" />
-        ) : isFailed ? (
+        {isRunning ? null : isFailed ? (
           <RotateCcw aria-hidden="true" size={18} />
         ) : (
           <Play aria-hidden="true" size={18} />

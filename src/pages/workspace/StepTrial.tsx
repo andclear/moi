@@ -177,7 +177,7 @@ export function StepTrial() {
   return (
     <main className="min-h-[calc(100vh-9rem)] px-4 py-6 sm:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
-        <section className="border-2 border-[var(--echo-line)] bg-[rgba(18,33,42,0.82)] p-5 shadow-[8px_8px_0_var(--echo-shadow)]">
+        <section className="border-2 border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-5 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
             角色一致性
           </p>
@@ -190,7 +190,7 @@ export function StepTrial() {
         </section>
 
         <section className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="space-y-4 border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] p-4">
+          <aside className="space-y-4 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
             <ScrollText aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">测试模式</h2>
             <div className="space-y-2">
@@ -202,8 +202,8 @@ export function StepTrial() {
                   className={cn(
                     "w-full border-2 p-3 text-left transition-colors",
                     mode === trialMode
-                      ? "border-[var(--echo-paper)] bg-[var(--echo-paper)] text-[var(--echo-ink)]"
-                      : "border-[var(--echo-line)] bg-[rgba(18,33,42,0.72)] text-[var(--echo-text)] hover:border-[var(--echo-paper)]",
+                      ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
+                      : "border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] text-[var(--echo-text)] hover:border-[var(--echo-paper)]",
                   )}
                 >
                   <span className="font-display text-lg font-black">{trialModeLabels[trialMode]}</span>
@@ -261,7 +261,7 @@ export function StepTrial() {
 
 function TrialRunCard({ trialRun, compact = false }: { trialRun: TrialRun; compact?: boolean }) {
   return (
-    <article className="border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.58)] p-4">
+    <article className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--echo-muted)]">
@@ -279,14 +279,14 @@ function TrialRunCard({ trialRun, compact = false }: { trialRun: TrialRun; compa
         )}
       </div>
       {!compact && (
-        <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(18,33,42,0.64)] p-3">
+        <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-3">
           <h3 className="font-display text-lg font-black text-[var(--echo-paper)]">问卷</h3>
           <p className="mt-2 whitespace-pre-wrap font-mono text-xs leading-6 text-[var(--echo-muted)]">
             {trialRun.questionnaireMarkdown}
           </p>
         </section>
       )}
-      <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(18,33,42,0.64)] p-3">
+      <section className="mt-4 border border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-3">
         <h3 className="font-display text-lg font-black text-[var(--echo-paper)]">回答</h3>
         <p className="mt-2 whitespace-pre-wrap font-mono text-sm leading-7 text-[var(--echo-text)]">
           {trialRun.resultMarkdown}

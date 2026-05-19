@@ -89,7 +89,7 @@ export function AssistantNotesPanel() {
         )}
         {tasks.length ? (
           tasks.map((task) => (
-            <article key={task.id} className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.45)] p-3">
+            <article key={task.id} className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3">
               <div className="flex items-start gap-3">
                 <Activity aria-hidden="true" size={18} className="mt-1 text-[var(--echo-paper)]" />
                 <div className="min-w-0 flex-1">

@@ -44,14 +44,14 @@ export function ApiStatusBadge() {
   const Icon = isAvailable ? CircleCheck : CircleAlert;
 
   return (
-    <div className="inline-flex items-center gap-2 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.48)] px-3 py-2 font-mono text-xs text-[var(--echo-muted)]">
+    <div className="inline-flex items-center gap-2 rounded-[var(--animal-radius-pill)] border border-[var(--animal-border)] bg-[var(--animal-primary-bg)] px-3 py-2 font-mono text-xs text-[var(--animal-text-muted)]">
       <Icon
         aria-hidden="true"
         size={15}
-        className={isAvailable ? "text-[var(--echo-paper)]" : "text-[var(--echo-stamp)]"}
+        className={isAvailable ? "text-[var(--animal-success)]" : "text-[var(--animal-error)]"}
       />
       <span>{label}</span>
-      {detail && <span className="text-[var(--echo-paper)]">{detail}</span>}
+      {detail && <span className="text-[var(--animal-text)]">{detail}</span>}
     </div>
   );
 }

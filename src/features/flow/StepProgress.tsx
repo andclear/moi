@@ -55,14 +55,14 @@ export function StepProgress({ steps, currentStepId, completedStepIds = [] }: St
                 }}
                 aria-disabled={!isDone && !isCurrent}
                 className={cn(
-                  "block min-h-full border p-3 transition-colors",
+                  "block min-h-full rounded-[var(--animal-radius)] border-2 p-3 transition-all duration-200",
                   isDone || isCurrent ? "cursor-pointer" : "cursor-default",
                   isCurrent
-                    ? "border-[var(--echo-paper)] bg-[var(--echo-paper)] text-[var(--echo-ink)] shadow-[4px_4px_0_var(--echo-shadow)]"
-                    : "border-[var(--echo-line)] bg-[rgba(18,33,42,0.88)] text-[var(--echo-muted)]",
+                    ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_4px_0_0_var(--animal-shadow-input)]"
+                    : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-muted)]",
                   isDone &&
                     !isCurrent &&
-                    "hover:border-[var(--echo-paper)] hover:text-[var(--echo-text)]",
+                    "hover:-translate-y-0.5 hover:border-[var(--animal-primary)] hover:text-[var(--animal-text)]",
                 )}
               >
                 {content}

@@ -190,7 +190,7 @@ export function StepGreeting() {
   return (
     <main className="min-h-[calc(100vh-9rem)] px-4 py-6 sm:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
-        <section className="border-2 border-[var(--echo-line)] bg-[rgba(18,33,42,0.82)] p-5 shadow-[8px_8px_0_var(--echo-shadow)]">
+        <section className="border-2 border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-5 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
             初次接触
           </p>
@@ -203,7 +203,7 @@ export function StepGreeting() {
         </section>
 
         <section className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="space-y-4 border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] p-4">
+          <aside className="space-y-4 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
             <SlidersHorizontal aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">生成条件</h2>
 
@@ -229,7 +229,7 @@ export function StepGreeting() {
                 step={50}
                 value={wordCount}
                 onChange={(event) => setWordCount(Number(event.target.value))}
-                className="mt-2 w-full border border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] px-3 py-2 text-[var(--echo-text)] outline-none"
+                className="mt-2 w-full border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 py-2 text-[var(--echo-text)] outline-none"
               />
             </label>
 
@@ -238,7 +238,7 @@ export function StepGreeting() {
               <select
                 value={personType}
                 onChange={(event) => setPersonType(event.target.value as GreetingPersonType)}
-                className="mt-2 w-full border border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] px-3 py-2 text-[var(--echo-text)] outline-none"
+                className="mt-2 w-full border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 py-2 text-[var(--echo-text)] outline-none"
               >
                 {greetingPersonTypes.map((item) => (
                   <option key={item} value={item}>
@@ -266,7 +266,7 @@ export function StepGreeting() {
                 value={mustInclude}
                 onChange={(event) => setMustInclude(event.target.value)}
                 placeholder="比如：雨夜、未寄出的信、旧城区的钟声。"
-                className="mt-2 min-h-24 w-full resize-y border border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] p-3 text-[var(--echo-text)] outline-none"
+                className="mt-2 min-h-24 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 text-[var(--echo-text)] outline-none"
               />
             </label>
 
@@ -302,7 +302,7 @@ export function StepGreeting() {
               currentRoleVariants.map((variant) => (
                 <article
                   key={variant.id}
-                  className="border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.58)] p-4"
+                  className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <input
@@ -321,7 +321,7 @@ export function StepGreeting() {
                     onChange={(event) =>
                       void handleEditVariant(variant, { content: event.target.value })
                     }
-                    className="mt-4 min-h-72 w-full resize-y border border-[var(--echo-line)] bg-[rgba(2,16,24,0.45)] p-3 font-mono text-sm leading-7 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                    className="mt-4 min-h-72 w-full resize-y border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-7 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                   />
                   <Button
                     type="button"

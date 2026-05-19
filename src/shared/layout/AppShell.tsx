@@ -1,14 +1,21 @@
-import { BookOpen, FileArchive, Settings } from "lucide-react";
+import type { IconName } from "animal-island-ui";
+import { Footer } from "animal-island-ui";
+import { Settings, type LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 import { NavLink, Outlet } from "react-router";
 
 import { useModelChannelStore } from "@/features/activation/modelChannelStore";
+import { AnimalIcon } from "@/shared/components/AnimalIcon";
 import { PageTransition } from "@/shared/layout/PageTransition";
 import { cn } from "@/shared/lib/utils";
 
-const navItems = [
-  { to: "/workspace", label: "工作台", icon: BookOpen },
-  { to: "/library", label: "档案库", icon: FileArchive },
+type NavItem =
+  | { to: string; label: string; animalIcon: IconName; icon?: never }
+  | { to: string; label: string; icon: LucideIcon; animalIcon?: never };
+
+const navItems: NavItem[] = [
+  { to: "/workspace", label: "工作台", animalIcon: "icon-map" },
+  { to: "/library", label: "档案库", animalIcon: "icon-critterpedia" },
   { to: "/settings", label: "设置", icon: Settings },
 ];
 
@@ -21,11 +28,12 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-[var(--echo-bg)] text-[var(--echo-text)]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(211,197,170,0.08),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.04)_0,transparent_38%)]" />
-      <header className="sticky top-0 z-40 border-b border-[var(--echo-line)] bg-[rgba(2,16,24,0.9)] backdrop-blur-md">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(130,213,187,0.24),transparent_30%),radial-gradient(circle_at_86%_8%,rgba(247,205,103,0.22),transparent_24%)]" />
+      <header className="sticky top-0 z-40 border-b-2 border-[var(--animal-border)] bg-[rgba(255,252,244,0.9)] backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <NavLink to="/workspace" className="group flex items-baseline gap-3">
-            <span className="font-display text-2xl font-black tracking-normal text-[var(--echo-paper)]">
+          <NavLink to="/workspace" className="group flex items-center gap-3">
+            <AnimalIcon name="icon-miles" size={34} />
+            <span className="font-display text-2xl font-black tracking-normal text-[var(--animal-text)]">
               回音
             </span>
           </NavLink>
@@ -39,14 +47,18 @@ export function AppShell() {
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      "flex h-10 cursor-pointer items-center gap-2 border px-3 text-sm font-bold transition-colors",
+                      "flex h-10 cursor-pointer items-center gap-2 rounded-[var(--animal-radius-sm)] border-2 px-3 text-sm font-bold transition-all duration-150",
                       isActive
-                        ? "border-[var(--echo-paper)] bg-[var(--echo-paper)] text-[var(--echo-ink)]"
-                        : "border-[var(--echo-line)] bg-[var(--echo-panel)] text-[var(--echo-muted)] hover:text-[var(--echo-text)]",
+                        ? "border-[var(--animal-sidebar-active)] bg-[var(--animal-sidebar-active)] text-white shadow-[0_3px_0_0_var(--animal-shadow-input)]"
+                        : "border-transparent bg-transparent text-[var(--animal-text-muted)] hover:bg-[var(--animal-sidebar-hover)] hover:text-[var(--animal-text)]",
                     )
                   }
                 >
-                  <Icon aria-hidden="true" size={16} />
+                  {item.animalIcon ? (
+                    <AnimalIcon name={item.animalIcon} size={18} />
+                  ) : Icon ? (
+                    <Icon aria-hidden="true" size={16} />
+                  ) : null}
                   <span className="hidden sm:inline">{item.label}</span>
                 </NavLink>
               );
@@ -59,6 +71,7 @@ export function AppShell() {
           <Outlet />
         </PageTransition>
       </main>
+      <Footer type="sea" className="relative mt-6" />
     </div>
   );
 }

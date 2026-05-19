@@ -28,10 +28,10 @@ export function ChoiceCard({
       disabled={disabled}
       onClick={onSelect}
       className={cn(
-        "min-h-full w-full cursor-pointer border-2 p-4 text-left transition-colors disabled:cursor-default disabled:opacity-70",
+        "min-h-full w-full cursor-pointer rounded-[var(--animal-radius)] border-2 p-4 text-left transition-all duration-200 disabled:cursor-default disabled:opacity-70",
         selected
-          ? "border-[var(--echo-paper)] bg-[var(--echo-paper)] text-[var(--echo-ink)] shadow-[5px_5px_0_var(--echo-shadow)]"
-          : "border-[var(--echo-line)] bg-[rgba(18,33,42,0.86)] text-[var(--echo-text)] hover:border-[var(--echo-paper)]",
+          ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)] shadow-[0_4px_0_0_var(--animal-shadow-input)]"
+          : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)] hover:-translate-y-1 hover:border-[var(--animal-primary)]",
       )}
     >
       <div className="flex items-start justify-between gap-3">

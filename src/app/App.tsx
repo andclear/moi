@@ -1,3 +1,4 @@
+import { Cursor } from "animal-island-ui";
 import { RouterProvider } from "react-router";
 
 import { AppProviders } from "@/app/providers";
@@ -6,7 +7,9 @@ import { router } from "@/app/router";
 export function App() {
   return (
     <AppProviders>
-      <RouterProvider router={router} />
+      <Cursor>
+        <RouterProvider router={router} />
+      </Cursor>
     </AppProviders>
   );
 }

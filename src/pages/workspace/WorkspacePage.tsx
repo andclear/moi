@@ -56,8 +56,8 @@ export function WorkspacePage() {
         }
       >
         {shouldShowStepNav && (
-          <aside className="border-b border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] p-4 lg:border-b-0 lg:border-r">
-            <p className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
+          <aside className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.5)] p-4 lg:border-b-0 lg:border-r-2">
+            <p className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--animal-text-muted)]">
               档案流程
             </p>
             <StepProgress
@@ -104,15 +104,15 @@ function FutureStep({ stepId }: { stepId: FlowStepId }) {
 
   return (
     <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-4 py-16">
-      <article className="w-full max-w-2xl border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-8 shadow-[8px_8px_0_var(--echo-shadow)]">
-        <Icon aria-hidden="true" size={28} className="text-[var(--echo-paper)]" />
-        <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
+      <article className="w-full max-w-2xl rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-8 shadow-[0_4px_10px_rgba(107,92,67,0.3)]">
+        <Icon aria-hidden="true" size={28} className="text-[var(--animal-primary)]" />
+        <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[var(--animal-text-muted)]">
           后续阶段入口
         </p>
-        <h1 className="mt-4 font-display text-4xl font-black text-[var(--echo-paper)]">
+        <h1 className="mt-4 font-display text-4xl font-black text-[var(--animal-text)]">
           {step.label}
         </h1>
-        <p className="mt-4 font-mono text-sm leading-7 text-[var(--echo-muted)]">
+        <p className="mt-4 font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
           阶段 1 先完成路由、布局、面板状态与切换动效。该业务步骤会在对应阶段接入真实交互。
         </p>
       </article>

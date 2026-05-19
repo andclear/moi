@@ -281,7 +281,7 @@ export function StepProfile() {
   return (
     <main className="min-h-[calc(100vh-9rem)] px-4 py-6 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <section className="border-2 border-[var(--echo-line)] bg-[rgba(18,33,42,0.82)] p-5 shadow-[8px_8px_0_var(--echo-shadow)]">
+        <section className="border-2 border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] p-5 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
@@ -305,9 +305,9 @@ export function StepProfile() {
                     className={cn(
                       "inline-flex items-center gap-2 border px-3 py-2 text-xs font-bold",
                       isCurrent
-                        ? "border-[var(--echo-paper)] bg-[var(--echo-paper)] text-[var(--echo-ink)]"
+                        ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
                         : isDone
-                          ? "border-[var(--echo-line)] bg-[rgba(244,231,203,0.12)] text-[var(--echo-paper)]"
+                          ? "border-[var(--echo-line)] bg-[var(--animal-bg-content)] text-[var(--echo-paper)]"
                           : "border-[var(--echo-line)] text-[var(--echo-muted)]",
                     )}
                   >
@@ -373,7 +373,7 @@ export function StepProfile() {
             )}
           </div>
 
-          <aside className="border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] p-4">
+          <aside className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
             <FileQuestion aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
             <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
               已确认的回音

@@ -19,7 +19,7 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
   }
 
   return (
-    <section className="border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.36)] p-5">
+    <section className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
@@ -44,10 +44,10 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
           <input
             value={versionLabel}
             onChange={(event) => setVersionLabel(event.target.value)}
-            className="h-11 border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+            className="h-11 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
           />
         </label>
-        <div className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.52)] p-3">
+        <div className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3">
           <p className="flex items-center gap-2 font-mono text-sm font-bold text-[var(--echo-paper)]">
             <FileText aria-hidden="true" size={17} />
             浏览器预览

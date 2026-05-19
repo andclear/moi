@@ -27,16 +27,16 @@ function renderInlineMarkdown(text: string) {
 
 function MarkdownPreview({ markdown }: { markdown: string }) {
   return (
-    <div className="space-y-5 font-mono text-sm leading-7 text-[var(--echo-muted)]">
+    <div className="space-y-5 font-mono text-sm leading-7 text-[var(--animal-text-muted)]">
       {markdown.split(/\n(?=##\s+)/).map((section) => {
         const [headingLine = "", ...bodyLines] = section.split(/\r?\n/);
         const heading = headingLine.replace(/^##\s+/, "").trim();
         const body = bodyLines.join("\n").trim();
 
         return (
-          <section key={heading || section} className="border-b border-[var(--echo-line)] pb-4">
+          <section key={heading || section} className="border-b border-[var(--animal-border)] pb-4">
             {heading && (
-              <h3 className="font-display text-lg font-black text-[var(--echo-paper)]">
+              <h3 className="font-display text-lg font-black text-[var(--animal-text)]">
                 {heading}
               </h3>
             )}
@@ -97,7 +97,7 @@ export function DossierEditor({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-y border-[var(--echo-line)] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-y-2 border-[var(--animal-border)] px-4 py-3">
         <div className="flex gap-2">
           <Button
             type="button"
@@ -123,10 +123,11 @@ export function DossierEditor({
           size="sm"
           variant={hasManualChanges || isSaveError ? "primary" : "secondary"}
           onClick={() => void handleSave()}
+          loading={isSaveDisabled}
           disabled={isSaveDisabled}
           aria-label="保存 TA 的回音"
         >
-          <SaveIcon aria-hidden="true" size={16} />
+          {isSaveDisabled ? null : <SaveIcon aria-hidden="true" size={16} />}
           {saveLabel}
         </Button>
       </div>
@@ -136,7 +137,7 @@ export function DossierEditor({
           <textarea
             value={markdown}
             onChange={(event) => handleChange(event.target.value)}
-            className="h-full min-h-[46rem] w-full resize-y border border-[var(--echo-line)] bg-[rgba(2,16,24,0.46)] p-4 font-mono text-sm leading-7 text-[var(--echo-paper)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
+            className="h-full min-h-[46rem] w-full resize-y border border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 font-mono text-sm leading-7 text-[var(--animal-text-body)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)]"
             spellCheck={false}
             aria-label="编辑 TA 的回音 Markdown"
           />

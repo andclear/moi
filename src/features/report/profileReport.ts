@@ -37,17 +37,17 @@ export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(project.title)} - 寻回报告</title>
   <style>
-    :root { color-scheme: dark; --paper: #d3c5aa; --ink: #07141a; --line: rgba(211,197,170,.28); --text: #e8dfcb; --muted: #9faeb5; }
-    body { margin: 0; background: radial-gradient(circle at 20% 10%, rgba(211,197,170,.12), transparent 30%), #061016; color: var(--text); font-family: "Songti SC", "Noto Serif SC", serif; }
+    :root { color-scheme: light; --paper: rgb(247,243,223); --ink: #794f27; --line: #c4b89e; --text: #725d42; --muted: #8a7b66; --primary: #19c8b9; }
+    body { margin: 0; background: radial-gradient(circle at 20% 10%, rgba(130,213,187,.28), transparent 30%), linear-gradient(180deg, #f8f8f0, #f0e8d8); color: var(--text); font-family: Nunito, "Noto Sans SC", "Zen Maru Gothic", -apple-system, "PingFang SC", sans-serif; font-weight: 500; }
     main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0; }
-    header { border: 1px solid var(--line); padding: 32px; background: rgba(2,16,24,.72); box-shadow: 10px 10px 0 rgba(0,0,0,.28); }
-    h1 { margin: 0; color: var(--paper); font-size: clamp(2.4rem, 8vw, 5rem); letter-spacing: 0; }
-    .meta { margin-top: 16px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    section { margin-top: 24px; border: 1px solid var(--line); padding: 24px; background: rgba(2,16,24,.54); }
-    h2 { margin: 0 0 14px; color: var(--paper); font-size: 1.4rem; }
+    header { border: 2px solid var(--line); border-radius: 24px; padding: 32px; background: var(--paper); box-shadow: 0 4px 10px rgba(107,92,67,.3); }
+    h1 { margin: 0; color: var(--ink); font-size: clamp(2.4rem, 8vw, 5rem); letter-spacing: 0; }
+    .meta { margin-top: 16px; color: var(--muted); font-weight: 700; }
+    section { margin-top: 24px; border: 2px solid var(--line); border-radius: 20px; padding: 24px; background: var(--paper); box-shadow: 0 3px 10px rgba(61,52,40,.1); }
+    h2 { margin: 0 0 14px; color: var(--ink); font-size: 1.4rem; }
     div, p, li { line-height: 1.9; }
     ul { padding-left: 1.2rem; }
-    strong { color: var(--paper); }
+    strong { color: var(--ink); }
   </style>
 </head>
 <body>

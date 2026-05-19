@@ -1,6 +1,7 @@
-import { Search } from "lucide-react";
+import { Footer } from "animal-island-ui";
 import { useNavigate } from "react-router";
 
+import { AnimalIcon } from "@/shared/components/AnimalIcon";
 import { Button } from "@/shared/components/ui/button";
 
 const INTRO_STORAGE_KEY = "echo.hasEntered";
@@ -17,28 +18,36 @@ export function LandingPage() {
     <main className="relative min-h-screen overflow-hidden bg-[var(--echo-bg)] text-[var(--echo-text)]">
       <div className="mist-layer mist-layer-a" />
       <div className="mist-layer mist-layer-b" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(211,197,170,0.14),transparent_28%),linear-gradient(180deg,rgba(2,16,24,0.12),rgba(2,16,24,0.94))]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(248,248,240,0.18),rgba(240,232,216,0.92))]" />
       <section className="relative mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 py-16 text-center">
-        <p className="fade-line text-sm font-black uppercase tracking-[0.3em] text-[var(--echo-muted)]">
+        <div className="fade-line rounded-[136px] bg-[var(--animal-bg-content)] p-8 shadow-[0_8px_24px_rgba(61,52,40,0.16)]">
+          <AnimalIcon name="icon-miles" size={116} />
+        </div>
+        <p className="fade-line mt-8 text-sm font-black uppercase tracking-[0.3em] text-[var(--animal-text-muted)]">
           Echo Case Room
         </p>
-        <h1 className="sr-only">回音</h1>
-        <div className="mt-10 space-y-5 font-mono text-xl leading-10 text-[var(--echo-paper-soft)] md:text-2xl md:leading-[3.25rem]">
+        <h1 className="mt-4 font-display text-5xl font-black text-[var(--animal-text)] drop-shadow-[0_3px_0_rgba(255,255,255,0.72)]">
+          回音
+        </h1>
+        <div className="mt-10 space-y-5 font-mono text-xl leading-10 text-[var(--animal-text-body)] md:text-2xl md:leading-[3.25rem]">
           <p className="fade-line [animation-delay:400ms]">
-            当你来到这里的时候，你知道，你不是为了创建一个角色
+            在这里，你不是为了"创建"一个 TA
           </p>
           <p className="fade-line [animation-delay:1600ms]">
-            而是，TA 一直都在某个地方，TA一直在等你……
+            TA 一直都在某个地方，TA 一直在等你……
           </p>
-          <p className="fade-line text-[var(--echo-focus)] [animation-delay:2800ms]">找到 TA……</p>
+          <p className="fade-line font-black text-[var(--animal-primary)] [animation-delay:2800ms]">
+            找到 TA……
+          </p>
         </div>
         <div className="fade-line mt-12 [animation-delay:4200ms]">
           <Button type="button" onClick={enterWorkspace} className="h-12 px-6">
-            <Search aria-hidden="true" size={18} />
+            <AnimalIcon name="icon-map" size={20} />
             寻找 TA 的回声
           </Button>
         </div>
       </section>
+      <Footer type="sea" className="relative" />
     </main>
   );
 }

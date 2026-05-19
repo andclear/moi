@@ -1,5 +1,5 @@
 import mermaid from "mermaid";
-import { GitBranch, Loader2, Plus, Trash2, UserCheck } from "lucide-react";
+import { GitBranch, Plus, Trash2, UserCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import type { CompanionNode, Project } from "@/db/types";
@@ -46,7 +46,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
 
   useEffect(() => {
     let cancelled = false;
-    mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+    mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "loose" });
     mermaid
       .render(`echo-relation-${project.id.replace(/\W/g, "")}`, graphDefinition)
       .then((result) => {
@@ -130,7 +130,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
   }
 
   return (
-    <section className="border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.36)] p-5">
+    <section className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
@@ -157,11 +157,11 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
               value={userRequest}
               onChange={(event) => setUserRequest(event.target.value)}
               rows={4}
-              className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.72)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+              className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
             />
           </label>
-          <Button type="button" disabled={isGenerating} onClick={() => void handleGenerate()}>
-            {isGenerating ? <Loader2 aria-hidden="true" size={18} /> : <GitBranch aria-hidden="true" size={18} />}
+          <Button type="button" loading={isGenerating} disabled={isGenerating} onClick={() => void handleGenerate()}>
+            {isGenerating ? null : <GitBranch aria-hidden="true" size={18} />}
             寻找关系剪影
           </Button>
           {error && (
@@ -186,7 +186,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
         </div>
 
         <div className="space-y-4">
-          <div className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.52)] p-3">
+          <div className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3">
             <p className="font-mono text-sm font-bold text-[var(--echo-paper)]">关系图</p>
             {mermaidSvg ? (
               <div
@@ -203,7 +203,7 @@ export function CompanionNetwork({ project, onProjectChange }: CompanionNetworkP
           <div className="grid gap-3">
             {(project.companions ?? []).length ? (
               project.companions.map((node) => (
-                <article key={node.id} className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] p-3">
+                <article key={node.id} className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1 space-y-2">
                       <input

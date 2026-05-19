@@ -1,4 +1,4 @@
-import { Archive, Download, FileJson, ImageUp, Loader2 } from "lucide-react";
+import { Archive, Download, FileJson, ImageUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 
@@ -93,7 +93,7 @@ export function StepExport() {
   return (
     <section className="p-4 sm:p-6">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-6 shadow-[8px_8px_0_var(--echo-shadow)]">
+        <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-6 shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
           <Archive aria-hidden="true" size={26} className="text-[var(--echo-paper)]" />
           <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
             带 TA 回来
@@ -111,7 +111,7 @@ export function StepExport() {
               <input
                 value={versionLabel}
                 onChange={(event) => setVersionLabel(event.target.value)}
-                className="h-11 border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.7)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                className="h-11 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-[var(--echo-paper)]">
@@ -120,14 +120,14 @@ export function StepExport() {
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
                 rows={4}
-                className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(2,16,24,0.7)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                className="resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                 placeholder="写下这次把 TA 带回来的备注。"
               />
             </label>
           </div>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <section className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.36)] p-4">
+            <section className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
               <FileJson aria-hidden="true" size={22} className="text-[var(--echo-paper)]" />
               <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
                 格式化 JSON
@@ -138,15 +138,16 @@ export function StepExport() {
               <Button
                 type="button"
                 className="mt-5"
+                loading={isBuilding}
                 disabled={!project || isBuilding}
                 onClick={() => void handleJsonExport()}
               >
-                {isBuilding ? <Loader2 aria-hidden="true" size={18} /> : <Download aria-hidden="true" size={18} />}
+                {isBuilding ? null : <Download aria-hidden="true" size={18} />}
                 导出 JSON
               </Button>
             </section>
 
-            <section className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.36)] p-4">
+            <section className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
               <ImageUp aria-hidden="true" size={22} className="text-[var(--echo-paper)]" />
               <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
                 内嵌 PNG
@@ -158,15 +159,16 @@ export function StepExport() {
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={(event) => setImageFile(event.target.files?.[0])}
-                className="mt-4 block w-full text-sm text-[var(--echo-muted)] file:mr-4 file:h-10 file:border-2 file:border-[var(--echo-line)] file:bg-[var(--echo-paper)] file:px-4 file:font-bold file:text-[var(--echo-ink)]"
+                className="mt-4 block w-full text-sm text-[var(--echo-muted)] file:mr-4 file:h-10 file:border-2 file:border-[var(--echo-line)] file:bg-[var(--animal-bg-content)] file:px-4 file:font-bold file:text-[var(--echo-ink)]"
               />
               <Button
                 type="button"
                 className="mt-5"
+                loading={isBuilding}
                 disabled={!project || isBuilding}
                 onClick={() => void handlePngExport()}
               >
-                {isBuilding ? <Loader2 aria-hidden="true" size={18} /> : <Download aria-hidden="true" size={18} />}
+                {isBuilding ? null : <Download aria-hidden="true" size={18} />}
                 导出 PNG
               </Button>
             </section>

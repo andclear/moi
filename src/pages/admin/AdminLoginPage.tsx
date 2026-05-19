@@ -218,7 +218,7 @@ export function AdminLoginPage() {
 
   if (!token) {
     return (
-      <section className="mx-auto max-w-lg border-2 border-[var(--echo-line)] bg-[var(--echo-paper)] p-8 text-[var(--echo-ink)] shadow-[8px_8px_0_var(--echo-shadow)]">
+      <section className="mx-auto max-w-lg border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-8 text-[var(--echo-ink)] shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
         <LockKeyhole aria-hidden="true" size={28} />
         <h1 className="mt-5 font-display text-3xl font-black">后台登录</h1>
         <p className="mt-4 font-mono text-sm leading-6">
@@ -262,7 +262,7 @@ export function AdminLoginPage() {
             <input
               value={model}
               onChange={(event) => setModel(event.target.value)}
-              className="h-11 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.44)] px-3 text-[var(--echo-paper)] outline-none"
+              className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none"
             />
             <span className="text-xs text-[var(--echo-muted)]">
               仅用于前端展示，真实模型名称读取服务端 PRESET_MODEL。
@@ -283,7 +283,7 @@ export function AdminLoginPage() {
         </div>
       </article>
 
-      <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-paper)] p-6 text-[var(--echo-ink)]">
+      <article className="border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-6 text-[var(--echo-ink)]">
         <KeyRound aria-hidden="true" size={24} />
         <h2 className="mt-4 font-display text-2xl font-black">激活码</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">

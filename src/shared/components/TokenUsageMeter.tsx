@@ -15,7 +15,7 @@ export function TokenUsageMeter({ task }: TokenUsageMeterProps) {
   const duration = task.usage?.durationMs ? `${(task.usage.durationMs / 1000).toFixed(1)} 秒` : "未记录";
 
   return (
-    <div className="inline-flex items-center gap-2 border border-[var(--echo-line)] bg-[rgba(2,16,24,0.42)] px-3 py-2 font-mono text-xs text-[var(--echo-muted)]">
+    <div className="inline-flex items-center gap-2 rounded-[var(--animal-radius-pill)] border border-[var(--animal-border)] bg-[var(--animal-primary-bg)] px-3 py-2 font-mono text-xs text-[var(--animal-text-muted)]">
       <Gauge aria-hidden="true" size={15} />
       <span>Token：{totalTokens || "未返回"}</span>
       <span>耗时：{duration}</span>

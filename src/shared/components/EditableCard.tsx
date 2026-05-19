@@ -9,7 +9,7 @@ interface EditableCardProps {
 
 export function EditableCard({ title, value, placeholder, onChange }: EditableCardProps) {
   return (
-    <label className="block border-2 border-[var(--echo-line)] bg-[rgba(244,231,203,0.94)] p-4 text-[var(--echo-ink)]">
+    <label className="block rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)]">
       <span className="flex items-center gap-2 font-display text-lg font-black">
         <Pencil aria-hidden="true" size={16} />
         {title}

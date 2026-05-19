@@ -54,7 +54,7 @@ export function buildFallbackBeautification(input: BeautificationDraftInput) {
         : null,
     regex,
     html:
-      '<div class="echo-status-card-a7f3">\n  <style>\n    .echo-status-card-a7f3 { --echo-hud: #d3c5aa; max-width: 36rem; margin: 0 auto; pointer-events: none; }\n    .echo-status-card-a7f3 .hud { pointer-events: auto; border: 1px solid rgba(211,197,170,.55); padding: 1rem; background: linear-gradient(135deg, rgba(2,16,24,.94), rgba(40,58,67,.86)); box-shadow: 0 0 28px rgba(211,197,170,.14); animation: echoHudIn .5s ease both; }\n    @keyframes echoHudIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }\n  </style>\n  <div class="hud">$1</div>\n</div>',
+      '<div class="echo-status-card-a7f3">\n  <style>\n    .echo-status-card-a7f3 { --echo-hud: #725d42; max-width: 36rem; margin: 0 auto; pointer-events: none; font-family: Nunito, "Noto Sans SC", sans-serif; }\n    .echo-status-card-a7f3 .hud { pointer-events: auto; border: 2px solid #c4b89e; border-radius: 20px; padding: 1rem; color: #725d42; background: rgb(247,243,223); box-shadow: 0 4px 10px rgba(107,92,67,.3); animation: echoHudIn .5s ease both; }\n    @keyframes echoHudIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }\n  </style>\n  <div class="hud">$1</div>\n</div>',
     original_text: input.originalText,
     formatted_original_text: wrappedText,
   };

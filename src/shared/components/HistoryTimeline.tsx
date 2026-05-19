@@ -22,7 +22,7 @@ export function HistoryTimeline({ histories, onRestore }: HistoryTimelineProps) 
       {histories.map((history) => (
         <li
           key={history.id}
-          className="border border-[var(--echo-line)] bg-[rgba(2,16,24,0.36)] p-3 text-[var(--echo-muted)]"
+          className="rounded-[var(--animal-radius-sm)] border border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-3 text-[var(--animal-text-muted)]"
         >
           <div className="flex items-start justify-between gap-3">
             <div>

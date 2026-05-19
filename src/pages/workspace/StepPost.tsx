@@ -8,15 +8,32 @@ import { useDossierStore } from "@/features/dossier/dossierStore";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { useGenerationStore } from "@/features/generation/generationStore";
 import { generateProfileDraft } from "@/features/llm/llmClient";
+import { createEmptyProfileSession } from "@/features/profile/profileSession";
 import { useSettingsStore } from "@/features/settings/settingsStore";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
 import { buildDossierBlockMeta } from "@/features/dossier/dossierSections";
 import { nowIso } from "@/shared/lib/date";
 
+type GenderOption = "男" | "女" | "其他";
+
+function buildBriefForAi(brief: string, gender: GenderOption, customGender: string, age: string) {
+  const lines = [
+    brief.trim(),
+    "补充信息：",
+    `TA 的性别：${gender === "其他" ? customGender.trim() : gender}`,
+    age.trim() ? `TA 的年龄：${age.trim()}` : "",
+  ].filter(Boolean);
+
+  return lines.join("\n");
+}
+
 export function StepPost() {
   const navigate = useNavigate();
   const [brief, setBrief] = useState("");
+  const [gender, setGender] = useState<GenderOption | "">("");
+  const [customGender, setCustomGender] = useState("");
+  const [age, setAge] = useState("");
   const [hint, setHint] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
@@ -34,10 +51,16 @@ export function StepPost() {
 
   async function handleStartProfile() {
     const trimmedBrief = brief.trim();
+    const trimmedCustomGender = customGender.trim();
     setErrorMessage(null);
 
     if (trimmedBrief.length < 12) {
       setHint("再留下一点点线索吧。比如 TA 在什么场景里出现，或 TA 最不像谁。");
+      return;
+    }
+
+    if (!gender || (gender === "其他" && !trimmedCustomGender)) {
+      setHint("请先选择 TA 的性别；如果选择“其他”，需要写下具体内容。");
       return;
     }
 
@@ -51,12 +74,13 @@ export function StepPost() {
     setRunning("profile:draft", controller);
 
     try {
+      const aiBrief = buildBriefForAi(trimmedBrief, gender, trimmedCustomGender, age);
       const draftProject = await projectRepository.create({
         title: trimmedBrief.length > 18 ? `${trimmedBrief.slice(0, 18)}…` : trimmedBrief,
       });
       const result = await generateProfileDraft({
         projectId: draftProject.id,
-        brief: trimmedBrief,
+        brief: aiBrief,
         signal: controller.signal,
       });
       const now = nowIso();
@@ -70,6 +94,7 @@ export function StepPost() {
       const updatedProject = await projectService.updateProject(draftProject.id, {
         title: result.data.title,
         currentStep: "profile",
+        profileSession: createEmptyProfileSession(),
         dossier: {
           markdown: result.data.dossierMarkdown,
           blocks: dossierBlocks,
@@ -97,7 +122,7 @@ export function StepPost() {
 
   return (
     <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-4 py-20">
-      <article className="w-full max-w-3xl border-2 border-[var(--echo-line)] bg-[var(--echo-paper)] p-5 text-[var(--echo-ink)] shadow-[10px_10px_0_var(--echo-shadow)] sm:p-8">
+      <article className="w-full max-w-3xl border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-5 text-[var(--echo-ink)] shadow-[0_4px_10px_rgba(107,92,67,0.28)] sm:p-8">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
           张贴寻人启事
         </p>
@@ -107,7 +132,61 @@ export function StepPost() {
         <p className="mt-5 max-w-2xl font-mono text-base leading-7">
           不必急着说清 TA 是谁。写下一点气息、一句话、一个场景、一段你无法忘记的矛盾，或那个始终没有散去的瞬间。
         </p>
-        <div className="mt-8">
+        <div className="mt-8 grid gap-5">
+          <fieldset>
+            <legend className="mb-3 text-sm font-black text-[var(--animal-text)]">
+              TA 的性别 <span className="text-[var(--animal-error)]">*</span>
+            </legend>
+            <div className="flex flex-wrap gap-3">
+              {(["男", "女", "其他"] as const).map((option) => (
+                <label
+                  key={option}
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] px-4 py-2 text-sm font-bold text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)] transition-all hover:-translate-y-0.5 hover:border-[var(--animal-primary)] has-[:checked]:border-[var(--animal-primary)] has-[:checked]:bg-[var(--animal-primary-bg)] has-[:checked]:text-[var(--animal-text)]"
+                >
+                  <input
+                    type="radio"
+                    name="gender"
+                    value={option}
+                    checked={gender === option}
+                    onChange={() => {
+                      setGender(option);
+                      setHint(null);
+                    }}
+                    className="h-4 w-4 accent-[var(--animal-primary)]"
+                    required
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
+            {gender === "其他" && (
+              <input
+                type="text"
+                value={customGender}
+                onChange={(event) => {
+                  setCustomGender(event.target.value);
+                  setHint(null);
+                }}
+                className="mt-4 h-12 w-full max-w-md rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-5 text-base font-bold text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
+                placeholder="请写下 TA 更准确的性别描述"
+                required
+              />
+            )}
+          </fieldset>
+          <label className="block">
+            <span className="mb-3 block text-sm font-black text-[var(--animal-text)]">
+              TA 的年龄 <span className="text-[var(--animal-text-muted)]">（可选）</span>
+            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={age}
+              onChange={(event) => setAge(event.target.value.replace(/\D/g, ""))}
+              className="h-12 w-full max-w-md rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-5 text-base font-bold text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
+              placeholder="只填写数字，例如 24"
+            />
+          </label>
           <label htmlFor="case-brief" className="sr-only">
             最初的回音
           </label>
@@ -118,7 +197,7 @@ export function StepPost() {
               setBrief(event.target.value);
               setHint(null);
             }}
-            className="min-h-56 w-full resize-y border-0 border-b-2 border-[var(--echo-ink)] bg-transparent p-0 font-mono text-lg leading-9 outline-none placeholder:text-[rgba(36,49,65,0.45)] focus:border-[var(--echo-stamp)]"
+            className="min-h-56 w-full resize-y rounded-[30px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-6 py-5 font-mono text-lg leading-9 text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] hover:border-[var(--animal-border-hover)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_4px_0_0_var(--animal-focus-yellow-dark)]"
             placeholder="比如：TA 总在雨夜出现，话很少，像在等一封永远不会抵达的信。"
           />
         </div>
@@ -148,7 +227,7 @@ export function StepPost() {
             onGenerate={handleStartProfile}
             onCancel={() => cancel("profile:draft")}
           />
-          <p className="font-mono text-xs leading-5 text-[rgba(36,49,65,0.68)]">
+          <p className="font-mono text-xs leading-5 text-[var(--animal-text-muted)]">
             <FileSearch aria-hidden="true" size={14} className="mr-1 inline" />
             生成后会自动写入 TA 的回音，并进入辨认轮廓。
           </p>
