@@ -90,6 +90,9 @@ describe("worldStore", () => {
 
     expect(messages[0].content).toContain("角色档案");
     expect(messages[0].content).toContain("角色信息");
+    expect(messages[0].content).toContain("不要用几句概括带过");
+    expect(messages[0].content).toContain("运转代价");
+    expect(messages[0].content).toContain("不设置最大长度");
     expect(messages[1].content).toContain("姓名: 陈露");
     expect(messages[1].content).toContain("## 核心人格");
   });
