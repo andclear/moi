@@ -24,7 +24,7 @@ interface ProjectLibraryItem {
 function hasRecognizableDossier(markdown: string) {
   return parseDossierSections(markdown).some(
     (block) =>
-      block.section !== "最初的来岛上" &&
+      block.section !== "最初的小岛" &&
       block.section !== "最初的印象" &&
       block.content.trim() &&
       block.content.trim() !== "尚未听见",

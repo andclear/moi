@@ -83,8 +83,7 @@ export function StepBeautification() {
             添加美化
           </h1>
           <p className="mt-3 max-w-4xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            为 SillyTavern 生成结构化文本、WorldInfo、正则和 HTML/CSS/JavaScript
-            渲染代码。这个步骤可以跳过；保存启用的方案会写入最终角色卡。
+            为 SillyTavern 生成美化样式。这个步骤可以跳过；保存启用的方案会写入最终角色卡。
           </p>
         </section>
 
@@ -95,10 +94,11 @@ export function StepBeautification() {
             <Sparkles aria-hidden="true" size={22} className="mt-1 text-[var(--animal-primary)]" />
             <div>
               <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
-                美化可稍后再调整
+                美化部分可跳过
               </h2>
               <p className="mt-1 font-mono text-sm leading-7 text-[var(--echo-muted)]">
-                当前已保存 {project.beautifications.length} 套美化方案。
+                测试功能，生成质量不稳定，可跳过。当前已保存 {project.beautifications.length}{" "}
+                套美化方案。
               </p>
             </div>
           </div>

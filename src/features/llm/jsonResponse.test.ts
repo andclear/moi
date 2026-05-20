@@ -53,12 +53,12 @@ describe("jsonResponse", () => {
       modes: {
         interview: { title: "三席岛访", questions: [{ id: "interview_1", question: "问题" }] },
         stress: { title: "风浪压测", questions: [{ id: "stress_1", question: "问题" }] },
-        diary: { title: "日记来信", questions: [{ id: "diary_1", question: "问题" }] },
+        diary: { title: "日记回音", questions: [{ id: "diary_1", question: "问题" }] },
       },
     });
 
     expect(parseLlmJson(content, trialQuestionnaireSetResponseSchema).modes.diary.title).toBe(
-      "日记来信",
+      "日记回音",
     );
   });
 

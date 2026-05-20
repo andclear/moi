@@ -23,9 +23,9 @@ describe("Dexie repositories", () => {
 
   it("projectRepository 支持创建、读取、更新步骤、保存记录和删除", async () => {
     const projects = createProjectRepository(db);
-    const project = await projects.create({ title: "雨夜里的来岛上" });
+    const project = await projects.create({ title: "雨夜里的小岛" });
 
-    expect(await projects.getById(project.id)).toMatchObject({ title: "雨夜里的来岛上" });
+    expect(await projects.getById(project.id)).toMatchObject({ title: "雨夜里的小岛" });
 
     const stepped = await projects.updateCurrentStep(project.id, "profile");
     expect(stepped?.currentStep).toBe("profile");

@@ -34,7 +34,7 @@ export function LandingPage() {
             TA 并非诞生于键盘敲击之中
           </p>
           <p className="fade-line [animation-delay:1600ms]">
-            TA 正在某座小岛上
+            TA 正在某座小岛上生活
           </p>
           <p className="fade-line [animation-delay:2800ms]">
             你来，不是为了寻找，而是与 TA 相遇

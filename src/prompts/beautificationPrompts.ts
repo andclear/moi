@@ -59,7 +59,7 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         "6. 动画用 @keyframes 或 JavaScript 切换 class；不要使用 CSS transition。",
         "7. 主容器 pointer-events: none；可点击子元素 pointer-events: auto。",
         "8. 视觉要精致、有层次，但文字必须清楚易读，不要为了装饰牺牲可读性。",
-        "9. 不要用 Emoji 代替 UI 图标要求；如果结构化文本本身已有符号或用户要求保留符号，可以原样保留。",
+        "9. 如果结构化文本本身已有符号或用户要求保留符号，可以原样保留。",
         "",
         "## 预置 UI 风格",
         `用户选择的设计风格：${selectedStyle.label}`,
