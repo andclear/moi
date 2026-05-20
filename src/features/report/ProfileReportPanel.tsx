@@ -43,7 +43,11 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
                 className="h-11 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
               />
             </label>
-            <Button type="button" className="w-full sm:w-fit" onClick={handleDownload}>
+            <Button
+              type="button"
+              className="w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] sm:w-fit"
+              onClick={handleDownload}
+            >
               <Download aria-hidden="true" size={18} />
               下载报告
             </Button>

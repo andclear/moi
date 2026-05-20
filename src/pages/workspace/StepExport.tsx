@@ -1,4 +1,4 @@
-import { Archive, Download, FileJson, ImageUp } from "lucide-react";
+import { Archive, Download, FileJson, ImageUp, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
@@ -96,16 +96,16 @@ export function StepExport() {
             </div>
 
             <div className="grid min-w-0 gap-5">
-              <div className="grid gap-4 rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.36)] p-5 md:grid-cols-[minmax(9rem,12rem)_minmax(0,1fr)]">
-                <label className="grid gap-2 text-sm font-bold text-[var(--echo-paper)]">
+              <div className="grid items-start gap-4 rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.36)] p-5 md:grid-cols-[minmax(9rem,12rem)_minmax(0,1fr)]">
+                <label className="grid self-start gap-3 text-sm font-bold text-[var(--echo-paper)]">
                   版本
                   <input
                     value={versionLabel}
                     onChange={(event) => setVersionLabel(event.target.value)}
-                    className="h-11 border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
+                    className="h-11 w-full border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 font-mono text-sm text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                   />
                 </label>
-                <label className="grid gap-2 text-sm font-bold text-[var(--echo-paper)]">
+                <label className="grid gap-3 text-sm font-bold text-[var(--echo-paper)]">
                   备注
                   <textarea
                     value={note}
@@ -117,59 +117,74 @@ export function StepExport() {
                 </label>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid gap-4">
                 <section className="rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
-                  <div className="flex items-start gap-3">
-                    <FileJson aria-hidden="true" size={22} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
-                    <div>
-                      <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
-                        格式化 JSON
-                      </h2>
-                      <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-                        下载可解析的 Character Card V3 JSON。
-                      </p>
+                  <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <FileJson aria-hidden="true" size={22} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
+                      <div className="min-w-0">
+                        <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                          格式化 JSON
+                        </h2>
+                        <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
+                          下载可解析的 Character Card V3 JSON。
+                        </p>
+                      </div>
                     </div>
+                    <Button
+                      type="button"
+                      className="w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] sm:w-fit"
+                      loading={isBuilding}
+                      disabled={!project || isBuilding}
+                      onClick={() => void handleJsonExport()}
+                    >
+                      {isBuilding ? null : <Download aria-hidden="true" size={18} />}
+                      导出 JSON
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    className="mt-6 w-full sm:w-fit"
-                    loading={isBuilding}
-                    disabled={!project || isBuilding}
-                    onClick={() => void handleJsonExport()}
-                  >
-                    {isBuilding ? null : <Download aria-hidden="true" size={18} />}
-                    导出 JSON
-                  </Button>
                 </section>
 
                 <section className="rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
-                  <div className="flex items-start gap-3">
-                    <ImageUp aria-hidden="true" size={22} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
-                    <div>
-                      <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
-                        内嵌 PNG
-                      </h2>
-                      <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-                        上传图片，写入 chara 与 ccv3 文本区块。
-                      </p>
+                  <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                    <div className="min-w-0">
+                      <div className="flex items-start gap-3">
+                        <ImageUp aria-hidden="true" size={22} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
+                        <div className="min-w-0">
+                          <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                            内嵌 PNG
+                          </h2>
+                          <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
+                            上传图片，写入 chara 与 ccv3 文本区块。
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-5 text-sm font-black text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--animal-border-hover)] hover:shadow-[0_5px_0_0_var(--animal-shadow-input)]">
+                          <Upload aria-hidden="true" size={17} />
+                          选择图片
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={(event) => setImageFile(event.target.files?.[0])}
+                            className="sr-only"
+                          />
+                        </label>
+                        <span className="min-w-0 max-w-full truncate rounded-[var(--animal-radius-pill)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.34)] px-4 py-2 font-mono text-sm font-bold text-[var(--echo-muted)]">
+                          {imageFile?.name ?? "尚未选择图片"}
+                        </span>
+                      </div>
                     </div>
+                    <Button
+                      type="button"
+                      className="w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] sm:w-fit"
+                      loading={isBuilding}
+                      disabled={!project || isBuilding}
+                      onClick={() => void handlePngExport()}
+                    >
+                      {isBuilding ? null : <Download aria-hidden="true" size={18} />}
+                      导出 PNG
+                    </Button>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={(event) => setImageFile(event.target.files?.[0])}
-                    className="mt-5 block w-full text-sm text-[var(--echo-muted)] file:mr-4 file:h-10 file:border-2 file:border-[var(--echo-line)] file:bg-[var(--animal-bg-content)] file:px-4 file:font-bold file:text-[var(--echo-ink)]"
-                  />
-                  <Button
-                    type="button"
-                    className="mt-6 w-full sm:w-fit"
-                    loading={isBuilding}
-                    disabled={!project || isBuilding}
-                    onClick={() => void handlePngExport()}
-                  >
-                    {isBuilding ? null : <Download aria-hidden="true" size={18} />}
-                    导出 PNG
-                  </Button>
                 </section>
               </div>
             </div>
