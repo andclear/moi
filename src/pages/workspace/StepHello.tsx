@@ -630,7 +630,13 @@ const ChatBubble = memo(function ChatBubble({
   return (
     <article className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser && <Avatar label="TA" />}
-      <div className={cn(isUser ? "order-first max-w-[min(780px,84%)]" : "max-w-[min(980px,92%)]")}>
+      <div
+        className={cn(
+          isUser
+            ? "order-first max-w-[min(780px,84%)]"
+            : "w-[min(980px,92%)] max-w-[calc(100%-4rem)]",
+        )}
+      >
         <div
           className={cn(
             "border-2 p-3 shadow-[0_3px_0_0_var(--animal-shadow-input)]",
