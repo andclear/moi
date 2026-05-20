@@ -1041,14 +1041,14 @@ function buildRenderedDocument(body: string, frameId: string) {
   <style>
     html, body {
       margin: 0;
-      min-height: 100%;
       color: #725d42;
-      background: #f8f8f0;
+      background: transparent;
       font-family: Nunito, "Noto Sans SC", "PingFang SC", sans-serif;
     }
     body {
       padding: 0;
       box-sizing: border-box;
+      display: flow-root;
       white-space: pre-wrap;
       overflow: hidden;
     }
@@ -1070,12 +1070,14 @@ ${body}
   (() => {
     const frameId = ${JSON.stringify(frameId)};
     const report = () => {
-      const height = Math.max(
-        document.documentElement.scrollHeight,
-        document.body ? document.body.scrollHeight : 0
-      );
-      window.parent.postMessage({ type: "echo-hello-frame-height", frameId, height: height + 8 }, "*");
+      const body = document.body;
+      if (!body) return;
+      const rectHeight = body.getBoundingClientRect().height;
+      const height = Math.max(rectHeight, body.scrollHeight, body.offsetHeight);
+      window.parent.postMessage({ type: "echo-hello-frame-height", frameId, height: height + 2 }, "*");
     };
+    const observer = "ResizeObserver" in window ? new ResizeObserver(report) : null;
+    if (observer && document.body) observer.observe(document.body);
     window.addEventListener("load", report);
     requestAnimationFrame(report);
     setTimeout(report, 80);
