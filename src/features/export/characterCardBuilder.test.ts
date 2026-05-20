@@ -130,12 +130,35 @@ describe("characterCardBuilder", () => {
         updatedAt: project.updatedAt,
       },
     ];
+    const cardCompletion = {
+      description: "雨夜来客曾在旧图书馆整理无人认领的信，外表温顺但边界明确。",
+      personality: "谨慎、克制，想靠近他人却害怕真实身份被认出。",
+      tags: ["雨夜", "旧图书馆", "边界感"],
+      generationId: "generation_export_1",
+      updatedAt: project.updatedAt,
+    };
+    project.exportDraft = {
+      creator: "林屿",
+      cardCompletion,
+    };
 
-    const card = buildCharacterCard({ project, versionLabel: "1.0", note: "首版" });
+    const card = buildCharacterCard({ project, versionLabel: "1.0", creator: "林屿" });
     const json = formatCharacterCardJson(card);
 
     expect(card.spec).toBe("chara_card_v3");
     expect(card.spec_version).toBe("3.0");
+    expect(card.description).toBe(cardCompletion.description);
+    expect(card.personality).toBe(cardCompletion.personality);
+    expect(card.tags).toEqual(["雨夜", "旧图书馆", "边界感"]);
+    expect(card.data.description).toBe(cardCompletion.description);
+    expect(card.data.personality).toBe(cardCompletion.personality);
+    expect(card.data.tags).toEqual(["雨夜", "旧图书馆", "边界感"]);
+    expect(card.creatorcomment).toBe(project.dossier.markdown);
+    expect(card.data.creator_notes).toBe(project.dossier.markdown);
+    expect(card.data.creator).toBe("林屿");
+    expect(card.data.character_version).toBe("1.0");
+    expect(card.data.extensions.world).toBe("雨夜来客");
+    expect(card.data.character_book?.name).toBe("雨夜来客");
     expect(card.data.character_book?.entries).toHaveLength(3);
     expect(card.data.character_book?.entries[0]).toMatchObject({
       keys: ["旧馆", "雨水"],
@@ -149,7 +172,6 @@ describe("characterCardBuilder", () => {
     });
     expect(card.data.extensions.regex_scripts).toHaveLength(1);
     expect(card.data.first_mes).toContain("{{user}}");
-    expect(card.data.creator_notes).toContain("相处测试摘要");
     expect(json).not.toContain("createdAt");
     expect(json).not.toContain("updatedAt");
     expect(() => JSON.parse(json)).not.toThrow();

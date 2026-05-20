@@ -37,6 +37,10 @@ import {
   buildCharacterProfileTextRewriteMessages,
   buildCharacterProfileYamlMessages,
 } from "@/prompts/characterProfilePrompts";
+import {
+  buildExportCardCompletionMessages,
+  buildExportImagePromptMessages,
+} from "@/prompts/exportPrompts";
 import { withGlobalPrompt } from "@/prompts/globalPrompt";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
 import { parseLlmJson } from "@/features/llm/jsonResponse";
@@ -51,6 +55,8 @@ import {
   beautificationKeywordResponseSchema,
   beautificationResponseSchema,
   companionResponseSchema,
+  exportCardCompletionResponseSchema,
+  exportImagePromptResponseSchema,
   intakeQuestionnaireResponseSchema,
   profileChoiceResponseSchema,
   profileDiaryResponseSchema,
@@ -181,6 +187,49 @@ export async function generateCompanionCandidates(input: {
   return {
     taskId: result.taskId,
     data: parseLlmJson(result.response.content, companionResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateExportCardCompletion(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  characterInfoYaml?: string;
+  confirmedEntries: WorldEntry[];
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "export",
+    messages: buildExportCardCompletionMessages(input),
+    inputSummary: "补全角色卡导出字段",
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, exportCardCompletionResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateExportImagePrompt(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  characterInfoYaml?: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "export",
+    messages: buildExportImagePromptMessages(input),
+    inputSummary: "生成角色文生图提示词",
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, exportImagePromptResponseSchema),
     response: result.response,
   };
 }

@@ -265,6 +265,23 @@ export interface CharacterProfileDocument {
   updatedAt?: string;
 }
 
+export interface ExportDraft {
+  creator?: string;
+  cardCompletion?: {
+    description: string;
+    personality: string;
+    tags: string[];
+    generationId?: string;
+    updatedAt: string;
+  };
+  imagePrompt?: {
+    prompt: string;
+    generationId?: string;
+    updatedAt: string;
+  };
+  updatedAt?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -280,6 +297,7 @@ export interface Project {
   profileSession?: ProfileSession;
   intake?: ProjectIntake;
   characterProfile?: CharacterProfileDocument;
+  exportDraft?: ExportDraft;
   createdAt: string;
   updatedAt: string;
   archivedAt?: string;
@@ -300,6 +318,7 @@ export interface HistorySnapshot {
   profileSession?: ProfileSession;
   intake?: ProjectIntake;
   characterProfile?: CharacterProfileDocument;
+  exportDraft?: ExportDraft;
   generationIds: string[];
   createdAt: string;
 }

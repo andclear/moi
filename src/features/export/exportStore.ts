@@ -28,7 +28,7 @@ interface ExportState {
 export interface ExportBuildInput {
   project: Project;
   versionLabel?: string;
-  note?: string;
+  creator?: string;
 }
 
 function previewJson(formattedJson: string) {
@@ -56,17 +56,17 @@ export function downloadText(text: string, filename: string, type = "application
 
 export const useExportStore = create<ExportState>((set) => ({
   status: "idle",
-  buildJson: async ({ project, versionLabel, note }) => {
+  buildJson: async ({ project, versionLabel, creator }) => {
     set({ status: "building", error: undefined });
     try {
-      const card = buildCharacterCard({ project, versionLabel, note });
+      const card = buildCharacterCard({ project, versionLabel, creator });
       const formattedJson = formatCharacterCardJson(card);
       JSON.parse(formattedJson);
       const record = await exportRepository.create({
         projectId: project.id,
         format: "json",
         versionLabel,
-        note,
+        note: creator ? `署名：${creator}` : undefined,
         jsonPreview: previewJson(formattedJson),
       });
       downloadText(formattedJson, createDownloadName(project, "json"));
@@ -78,10 +78,10 @@ export const useExportStore = create<ExportState>((set) => ({
       throw error;
     }
   },
-  buildPng: async ({ project, versionLabel, note, imageFile }) => {
+  buildPng: async ({ project, versionLabel, creator, imageFile }) => {
     set({ status: "building", error: undefined });
     try {
-      const card = buildCharacterCard({ project, versionLabel, note });
+      const card = buildCharacterCard({ project, versionLabel, creator });
       const formattedJson = formatCharacterCardJson(card);
       const sourcePng = await imageFileToPngBytes(imageFile);
       const pngBytes = writeCharacterCardTextChunks(sourcePng, formattedJson);
@@ -93,7 +93,7 @@ export const useExportStore = create<ExportState>((set) => ({
         projectId: project.id,
         format: "png",
         versionLabel,
-        note,
+        note: creator ? `署名：${creator}` : undefined,
         jsonPreview: previewJson(formattedJson),
         pngTextKey: "ccv3",
       });

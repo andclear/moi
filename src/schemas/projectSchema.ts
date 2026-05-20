@@ -182,6 +182,27 @@ export const characterProfileDocumentSchema = z.object({
   updatedAt: z.string().datetime().optional(),
 });
 
+export const exportDraftSchema = z.object({
+  creator: z.string().optional(),
+  cardCompletion: z
+    .object({
+      description: z.string().min(1),
+      personality: z.string().min(1),
+      tags: z.array(z.string().min(1)).default([]),
+      generationId: z.string().optional(),
+      updatedAt: z.string().datetime(),
+    })
+    .optional(),
+  imagePrompt: z
+    .object({
+      prompt: z.string().min(1),
+      generationId: z.string().optional(),
+      updatedAt: z.string().datetime(),
+    })
+    .optional(),
+  updatedAt: z.string().datetime().optional(),
+});
+
 export const projectSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -197,6 +218,7 @@ export const projectSchema = z.object({
   profileSession: z.unknown().optional(),
   intake: z.unknown().optional(),
   characterProfile: characterProfileDocumentSchema.optional(),
+  exportDraft: exportDraftSchema.optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   archivedAt: z.string().datetime().optional(),
@@ -218,6 +240,7 @@ export const historySnapshotSchema = z.object({
   profileSession: z.unknown().optional(),
   intake: z.unknown().optional(),
   characterProfile: characterProfileDocumentSchema.optional(),
+  exportDraft: exportDraftSchema.optional(),
   generationIds: z.array(z.string()),
   createdAt: z.string().datetime(),
 });

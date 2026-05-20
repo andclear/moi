@@ -5,7 +5,6 @@ import type {
   DossierBlockMeta,
   GreetingVariant,
   Project,
-  TrialRun,
   WorldEntry,
 } from "@/db/types";
 import type { CharacterCard } from "@/schemas/characterCardSchema";
@@ -17,7 +16,7 @@ import { stripRuntimeTimestamps } from "@/shared/lib/jsonSanitizer";
 export interface BuildCharacterCardInput {
   project: Project;
   versionLabel?: string;
-  note?: string;
+  creator?: string;
   exportedAt?: string;
 }
 
@@ -184,23 +183,6 @@ function buildCompanionWorldInfo(node: CompanionNode, relations: CompanionRelati
     .join("\n");
 }
 
-function buildCreatorNotes(input: {
-  note?: string;
-  versionLabel?: string;
-  trialRuns: TrialRun[];
-}) {
-  const blocks = [
-    input.note ? `导出备注：${input.note}` : "",
-    input.versionLabel ? `版本：${input.versionLabel}` : "",
-    input.trialRuns[0]?.resultMarkdown ? `相处测试摘要：\n${input.trialRuns[0].resultMarkdown}` : "",
-    input.trialRuns[0]?.riskNotes.length
-      ? `相处测试风险记录：${input.trialRuns[0].riskNotes.join("；")}`
-      : "",
-  ];
-
-  return blocks.filter(Boolean).join("\n\n");
-}
-
 function buildEchoExtension(project: Project, dossierMetadata: DossierBlockMeta[], exportedAt: string) {
   return {
     project_id: project.id,
@@ -225,7 +207,7 @@ function buildEchoExtension(project: Project, dossierMetadata: DossierBlockMeta[
 export function buildCharacterCard({
   project,
   versionLabel,
-  note,
+  creator,
   exportedAt = new Date().toISOString(),
 }: BuildCharacterCardInput): CharacterCard {
   const markdown = project.dossier.markdown;
@@ -238,8 +220,14 @@ export function buildCharacterCard({
   const world = normalizeText(getSection(markdown, "世界观"));
   const greeting = primaryGreeting(project.greetingVariants);
   const firstMes = normalizeText(greeting?.content ?? getSection(markdown, "开场白"), "{{char}}终于看见了{{user}}。");
-  const description = [core, appearance, background, conflict, speech].filter(Boolean).join("\n\n");
-  const creatorNotes = buildCreatorNotes({ note, versionLabel, trialRuns: project.trialRuns });
+  const fallbackDescription = [core, appearance, background, conflict, speech].filter(Boolean).join("\n\n");
+  const fallbackPersonality = [core, conflict, speech].filter(Boolean).join("\n\n");
+  const completion = project.exportDraft?.cardCompletion;
+  const description = normalizeText(completion?.description ?? "", fallbackDescription);
+  const personality = normalizeText(completion?.personality ?? "", fallbackPersonality);
+  const tags = completion?.tags?.length ? completion.tags : ["回音", "Echo"];
+  const creatorName = normalizeText(creator ?? project.exportDraft?.creator ?? "", "Echo");
+  const creatorNotes = markdown;
   const alternateGreetings = adoptedGreetings(project.greetingVariants)
     .filter((item) => item.id !== greeting?.id)
     .map((item) => item.content.trim());
@@ -274,7 +262,7 @@ export function buildCharacterCard({
   const card = {
     name: title,
     description,
-    personality: [core, conflict, speech].filter(Boolean).join("\n\n"),
+    personality,
     scenario: world,
     first_mes: firstMes,
     mes_example: "",
@@ -282,14 +270,14 @@ export function buildCharacterCard({
     avatar: "none",
     talkativeness: "0.5",
     fav: false,
-    tags: ["回音", "Echo"],
+    tags,
     spec: "chara_card_v3" as const,
     spec_version: "3.0" as const,
     create_date: new Date(exportedAt).toLocaleString("zh-CN", { hour12: false }),
     data: {
       name: title,
       description,
-      personality: [core, conflict, speech].filter(Boolean).join("\n\n"),
+      personality,
       scenario: world,
       first_mes: firstMes,
       mes_example: "",
@@ -297,12 +285,12 @@ export function buildCharacterCard({
       system_prompt:
         "你将扮演{{char}}。保持角色已有经历、欲望、边界和说话方式，不替{{user}}做决定，不描写{{user}}的内心。",
       post_history_instructions: "持续遵守角色记录中用户确认的事实，避免突然改变人格、关系或世界逻辑。",
-      tags: ["回音", "Echo"],
-      creator: "Echo",
+      tags,
+      creator: creatorName,
       character_version: versionLabel ?? "1.0",
       alternate_greetings: alternateGreetings,
       character_book: {
-        name: `${title}的WorldInfo`,
+        name: title,
         description: "由 Echo 寻回并经用户确认的世界书条目。",
         scan_depth: 2,
         token_budget: 2048,
@@ -317,7 +305,7 @@ export function buildCharacterCard({
       extensions: {
         talkativeness: "0.5",
         fav: false,
-        world: "",
+        world: title,
         depth_prompt: {
           prompt: "",
           depth: 4,

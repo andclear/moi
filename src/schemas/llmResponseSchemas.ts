@@ -325,3 +325,13 @@ export const companionResponseSchema = z.object({
     .length(2),
   fragment: z.string().min(1),
 });
+
+export const exportCardCompletionResponseSchema = z.object({
+  description: z.string().min(1),
+  personality: z.string().min(1),
+  tags: z.array(z.string().min(1)).min(1).max(8),
+});
+
+export const exportImagePromptResponseSchema = z.object({
+  prompt: z.string().min(1),
+});
