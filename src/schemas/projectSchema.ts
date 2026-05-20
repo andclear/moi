@@ -90,6 +90,25 @@ export const trialRunSchema = z.object({
   createdAt: z.string().datetime(),
 });
 
+export const helloChatSessionSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  mode: z.enum(["greeting", "casual"]),
+  selectedGreetingId: z.string().optional(),
+  messages: z.array(
+    z.object({
+      id: z.string().min(1),
+      role: z.enum(["user", "assistant"]),
+      content: z.string(),
+      createdAt: z.string().datetime(),
+      greetingId: z.string().optional(),
+      isOpening: z.boolean().optional(),
+    }),
+  ),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
 export const beautificationAssetSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -171,6 +190,7 @@ export const projectSchema = z.object({
   worldEntries: z.array(worldEntrySchema),
   greetingVariants: z.array(greetingVariantSchema),
   trialRuns: z.array(trialRunSchema),
+  helloSessions: z.array(helloChatSessionSchema).default([]).optional(),
   beautifications: z.array(beautificationAssetSchema).default([]),
   companions: z.array(companionNodeSchema).default([]),
   companionRelations: z.array(companionRelationSchema).default([]),
@@ -191,6 +211,7 @@ export const historySnapshotSchema = z.object({
   worldEntries: z.array(worldEntrySchema),
   greetingVariants: z.array(greetingVariantSchema),
   trialRuns: z.array(trialRunSchema),
+  helloSessions: z.array(helloChatSessionSchema).default([]).optional(),
   beautifications: z.array(beautificationAssetSchema).default([]),
   companions: z.array(companionNodeSchema).default([]),
   companionRelations: z.array(companionRelationSchema).default([]),

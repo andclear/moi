@@ -76,6 +76,17 @@ export function createProjectRepository(db: EchoDatabase = echoDb) {
           projectId: "",
           createdAt: now,
         })),
+        helloSessions: (project.helloSessions ?? []).map((session) => ({
+          ...session,
+          id: createId("hello"),
+          projectId: "",
+          messages: session.messages.map((message) => ({
+            ...message,
+            id: createId("msg"),
+          })),
+          createdAt: now,
+          updatedAt: now,
+        })),
         beautifications: (project.beautifications ?? []).map((asset) => ({
           ...asset,
           id: createId("beauty"),
@@ -108,6 +119,10 @@ export function createProjectRepository(db: EchoDatabase = echoDb) {
       }));
       nextProject.trialRuns = nextProject.trialRuns.map((trial) => ({
         ...trial,
+        projectId: nextProject.id,
+      }));
+      nextProject.helloSessions = (nextProject.helloSessions ?? []).map((session) => ({
+        ...session,
         projectId: nextProject.id,
       }));
       nextProject.beautifications = nextProject.beautifications.map((asset) => ({

@@ -3,6 +3,8 @@ import { settingsRepository } from "@/db/repositories/settingsRepository";
 import type {
   BeautificationUiStyleId,
   GreetingVariant,
+  HelloChatMessage,
+  HelloChatMode,
   ProfileDiaryBlank,
   ProfileStageId,
   TrialRun,
@@ -18,6 +20,7 @@ import {
   buildProfileStageMessages,
 } from "@/prompts/profilePrompts";
 import { buildGreetingMessages } from "@/prompts/greetingPrompts";
+import { buildHelloChatMessages, buildHelloRevisionMessages } from "@/prompts/helloPrompts";
 import {
   buildBeautificationKeywordMessages,
   buildBeautificationMessages,
@@ -654,6 +657,61 @@ export async function generateTrialRevision(input: {
     type: "trial_revision",
     messages: buildTrialRevisionMessages(input),
     inputSummary: `终审不满意修改：${input.question.slice(0, 60)}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, trialRevisionResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateHelloChatReply(input: {
+  projectId: string;
+  mode: HelloChatMode;
+  dossierMarkdown: string;
+  characterInfoYaml?: string;
+  confirmedEntries: WorldEntry[];
+  selectedGreeting?: GreetingVariant;
+  historyMessages: HelloChatMessage[];
+  userInput: string;
+  signal?: AbortSignal;
+  onDelta?: (delta: string, content: string) => void;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "hello_chat",
+    messages: buildHelloChatMessages(input),
+    inputSummary: `打个招呼：${input.userInput.slice(0, 80)}`,
+    signal: input.signal,
+    onDelta: input.onDelta,
+  });
+
+  return {
+    taskId: result.taskId,
+    text: result.response.content.trim(),
+    response: result.response,
+  };
+}
+
+export async function generateHelloRevision(input: {
+  projectId: string;
+  mode: HelloChatMode;
+  dossierMarkdown: string;
+  characterInfoYaml?: string;
+  confirmedEntries: WorldEntry[];
+  selectedGreeting?: GreetingVariant;
+  historyMessages: HelloChatMessage[];
+  targetReply: string;
+  revisionNotes: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "hello_revision",
+    messages: buildHelloRevisionMessages(input),
+    inputSummary: `对话不满意修改：${input.targetReply.slice(0, 60)}`,
     signal: input.signal,
   });
 

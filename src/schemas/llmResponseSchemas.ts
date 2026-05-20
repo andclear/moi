@@ -19,6 +19,8 @@ export const generationTaskSchema = z.object({
     "trial_questionnaire",
     "trial_answer",
     "trial_revision",
+    "hello_chat",
+    "hello_revision",
     "beautification",
     "companion",
     "export",

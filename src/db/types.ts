@@ -12,6 +12,8 @@ export type GenerationType =
   | "trial_questionnaire"
   | "trial_answer"
   | "trial_revision"
+  | "hello_chat"
+  | "hello_revision"
   | "beautification"
   | "companion"
   | "export";
@@ -101,6 +103,27 @@ export interface TrialModeResult {
 }
 
 export type TrialModeResults = Record<TrialRun["mode"], TrialModeResult>;
+
+export type HelloChatMode = "greeting" | "casual";
+
+export interface HelloChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: string;
+  greetingId?: string;
+  isOpening?: boolean;
+}
+
+export interface HelloChatSession {
+  id: string;
+  projectId: string;
+  mode: HelloChatMode;
+  selectedGreetingId?: string;
+  messages: HelloChatMessage[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface BeautificationAsset {
   id: string;
@@ -250,6 +273,7 @@ export interface Project {
   worldEntries: WorldEntry[];
   greetingVariants: GreetingVariant[];
   trialRuns: TrialRun[];
+  helloSessions?: HelloChatSession[];
   beautifications: BeautificationAsset[];
   companions: CompanionNode[];
   companionRelations: CompanionRelation[];
