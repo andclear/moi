@@ -59,7 +59,8 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         "",
         "## 输出格式",
         "严格输出 JSON object，不要 Markdown 代码块，不要解释，不要额外字段。",
-        "顶层字段只能是：worldinfo、regex、html、original_text、formatted_original_text。",
+        "顶层字段只能是：worldinfo、regex_title、regex、html、original_text、formatted_original_text。",
+        "regex_title 是正则脚本标题，必须简短清楚，方便用户在 SillyTavern 的正则列表里识别用途。",
         "original_text 与 formatted_original_text 可以相同；formatted_original_text 必须能被 regex 匹配，并能替换出可渲染的 html。",
         "语言必须是简体中文。",
       ].join("\n"),
@@ -75,7 +76,7 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         `是否插入开场白：${shouldInsertGreeting ? "是" : "否"}`,
         "",
         "请返回严格 JSON：",
-        '{"worldinfo":{"comment":"条目名称","content":"中文说明内容","constant":true,"keys":[],"position":4,"depth":4,"insertion_order":999},"regex":"正则表达式","html":"格式化 HTML/CSS/JS","original_text":"示例结构化文本","formatted_original_text":"严格匹配正则的结构化文本"}',
+        '{"worldinfo":{"comment":"条目名称","content":"中文说明内容","constant":true,"keys":[],"position":4,"depth":4,"insertion_order":999},"regex_title":"正则脚本标题","regex":"正则表达式","html":"格式化 HTML/CSS/JS","original_text":"示例结构化文本","formatted_original_text":"严格匹配正则的结构化文本"}',
       ].join("\n\n"),
     },
   ];

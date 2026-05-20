@@ -153,10 +153,10 @@ function buildSyntheticWorldEntry(input: {
 function buildRegexScript(asset: BeautificationAsset) {
   return {
     id: asset.id,
-    scriptName: asset.title,
+    scriptName: asset.regexTitle || asset.title,
     findRegex: asset.regex,
     replaceString: asset.html,
-    disabled: !asset.enabled,
+    disabled: false,
     placement: [2],
     markdownOnly: false,
     promptOnly: false,
@@ -246,7 +246,7 @@ export function buildCharacterCard({
     .filter((item) => item.id !== greeting?.id)
     .map((item) => item.content.trim());
   const worldEntries = project.worldEntries.filter((entry) => entry.enabled);
-  const beautifications = (project.beautifications ?? []).filter((asset) => asset.enabled);
+  const beautifications = project.beautifications ?? [];
   const beautificationWorldEntries = beautifications
     .filter((asset) => asset.worldInfo)
     .map((asset, index) =>

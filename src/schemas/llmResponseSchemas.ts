@@ -230,6 +230,7 @@ export const beautificationResponseSchema = z.object({
     })
     .nullable(),
   regex: z.string().min(1),
+  regex_title: z.string().min(1).optional(),
   html: z.string().min(1),
   original_text: z.string().default(""),
   formatted_original_text: z.string().min(1),

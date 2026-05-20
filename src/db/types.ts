@@ -87,6 +87,7 @@ export interface BeautificationAsset {
     insertion_order: number;
   } | null;
   regex: string;
+  regexTitle?: string;
   html: string;
   formattedOriginalText: string;
   insertIntoGreeting?: BeautificationGreetingInsertMode;

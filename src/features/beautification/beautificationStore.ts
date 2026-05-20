@@ -68,6 +68,7 @@ export function buildFallbackBeautification(input: BeautificationDraftInput) {
           }
         : null,
     regex,
+    regex_title: "状态栏正则",
     html:
       '<div class="echo-status-card-a7f3">\n  <style>\n    .echo-status-card-a7f3 { --echo-hud: #725d42; max-width: 36rem; margin: 0 auto; pointer-events: none; font-family: Nunito, "Noto Sans SC", sans-serif; }\n    .echo-status-card-a7f3 .hud { pointer-events: auto; border: 2px solid #c4b89e; border-radius: 20px; padding: 1rem; color: #725d42; background: rgb(247,243,223); box-shadow: 0 4px 10px rgba(107,92,67,.3); animation: echoHudIn .5s ease both; }\n    @keyframes echoHudIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }\n  </style>\n  <div class="hud">$1</div>\n</div>',
     original_text: sampleText,
@@ -111,6 +112,7 @@ export async function createBeautificationAsset(project: Project, input: Beautif
     strategy: inferBeautificationStrategy(data.data.formatted_original_text),
     worldInfo,
     regex: data.data.regex,
+    regexTitle: data.data.regex_title ?? `${worldInfo?.comment ?? "美化方案"}正则`,
     html: data.data.html,
     formattedOriginalText: data.data.formatted_original_text,
     insertIntoGreeting: input.insertIntoGreeting,
@@ -135,6 +137,7 @@ export function createFallbackBeautificationAsset(project: Project, input: Beaut
     strategy: inferBeautificationStrategy(data.formatted_original_text),
     worldInfo: data.worldinfo,
     regex: data.regex,
+    regexTitle: data.regex_title,
     html: data.html,
     formattedOriginalText: data.formatted_original_text,
     insertIntoGreeting: input.insertIntoGreeting,

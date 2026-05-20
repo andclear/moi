@@ -3,15 +3,14 @@ import { html as htmlLanguage } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import {
   Check,
-  Code2,
   Eye,
-  FileJson2,
   Regex,
-  Save,
   Sparkles,
+  Trash2,
   WandSparkles,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Select } from "animal-island-ui";
+import { useMemo, useState } from "react";
 
 import type {
   BeautificationAsset,
@@ -21,7 +20,6 @@ import type {
 import {
   applyBeautificationToGreetings,
   createBeautificationAsset,
-  createFallbackBeautificationAsset,
   testBeautificationRegex,
 } from "@/features/beautification/beautificationStore";
 import { projectService } from "@/db/services/projectService";
@@ -43,10 +41,6 @@ function splitCodeForExtensions(value: string) {
   return [htmlLanguage(), javascript({ jsx: true })];
 }
 
-function formatWorldInfoJson(asset: BeautificationAsset) {
-  return JSON.stringify(asset.worldInfo ?? null, null, 2);
-}
-
 function buildPreviewHtml(asset: BeautificationAsset) {
   try {
     const expression = new RegExp(asset.regex, "s");
@@ -59,55 +53,27 @@ function buildPreviewHtml(asset: BeautificationAsset) {
   }
 }
 
-function parseWorldInfoJson(value: string): BeautificationAsset["worldInfo"] {
-  const parsed = JSON.parse(value) as BeautificationAsset["worldInfo"];
-  if (!parsed) {
-    return null;
-  }
-
-  return {
-    comment: String(parsed.comment ?? "美化格式说明"),
-    content: String(parsed.content ?? ""),
-    constant: Boolean(parsed.constant),
-    keys: Array.isArray(parsed.keys) ? parsed.keys.map(String).filter(Boolean) : [],
-    position: Number.isFinite(Number(parsed.position)) ? Number(parsed.position) : 4,
-    depth: parsed.depth === "" ? "" : Number.isFinite(Number(parsed.depth)) ? Number(parsed.depth) : 4,
-    insertion_order: Number.isFinite(Number(parsed.insertion_order))
-      ? Number(parsed.insertion_order)
-      : parsed.constant
-        ? 999
-        : 180,
-  };
-}
-
-const insertOptions: Array<{ value: BeautificationGreetingInsertMode; label: string; description: string }> = [
+const insertOptions: Array<{ key: BeautificationGreetingInsertMode; label: string }> = [
   {
-    value: "none",
+    key: "none",
     label: "不插入开场白",
-    description: "依靠关键词触发 WorldInfo，适合剧情中后期才出现的美化。",
   },
   {
-    value: "primary",
+    key: "primary",
     label: "插入主开场白",
-    description: "只追加到主开场白，让状态栏或固定结构从第一轮就出现。",
   },
   {
-    value: "all_adopted",
+    key: "all_adopted",
     label: "插入所有已采用开场白",
-    description: "备用开场也会带同一段结构化内容。",
   },
 ];
 
 export function BeautificationLab({ project, onProjectChange }: BeautificationLabProps) {
-  const [userRequest, setUserRequest] = useState(
-    "生成一套适合当前角色卡的状态栏，包含关系状态、当前位置、情绪和当前目标，并带有可点击展开的视觉效果。",
-  );
+  const [userRequest, setUserRequest] = useState("");
   const [insertIntoGreeting, setInsertIntoGreeting] =
-    useState<BeautificationGreetingInsertMode>("primary");
+    useState<BeautificationGreetingInsertMode>("none");
   const [selectedId, setSelectedId] = useState(project.beautifications?.[0]?.id ?? "");
   const [error, setError] = useState("");
-  const [worldInfoJson, setWorldInfoJson] = useState("");
-  const [worldInfoError, setWorldInfoError] = useState("");
   const [generationStatus, setGenerationStatus] = useState<
     "idle" | "running" | "succeeded" | "failed"
   >("idle");
@@ -125,14 +91,6 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     () => (selectedAsset ? buildPreviewHtml(selectedAsset) : ""),
     [selectedAsset],
   );
-
-  useEffect(() => {
-    const asset = assets.find((item) => item.id === selectedId) ?? assets[0];
-    if (asset) {
-      setWorldInfoJson(formatWorldInfoJson(asset));
-      setWorldInfoError("");
-    }
-  }, [assets, selectedId]);
 
   async function persist(nextProject: Project) {
     const { id, createdAt, ...patch } = nextProject;
@@ -171,10 +129,6 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     }
   }
 
-  async function handleFallback() {
-    await addAsset(createFallbackBeautificationAsset(project, { userRequest, insertIntoGreeting }));
-  }
-
   async function updateAsset(patch: Partial<BeautificationAsset>) {
     if (!selectedAsset) {
       return;
@@ -186,18 +140,28 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     await persist({ ...project, beautifications: nextAssets, updatedAt: nowIso() });
   }
 
-  async function saveWorldInfoJson() {
+  async function updateWorldInfo(patch: Partial<NonNullable<BeautificationAsset["worldInfo"]>>) {
     if (!selectedAsset) {
       return;
     }
 
-    try {
-      const worldInfo = parseWorldInfoJson(worldInfoJson);
-      setWorldInfoError("");
-      await updateAsset({ worldInfo, title: worldInfo?.comment ?? selectedAsset.title });
-    } catch (parseError) {
-      setWorldInfoError(parseError instanceof Error ? parseError.message : "WorldInfo JSON 格式不正确。");
-    }
+    const worldInfo = selectedAsset.worldInfo ?? {
+      comment: selectedAsset.title,
+      content: "",
+      constant: selectedAsset.insertIntoGreeting !== "none",
+      keys: [],
+      position: 4,
+      depth: 4,
+      insertion_order: selectedAsset.insertIntoGreeting === "none" ? 180 : 999,
+    };
+    const nextWorldInfo = { ...worldInfo, ...patch };
+    await updateAsset({ worldInfo: nextWorldInfo, title: nextWorldInfo.comment || selectedAsset.title });
+  }
+
+  async function deleteAsset(assetId: string) {
+    const nextAssets = assets.filter((asset) => asset.id !== assetId);
+    setSelectedId(nextAssets[0]?.id ?? "");
+    await persist({ ...project, beautifications: nextAssets, updatedAt: nowIso() });
   }
 
   return (
@@ -221,23 +185,12 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
         </label>
 
         <div className="space-y-3">
-          <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">开场白插入方式</p>
-          {insertOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setInsertIntoGreeting(option.value)}
-              className={cn(
-                "w-full rounded-[24px] border-2 px-4 py-3 text-left shadow-[0_3px_0_0_var(--animal-shadow-input)]",
-                insertIntoGreeting === option.value
-                  ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-primary-active)]"
-                  : "border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] text-[var(--animal-text-muted)]",
-              )}
-            >
-              <span className="block font-display text-base font-black">{option.label}</span>
-              <span className="mt-1 block font-mono text-xs leading-5">{option.description}</span>
-            </button>
-          ))}
+          <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">是否插入开场白</p>
+          <Select
+            options={insertOptions}
+            value={insertIntoGreeting}
+            onChange={(value) => setInsertIntoGreeting(value as BeautificationGreetingInsertMode)}
+          />
         </div>
 
         <GenerationButton
@@ -248,13 +201,9 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
           errorMessage={error}
           onGenerate={handleGenerate}
           useAnimalLoadingButton
+          disabled={!userRequest.trim()}
           className="w-full"
         />
-        <Button type="button" variant="secondary" className="w-full" onClick={() => void handleFallback()}>
-          <Code2 aria-hidden="true" size={16} />
-          生成本地草案
-        </Button>
-
         <div className="space-y-2">
           {assets.length ? (
             assets.map((asset) => (
@@ -273,7 +222,6 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                   {asset.title}
                 </span>
                 <span className="mt-1 block font-mono text-xs text-[var(--animal-text-muted)]">
-                  {asset.enabled ? "会写入角色卡" : "已停用"} ·{" "}
                   {asset.insertIntoGreeting === "all_adopted"
                     ? "插入所有开场白"
                     : asset.insertIntoGreeting === "primary"
@@ -297,7 +245,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
-                    BEAUTIFICATION
+                    美化方案
                   </p>
                   <input
                     value={selectedAsset.title}
@@ -305,36 +253,55 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                     className="mt-2 h-12 w-full min-w-0 rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 font-display text-2xl font-black text-[var(--echo-paper)] outline-none focus:border-[var(--animal-focus-yellow)] sm:min-w-96"
                   />
                 </div>
-                <label className="flex items-center gap-2 rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 py-3 font-mono text-sm font-bold text-[var(--echo-muted)]">
-                  <input
-                    type="checkbox"
-                    checked={selectedAsset.enabled}
-                    onChange={(event) => void updateAsset({ enabled: event.target.checked })}
-                  />
-                  写入角色卡 JSON
-                </label>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  danger
+                  onClick={() => void deleteAsset(selectedAsset.id)}
+                >
+                  <Trash2 aria-hidden="true" size={16} />
+                  删除方案
+                </Button>
               </div>
             </section>
 
             <section className="grid gap-5 2xl:grid-cols-2">
               <article className="echo-text-card border-2 border-[var(--echo-line)]">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <h3 className="flex items-center gap-2 font-display text-xl font-black text-[var(--echo-paper)]">
-                    <FileJson2 aria-hidden="true" size={20} />
-                    WorldInfo 条目
-                  </h3>
-                  <Button type="button" size="sm" onClick={() => void saveWorldInfoJson()}>
-                    <Save aria-hidden="true" size={14} />
-                    保存
-                  </Button>
-                </div>
-                <textarea
-                  value={worldInfoJson}
-                  onChange={(event) => setWorldInfoJson(event.target.value)}
-                  className="min-h-80 w-full resize-y rounded-[24px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 py-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
-                />
-                {worldInfoError ? (
-                  <p className="mt-2 font-mono text-xs text-[var(--echo-stamp)]">{worldInfoError}</p>
+                <h3 className="mb-3 font-display text-xl font-black text-[var(--echo-paper)]">
+                  WorldInfo 条目
+                </h3>
+                <label className="block font-mono text-xs font-bold text-[var(--echo-muted)]">
+                  条目标题
+                  <input
+                    value={selectedAsset.worldInfo?.comment ?? selectedAsset.title}
+                    onChange={(event) => void updateWorldInfo({ comment: event.target.value })}
+                    className="mt-2 h-12 w-full rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 text-base text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
+                  />
+                </label>
+                <label className="mt-4 block font-mono text-xs font-bold text-[var(--echo-muted)]">
+                  条目内容
+                  <textarea
+                    value={selectedAsset.worldInfo?.content ?? ""}
+                    onChange={(event) => void updateWorldInfo({ content: event.target.value })}
+                    className="mt-2 min-h-64 w-full resize-y rounded-[24px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 py-3 text-sm leading-7 text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
+                  />
+                </label>
+                {selectedAsset.worldInfo?.keys?.length ? (
+                  <label className="mt-4 block font-mono text-xs font-bold text-[var(--echo-muted)]">
+                    关键词
+                    <input
+                      value={selectedAsset.worldInfo.keys.join("，")}
+                      onChange={(event) =>
+                        void updateWorldInfo({
+                          keys: event.target.value
+                            .split(/[，,]/)
+                            .map((item) => item.trim())
+                            .filter(Boolean),
+                        })
+                      }
+                      className="mt-2 h-12 w-full rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 text-base text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
+                    />
+                  </label>
                 ) : null}
               </article>
 
@@ -343,6 +310,14 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                   <Regex aria-hidden="true" size={20} />
                   正则表达式
                 </h3>
+                <label className="mb-3 block font-mono text-xs font-bold text-[var(--echo-muted)]">
+                  正则标题
+                  <input
+                    value={selectedAsset.regexTitle ?? selectedAsset.title}
+                    onChange={(event) => void updateAsset({ regexTitle: event.target.value })}
+                    className="mt-2 h-12 w-full rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 text-base text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
+                  />
+                </label>
                 <CodeMirror
                   value={selectedAsset.regex}
                   minHeight="120px"
@@ -377,7 +352,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
 
             <section className="echo-text-card border-2 border-[var(--echo-line)]">
               <h3 className="mb-3 font-display text-xl font-black text-[var(--echo-paper)]">
-                HTML / CSS / JavaScript
+                美化代码
               </h3>
               <CodeMirror
                 value={selectedAsset.html}

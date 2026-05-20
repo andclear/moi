@@ -56,7 +56,7 @@ export function StepExport() {
   );
   const confirmedWorldCount = project?.worldEntries.filter((entry) => entry.enabled).length ?? 0;
   const latestTrial = project?.trialRuns[0];
-  const enabledBeautificationCount = project?.beautifications?.filter((asset) => asset.enabled).length ?? 0;
+  const enabledBeautificationCount = project?.beautifications?.length ?? 0;
   const confirmedCompanionCount = project?.companions?.filter((node) => node.status === "confirmed").length ?? 0;
   const isBuilding = status === "building";
 

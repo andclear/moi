@@ -84,6 +84,7 @@ export const beautificationAssetSchema = z.object({
     .nullable()
     .optional(),
   regex: z.string(),
+  regexTitle: z.string().optional(),
   html: z.string(),
   formattedOriginalText: z.string(),
   insertIntoGreeting: z.enum(["none", "primary", "all_adopted"]).optional(),

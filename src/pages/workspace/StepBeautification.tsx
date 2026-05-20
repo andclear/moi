@@ -98,8 +98,7 @@ export function StepBeautification() {
                 美化可稍后再调整
               </h2>
               <p className="mt-1 font-mono text-sm leading-7 text-[var(--echo-muted)]">
-                当前已保存 {project.beautifications.filter((asset) => asset.enabled).length}{" "}
-                套启用美化方案。
+                当前已保存 {project.beautifications.length} 套美化方案。
               </p>
             </div>
           </div>
