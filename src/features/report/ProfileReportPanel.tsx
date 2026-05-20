@@ -23,7 +23,7 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
-            阶段 17
+            侧写报告
           </p>
           <h2 className="mt-2 font-display text-3xl font-black text-[var(--echo-paper)]">
             岛民报告

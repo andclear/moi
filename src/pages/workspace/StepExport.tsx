@@ -5,10 +5,8 @@ import { Link, useParams } from "react-router";
 import { exportRepository } from "@/db/repositories/exportRepository";
 import { projectService } from "@/db/services/projectService";
 import type { ExportRecord, Project } from "@/db/types";
-import { CompanionNetwork } from "@/features/companions/CompanionNetwork";
 import { useExportStore } from "@/features/export/exportStore";
 import { useFlowStore } from "@/features/flow/flowStore";
-import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
 import { ProfileReportPanel } from "@/features/report/ProfileReportPanel";
 import { Button } from "@/shared/components/ui/button";
 
@@ -50,14 +48,7 @@ export function StepExport() {
     };
   }, [projectId, lastRecord]);
 
-  const selectedGreeting = useMemo(
-    () => (project ? getAdoptedGreetingVariants(project)[0] : undefined),
-    [project],
-  );
-  const confirmedWorldCount = project?.worldEntries.filter((entry) => entry.enabled).length ?? 0;
-  const latestTrial = project?.trialRuns[0];
-  const enabledBeautificationCount = project?.beautifications?.length ?? 0;
-  const confirmedCompanionCount = project?.companions?.filter((node) => node.status === "confirmed").length ?? 0;
+  const latestRecord = useMemo(() => records[0], [records]);
   const isBuilding = status === "building";
 
   async function handleJsonExport() {
@@ -93,19 +84,32 @@ export function StepExport() {
   return (
     <section className="echo-workspace-page">
       <div className="echo-readable-shell echo-workspace-inner">
-        <article className="echo-section-card">
-          <Archive aria-hidden="true" size={26} className="text-[var(--echo-paper)]" />
-          <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
-            带 TA 回来
-          </p>
-          <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
-            导出记录
-          </h1>
-          <p className="mt-4 max-w-2xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-            将已确认的记录、WorldInfo、开场白和相处测试记录整理为 SillyTavern Character Card V3。
-          </p>
+        <article className="echo-section-card min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div className="min-w-0">
+              <Archive aria-hidden="true" size={26} className="text-[var(--echo-paper)]" />
+              <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
+                带 TA 回来
+              </p>
+              <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
+                导出记录
+              </h1>
+              <p className="mt-4 max-w-2xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
+                将已确认的记录、WorldInfo、开场白和相处测试记录整理为 SillyTavern Character Card V3。
+              </p>
+            </div>
+            {latestRecord && (
+              <div className="w-full rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.38)] p-4 font-mono text-sm text-[var(--echo-muted)] sm:w-auto sm:min-w-56">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-paper)]">
+                  最近导出
+                </p>
+                <p className="mt-2 font-bold uppercase">{latestRecord.format}</p>
+                <p className="mt-1 text-xs">{new Date(latestRecord.createdAt).toLocaleString()}</p>
+              </div>
+            )}
+          </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="mt-8 grid gap-4 md:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)]">
             <label className="grid gap-2 text-sm font-bold text-[var(--echo-paper)]">
               版本
               <input
@@ -126,18 +130,22 @@ export function StepExport() {
             </label>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <section className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
-              <FileJson aria-hidden="true" size={22} className="text-[var(--echo-paper)]" />
-              <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
-                格式化 JSON
-              </h2>
-              <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-                直接下载可解析的 Character Card V3 JSON。
-              </p>
+          <div className="mt-6 grid gap-4 xl:grid-cols-2">
+            <section className="flex min-h-56 flex-col rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
+              <div className="flex items-start gap-3">
+                <FileJson aria-hidden="true" size={22} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
+                <div>
+                  <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                    格式化 JSON
+                  </h2>
+                  <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
+                    直接下载可解析的 Character Card V3 JSON。
+                  </p>
+                </div>
+              </div>
               <Button
                 type="button"
-                className="mt-5"
+                className="mt-auto w-full sm:w-fit"
                 loading={isBuilding}
                 disabled={!project || isBuilding}
                 onClick={() => void handleJsonExport()}
@@ -147,14 +155,18 @@ export function StepExport() {
               </Button>
             </section>
 
-            <section className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4">
-              <ImageUp aria-hidden="true" size={22} className="text-[var(--echo-paper)]" />
-              <h2 className="mt-3 font-display text-2xl font-black text-[var(--echo-paper)]">
-                内嵌 PNG
-              </h2>
-              <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-                上传 JPG、PNG 或 WebP，转换为 PNG 后写入 chara 与 ccv3 文本区块。
-              </p>
+            <section className="flex min-h-56 flex-col rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
+              <div className="flex items-start gap-3">
+                <ImageUp aria-hidden="true" size={22} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
+                <div>
+                  <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                    内嵌 PNG
+                  </h2>
+                  <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
+                    上传 JPG、PNG 或 WebP，转换为 PNG 后写入 chara 与 ccv3 文本区块。
+                  </p>
+                </div>
+              </div>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -163,7 +175,7 @@ export function StepExport() {
               />
               <Button
                 type="button"
-                className="mt-5"
+                className="mt-auto w-full sm:w-fit"
                 loading={isBuilding}
                 disabled={!project || isBuilding}
                 onClick={() => void handlePngExport()}
@@ -181,40 +193,8 @@ export function StepExport() {
           )}
         </article>
 
-        <aside className="echo-side-panel space-y-4">
+        <aside className="echo-side-panel h-fit">
           <section>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
-              导出内容
-            </p>
-            <dl className="mt-4 space-y-3 font-mono text-sm text-[var(--echo-muted)]">
-              <div>
-                <dt className="font-bold text-[var(--echo-paper)]">记录</dt>
-                <dd>{project?.title ?? "读取中"}</dd>
-              </div>
-              <div>
-                <dt className="font-bold text-[var(--echo-paper)]">WorldInfo</dt>
-                <dd>{confirmedWorldCount} 条已确认</dd>
-              </div>
-              <div>
-                <dt className="font-bold text-[var(--echo-paper)]">开场白</dt>
-                <dd>{selectedGreeting ? "已采用" : "尚未采用"}</dd>
-              </div>
-              <div>
-                <dt className="font-bold text-[var(--echo-paper)]">相处测试</dt>
-                <dd>{latestTrial ? new Date(latestTrial.createdAt).toLocaleString() : "尚未通过"}</dd>
-              </div>
-              <div>
-                <dt className="font-bold text-[var(--echo-paper)]">美化</dt>
-                <dd>{enabledBeautificationCount} 套会写入 JSON</dd>
-              </div>
-              <div>
-                <dt className="font-bold text-[var(--echo-paper)]">关系网</dt>
-                <dd>{confirmedCompanionCount} 位旁人已确认</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="border-t-2 border-[var(--animal-border)] pt-5">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
               导出记录
             </p>
@@ -239,8 +219,7 @@ export function StepExport() {
       </div>
 
       {project && (
-        <div className="echo-workspace-inner mt-6 space-y-6">
-          <CompanionNetwork project={project} onProjectChange={setProject} />
+        <div className="echo-workspace-inner mt-6">
           <ProfileReportPanel project={project} />
         </div>
       )}
