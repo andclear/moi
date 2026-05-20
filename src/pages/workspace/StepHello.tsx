@@ -473,28 +473,9 @@ export function StepHello() {
             ))}
           </div>
 
-          {mode === "greeting" && adoptedGreetings.length > 1 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {adoptedGreetings.map((greeting, index) => (
-                <button
-                  key={greeting.id}
-                  type="button"
-                  className={cn(
-                    "border px-3 py-1.5 font-mono text-xs font-bold transition-colors",
-                    selectedGreetingId === greeting.id
-                      ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
-                      : "border-[var(--echo-line)] bg-[rgba(255,255,255,0.48)] text-[var(--echo-muted)] hover:text-[var(--echo-text)]",
-                  )}
-                  onClick={() => void handleGreetingChange(greeting.id)}
-                >
-                  开场白 {index + 1}
-                </button>
-              ))}
-            </div>
-          )}
         </section>
 
-        <section className="echo-text-card grid min-h-[620px] grid-rows-[1fr_auto] overflow-hidden p-0">
+        <section className="echo-text-card grid h-[calc(100vh-24rem)] min-h-[460px] max-h-[720px] grid-rows-[1fr_auto] overflow-hidden p-0">
           <div ref={scrollRef} className="space-y-4 overflow-auto p-4 md:p-5">
             {currentSession.messages.length === 0 ? (
               <EmptyState
@@ -512,9 +493,12 @@ export function StepHello() {
                   canInspect={message.role === "assistant" && !message.isOpening && !isSending}
                   isOldRenderedCode={mode === "greeting" && isOlderThanRenderDepth(currentSession, index)}
                   beautifications={project.beautifications.filter((asset) => asset.enabled)}
+                  adoptedGreetings={adoptedGreetings}
+                  selectedGreetingId={selectedGreetingId}
                   isEditing={editingMessageId === message.id}
                   editingText={editingText}
                   onEditingTextChange={setEditingText}
+                  onGreetingChange={(greetingId) => void handleGreetingChange(greetingId)}
                   onStartEdit={() => startEdit(message)}
                   onCancelEdit={() => {
                     setEditingMessageId(null);
@@ -593,9 +577,12 @@ function ChatBubble({
   canInspect,
   isOldRenderedCode,
   beautifications,
+  adoptedGreetings,
+  selectedGreetingId,
   isEditing,
   editingText,
   onEditingTextChange,
+  onGreetingChange,
   onStartEdit,
   onCancelEdit,
   onConfirmEdit,
@@ -607,17 +594,24 @@ function ChatBubble({
   canInspect: boolean;
   isOldRenderedCode: boolean;
   beautifications: Project["beautifications"];
+  adoptedGreetings: GreetingVariant[];
+  selectedGreetingId?: string;
   isEditing: boolean;
   editingText: string;
   onEditingTextChange: (value: string) => void;
+  onGreetingChange: (greetingId: string) => void;
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onConfirmEdit: () => void;
   onInspect: () => void;
 }) {
   const isUser = message.role === "user";
-  const hasHtmlLikeContent = /<style|<script|<[\w-]+[\s>]/i.test(message.content);
-  const shouldRender = hasHtmlLikeContent || matchesBeautification(message.content, beautifications);
+  const renderedContent = applyBeautifications(message.content, beautifications);
+  const shouldRender =
+    mode === "greeting" &&
+    !isUser &&
+    !isOldRenderedCode &&
+    (renderedContent.didReplace || hasHtmlLikeContent(renderedContent.content));
 
   return (
     <article className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
@@ -649,29 +643,38 @@ function ChatBubble({
                 </Button>
               </div>
             </div>
-          ) : mode === "greeting" && !isUser && shouldRender ? (
-            isOldRenderedCode ? (
-              <Collapse
-                question={
-                  <span className="font-mono text-sm font-bold text-[var(--animal-text)]">
-                    较早回复的代码内容
-                  </span>
-                }
-                answer={
-                  <pre className="echo-long-text pt-3 font-mono text-xs leading-5 text-[var(--echo-text)]">
-                    {message.content}
-                  </pre>
-                }
-              />
-            ) : (
-              <RenderedReply content={message.content} beautifications={beautifications} />
-            )
+          ) : shouldRender ? (
+            <RenderedReply content={renderedContent.content} />
           ) : (
-            <p className="echo-long-text whitespace-pre-wrap font-mono text-sm leading-7">
+            <p
+              className={cn(
+                "echo-long-text whitespace-pre-wrap font-mono text-sm leading-7",
+                mode === "greeting" && !isUser && isOldRenderedCode && "max-h-52 overflow-auto",
+              )}
+            >
               {message.content || "正在输入……"}
             </p>
           )}
         </div>
+        {message.isOpening && adoptedGreetings.length > 1 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {adoptedGreetings.map((greeting, index) => (
+              <button
+                key={greeting.id}
+                type="button"
+                className={cn(
+                  "border px-3 py-1.5 font-mono text-xs font-bold transition-colors",
+                  selectedGreetingId === greeting.id
+                    ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
+                    : "border-[var(--echo-line)] bg-[rgba(247,243,223,0.86)] text-[var(--echo-muted)] hover:text-[var(--echo-text)]",
+                )}
+                onClick={() => onGreetingChange(greeting.id)}
+              >
+                开场白 {index + 1}
+              </button>
+            ))}
+          </div>
+        )}
         {(canEdit || canInspect) && (
           <div className={cn("mt-2 flex gap-2", isUser ? "justify-end" : "justify-start")}>
             {canEdit && (
@@ -710,17 +713,11 @@ function Avatar({ label }: { label: "TA" | "UU" }) {
   );
 }
 
-function RenderedReply({
-  content,
-  beautifications,
-}: {
-  content: string;
-  beautifications: Project["beautifications"];
-}) {
+function RenderedReply({ content }: { content: string }) {
   return (
     <iframe
       title="TA 的回复渲染"
-      srcDoc={buildRenderedDocument(applyBeautifications(content, beautifications))}
+      srcDoc={buildRenderedDocument(content)}
       sandbox="allow-scripts"
       className="h-[320px] w-full border border-[var(--echo-line)] bg-[var(--animal-bg-content)]"
     />
@@ -969,24 +966,29 @@ function isOlderThanRenderDepth(session: HelloChatSession, index: number) {
   return !lastFourIndexes.includes(index);
 }
 
+function hasHtmlLikeContent(content: string) {
+  return /<style|<script|<[\w-]+[\s>]/i.test(content);
+}
+
 function applyBeautifications(content: string, beautifications: Project["beautifications"]) {
-  return beautifications.reduce((result, asset) => {
+  let didReplace = false;
+  const rendered = beautifications.reduce((result, asset) => {
     try {
-      return result.replace(new RegExp(asset.regex, "gs"), asset.html);
+      const expression = new RegExp(asset.regex, "gs");
+      const nextResult = result.replace(expression, asset.html);
+      if (nextResult !== result) {
+        didReplace = true;
+      }
+      return nextResult;
     } catch {
       return result;
     }
   }, content);
-}
 
-function matchesBeautification(content: string, beautifications: Project["beautifications"]) {
-  return beautifications.some((asset) => {
-    try {
-      return new RegExp(asset.regex, "s").test(content);
-    } catch {
-      return false;
-    }
-  });
+  return {
+    content: rendered,
+    didReplace,
+  };
 }
 
 function buildRenderedDocument(body: string) {
@@ -1006,6 +1008,7 @@ function buildRenderedDocument(body: string) {
     body {
       padding: 16px;
       box-sizing: border-box;
+      white-space: pre-wrap;
     }
     details {
       width: min(100%, 760px);
