@@ -16,6 +16,10 @@ import { buildDossierBlockMeta } from "@/features/dossier/dossierSections";
 import { useDossierStore } from "@/features/dossier/dossierStore";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
+import {
+  applyHelloBeautificationsForPreview,
+  hasHtmlLikeContent,
+} from "@/features/hello/helloBeautificationPreview";
 import { generateHelloChatReply, generateHelloRevision } from "@/features/llm/llmClient";
 import { useSettingsStore } from "@/features/settings/settingsStore";
 import { EmptyState } from "@/shared/components/EmptyState";
@@ -491,7 +495,11 @@ export function StepHello() {
                   mode={mode}
                   canEdit={message.id === latestEditableMessageId && !isSending}
                   canInspect={message.role === "assistant" && !message.isOpening && !isSending}
-                  isOldRenderedCode={mode === "greeting" && isOlderThanRenderDepth(currentSession, index)}
+                  isOldRenderedCode={
+                    mode === "greeting" &&
+                    !message.isOpening &&
+                    isOlderThanRenderDepth(currentSession, index)
+                  }
                   beautifications={project.beautifications.filter((asset) => asset.enabled)}
                   adoptedGreetings={adoptedGreetings}
                   selectedGreetingId={selectedGreetingId}
@@ -606,7 +614,7 @@ function ChatBubble({
   onInspect: () => void;
 }) {
   const isUser = message.role === "user";
-  const renderedContent = applyBeautifications(message.content, beautifications);
+  const renderedContent = applyHelloBeautificationsForPreview(message.content, beautifications);
   const shouldRender =
     mode === "greeting" &&
     !isUser &&
@@ -649,7 +657,7 @@ function ChatBubble({
             <p
               className={cn(
                 "echo-long-text whitespace-pre-wrap font-mono text-sm leading-7",
-                mode === "greeting" && !isUser && isOldRenderedCode && "max-h-52 overflow-auto",
+                mode === "greeting" && !isUser && isOldRenderedCode && "overflow-auto",
               )}
             >
               {message.content || "正在输入……"}
@@ -714,12 +722,33 @@ function Avatar({ label }: { label: "TA" | "UU" }) {
 }
 
 function RenderedReply({ content }: { content: string }) {
+  const frameId = useMemo(() => createId("hello_frame"), []);
+  const [height, setHeight] = useState(180);
+
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      const data = event.data as { type?: string; frameId?: string; height?: number } | null;
+      if (
+        data?.type !== "echo-hello-frame-height" ||
+        data.frameId !== frameId ||
+        typeof data.height !== "number"
+      ) {
+        return;
+      }
+      setHeight(Math.max(120, Math.ceil(data.height)));
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [frameId]);
+
   return (
     <iframe
       title="TA 的回复渲染"
-      srcDoc={buildRenderedDocument(content)}
+      srcDoc={buildRenderedDocument(content, frameId)}
       sandbox="allow-scripts"
-      className="h-[320px] w-full border border-[var(--echo-line)] bg-[var(--animal-bg-content)]"
+      style={{ height }}
+      className="w-full border border-[var(--echo-line)] bg-[var(--animal-bg-content)]"
     />
   );
 }
@@ -966,32 +995,7 @@ function isOlderThanRenderDepth(session: HelloChatSession, index: number) {
   return !lastFourIndexes.includes(index);
 }
 
-function hasHtmlLikeContent(content: string) {
-  return /<style|<script|<[\w-]+[\s>]/i.test(content);
-}
-
-function applyBeautifications(content: string, beautifications: Project["beautifications"]) {
-  let didReplace = false;
-  const rendered = beautifications.reduce((result, asset) => {
-    try {
-      const expression = new RegExp(asset.regex, "gs");
-      const nextResult = result.replace(expression, asset.html);
-      if (nextResult !== result) {
-        didReplace = true;
-      }
-      return nextResult;
-    } catch {
-      return result;
-    }
-  }, content);
-
-  return {
-    content: rendered,
-    didReplace,
-  };
-}
-
-function buildRenderedDocument(body: string) {
+function buildRenderedDocument(body: string, frameId: string) {
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -1024,6 +1028,22 @@ function buildRenderedDocument(body: string) {
 </head>
 <body>
 ${body}
+<script>
+  (() => {
+    const frameId = ${JSON.stringify(frameId)};
+    const report = () => {
+      const height = Math.max(
+        document.documentElement.scrollHeight,
+        document.body ? document.body.scrollHeight : 0
+      );
+      window.parent.postMessage({ type: "echo-hello-frame-height", frameId, height: height + 8 }, "*");
+    };
+    window.addEventListener("load", report);
+    requestAnimationFrame(report);
+    setTimeout(report, 80);
+    setTimeout(report, 260);
+  })();
+</script>
 </body>
 </html>`;
 }
