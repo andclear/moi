@@ -49,12 +49,49 @@ function buildPreviewHtml(asset: BeautificationAsset) {
   try {
     const expression = new RegExp(asset.regex, "s");
     const replaced = asset.formattedOriginalText.replace(expression, asset.html);
-    return replaced === asset.formattedOriginalText && !expression.test(asset.formattedOriginalText)
+    const previewBody = replaced === asset.formattedOriginalText && !expression.test(asset.formattedOriginalText)
       ? asset.html
       : replaced;
+    return buildPreviewDocument(previewBody);
   } catch {
-    return asset.html;
+    return buildPreviewDocument(asset.html);
   }
+}
+
+function buildPreviewDocument(body: string) {
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      color: #725d42;
+      background: #f8f8f0;
+      font-family: Nunito, "Noto Sans SC", "PingFang SC", sans-serif;
+    }
+    body {
+      padding: 18px;
+      box-sizing: border-box;
+    }
+    details {
+      width: min(100%, 720px);
+      margin: 0 auto 14px;
+      pointer-events: auto;
+    }
+    summary {
+      cursor: pointer;
+      list-style-position: inside;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+${body}
+</body>
+</html>`;
 }
 
 function formatStructuredText(value: string) {
@@ -276,29 +313,31 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
         {selectedAsset ? (
           <>
             <section className="echo-text-card border-2 border-[var(--echo-line)]">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
+              <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                <div className="min-w-0">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
                     美化方案名称
                   </p>
                   <input
                     value={selectedAsset.title}
                     onChange={(event) => void updateAsset({ title: event.target.value })}
-                    className="mt-2 h-12 w-full min-w-0 rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 font-display text-2xl font-black text-[var(--echo-paper)] outline-none focus:border-[var(--animal-focus-yellow)] sm:min-w-96"
+                    className="mt-2 h-12 w-full min-w-0 rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 font-display text-xl font-black text-[var(--echo-paper)] outline-none focus:border-[var(--animal-focus-yellow)]"
                   />
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] px-4 py-2 font-mono text-xs font-black text-[var(--animal-primary-active)]">
+                <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
+                  <span className="inline-flex h-8 items-center gap-1.5 rounded-[var(--animal-radius-pill)] border border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] px-3 font-mono text-[11px] font-black text-[var(--animal-primary-active)]">
                     <Check aria-hidden="true" size={14} />
                     已自动保存
                   </span>
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="ghost"
+                    size="sm"
                     danger
                     onClick={() => void deleteAsset(selectedAsset.id)}
+                    className="h-8 px-3 text-[11px] shadow-none hover:shadow-none"
                   >
-                    <Trash2 aria-hidden="true" size={16} />
+                    <Trash2 aria-hidden="true" size={13} />
                     删除方案
                   </Button>
                 </div>
