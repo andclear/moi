@@ -115,6 +115,8 @@ export function buildTrialRevisionMessages(input: BuildTrialRevisionMessagesInpu
         "你是虚拟角色资料修订助手。用户对终审回答不满意，你需要判断应该修改角色档案、角色信息 YAML、WorldInfo 或开场白中的哪一部分。",
         "所有内容必须使用简体中文，表达简单、直白、清晰，不追求文学性。",
         "修改必须针对资料本身，不要只重写这次回答。优先做最小必要修改，避免大段重写。",
+        "如果多个资料位置都可以解决问题，修改优先级必须是：角色信息 YAML ＞ WorldInfo ＞ 角色档案 ＞ 开场白。",
+        "只有当更高优先级资料里找不到明确可替换内容，或修改后会破坏事实一致性时，才选择更低优先级资料。",
         "before 必须一字不改地引用原文中实际存在的连续文本；如果找不到可替换原文，就不要生成该 change。",
         "source 只能是 dossier、character_info、worldinfo、greeting。worldinfo 和 greeting 必须填写 targetId。",
         "输出只能是标准 JSON 对象，不要输出 Markdown 代码块，不要输出解释。",

@@ -373,7 +373,12 @@ export function StepTrial() {
               确认角色行为符合预期后，进入“打个招呼”。
             </p>
           </div>
-          <Button type="button" disabled={!latestRun} onClick={() => void handlePassTrial()}>
+          <Button
+            type="button"
+            disabled={!latestRun}
+            className="border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)]"
+            onClick={() => void handlePassTrial()}
+          >
             <CheckCircle2 aria-hidden="true" size={16} />
             通过终审
           </Button>
@@ -650,11 +655,36 @@ function RevisionDialog({
           </button>
         </div>
 
-        <div className="mt-4 border border-[var(--echo-line)] bg-[rgba(247,243,223,0.7)] p-3">
-          <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">当前问题</p>
-          <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-text)]">
-            {target.question.question}
-          </p>
+        <div className="mt-4">
+          <Collapse
+            question={
+              <span className="font-mono text-sm font-bold text-[var(--animal-text)]">
+                当前问题及答案
+              </span>
+            }
+            answer={
+              <div className="space-y-3 pt-3">
+                <section className="border border-[var(--echo-line)] bg-[rgba(247,243,223,0.7)] p-3">
+                  <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">当前问题</p>
+                  <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-text)]">
+                    {target.question.question}
+                  </p>
+                </section>
+                <section className="border border-[var(--echo-line)] bg-[rgba(247,243,223,0.7)] p-3">
+                  <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">正式回复</p>
+                  <p className="echo-long-text mt-2 font-mono text-sm leading-6 text-[var(--echo-text)]">
+                    {target.answer.formalReply}
+                  </p>
+                </section>
+                <section className="border border-[var(--echo-line)] bg-[rgba(255,255,255,0.45)] p-3">
+                  <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">内心独白</p>
+                  <p className="echo-long-text mt-2 font-mono text-sm leading-6 text-[var(--echo-text)]">
+                    {target.answer.innerMonologue}
+                  </p>
+                </section>
+              </div>
+            }
+          />
         </div>
 
         <label className="mt-4 block">
