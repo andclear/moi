@@ -27,6 +27,7 @@ import {
 import { buildHelloChatMessages, buildHelloRevisionMessages } from "@/prompts/helloPrompts";
 import { withGlobalPrompt } from "@/prompts/globalPrompt";
 import type { LlmMessage } from "@/features/llm/llmTypes";
+import { stripRuntimeTimestamps } from "@/shared/lib/jsonSanitizer";
 
 export interface DebugVariable {
   name: string;
@@ -61,19 +62,7 @@ export interface DebugProjectSnapshot {
 }
 
 export function sanitizeDebugValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeDebugValue(item));
-  }
-
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value)
-        .filter(([key]) => key !== "createdAt" && key !== "updatedAt")
-        .map(([key, item]) => [key, sanitizeDebugValue(item)]),
-    );
-  }
-
-  return value;
+  return stripRuntimeTimestamps(value);
 }
 
 function stringify(value: unknown) {

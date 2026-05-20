@@ -12,6 +12,7 @@ import type { CharacterCard } from "@/schemas/characterCardSchema";
 import { characterCardSchema } from "@/schemas/characterCardSchema";
 import { parseDossierSections } from "@/features/dossier/dossierSections";
 import { getBeautificationWorldEntryId } from "@/features/world/worldPromptContext";
+import { stripRuntimeTimestamps } from "@/shared/lib/jsonSanitizer";
 
 export interface BuildCharacterCardInput {
   project: Project;
@@ -19,6 +20,11 @@ export interface BuildCharacterCardInput {
   note?: string;
   exportedAt?: string;
 }
+
+type ExportWorldEntry = Pick<
+  WorldEntry,
+  "title" | "content" | "keys" | "constant" | "position" | "depth" | "insertionOrder" | "enabled"
+>;
 
 function getSection(markdown: string, section: string) {
   return parseDossierSections(markdown).find((block) => block.section === section)?.content.trim() ?? "";
@@ -46,7 +52,7 @@ function primaryGreeting(greetings: GreetingVariant[]) {
   return adoptedGreetings(greetings)[0];
 }
 
-function buildWorldEntry(entry: WorldEntry, index: number) {
+function buildWorldEntry(entry: ExportWorldEntry, index: number) {
   const keys = entry.keys.length > 0 ? entry.keys : [entry.title].filter(Boolean);
   const position = entry.position ?? 1;
   const depth = entry.depth ?? 4;
@@ -113,8 +119,6 @@ function buildSyntheticWorldEntry(input: {
   return {
     ...buildWorldEntry(
       {
-        id: `${input.category}_${input.index}`,
-        projectId: "",
         title: input.title,
         content: input.content,
         keys: input.keys,
@@ -123,16 +127,12 @@ function buildSyntheticWorldEntry(input: {
         depth: typeof input.depth === "number" ? input.depth : undefined,
         insertionOrder: input.insertionOrder,
         enabled: true,
-        createdAt: new Date(0).toISOString(),
-        updatedAt: new Date(0).toISOString(),
       },
       input.index,
     ),
     extensions: {
       ...buildWorldEntry(
         {
-          id: `${input.category}_${input.index}`,
-          projectId: "",
           title: input.title,
           content: input.content,
           keys: input.keys,
@@ -141,8 +141,6 @@ function buildSyntheticWorldEntry(input: {
           depth: typeof input.depth === "number" ? input.depth : undefined,
           insertionOrder: input.insertionOrder,
           enabled: true,
-          createdAt: new Date(0).toISOString(),
-          updatedAt: new Date(0).toISOString(),
         },
         input.index,
       ).extensions,
@@ -215,7 +213,6 @@ function buildEchoExtension(project: Project, dossierMetadata: DossierBlockMeta[
       source: block.source,
       locked: block.locked,
       updated_by_generation_id: block.updatedByGenerationId,
-      updated_at: block.updatedAt,
     })),
     trial_runs: project.trialRuns,
     beautifications: project.beautifications ?? [],
@@ -333,9 +330,9 @@ export function buildCharacterCard({
     },
   };
 
-  return characterCardSchema.parse(card);
+  return characterCardSchema.parse(stripRuntimeTimestamps(card));
 }
 
 export function formatCharacterCardJson(card: CharacterCard) {
-  return JSON.stringify(card, null, 2);
+  return JSON.stringify(stripRuntimeTimestamps(card), null, 2);
 }

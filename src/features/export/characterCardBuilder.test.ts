@@ -150,6 +150,8 @@ describe("characterCardBuilder", () => {
     expect(card.data.extensions.regex_scripts).toHaveLength(1);
     expect(card.data.first_mes).toContain("{{user}}");
     expect(card.data.creator_notes).toContain("相处测试摘要");
+    expect(json).not.toContain("createdAt");
+    expect(json).not.toContain("updatedAt");
     expect(() => JSON.parse(json)).not.toThrow();
   });
 
