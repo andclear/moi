@@ -633,7 +633,6 @@ const ChatBubble = memo(function ChatBubble({
   const shouldRender =
     mode === "greeting" &&
     !isUser &&
-    !isOldRenderedCode &&
     (renderedContent.didReplace || hasHtmlLikeContent(renderedContent.content));
 
   return (

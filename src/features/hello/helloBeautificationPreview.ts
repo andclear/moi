@@ -61,12 +61,14 @@ function applySingleBeautification(content: string, asset: Project["beautificati
 
 function createContentMatchCandidates(content: string) {
   const strippedFence = stripMarkdownCodeFence(content);
+  const strippedAllFences = stripAllMarkdownCodeFences(content);
   const decoded = decodeHtmlEntities(content);
   const decodedStrippedFence = stripMarkdownCodeFence(decoded);
+  const decodedStrippedAllFences = stripAllMarkdownCodeFences(decoded);
 
   return Array.from(
     new Map(
-      [content, strippedFence, decoded, decodedStrippedFence]
+      [content, strippedFence, strippedAllFences, decoded, decodedStrippedFence, decodedStrippedAllFences]
         .filter(Boolean)
         .map((value) => [value, { value }]),
     ).values(),
@@ -78,6 +80,10 @@ function stripMarkdownCodeFence(content: string) {
     .trim()
     .replace(/^```(?:html|xml|text|txt)?\s*/i, "")
     .replace(/\s*```$/i, "");
+}
+
+function stripAllMarkdownCodeFences(content: string) {
+  return content.replace(/```(?:html|xml|text|txt)?\s*/gi, "").replace(/```/g, "").trim();
 }
 
 function decodeHtmlEntities(content: string) {
@@ -93,7 +99,14 @@ function decodeHtmlEntities(content: string) {
 function createRegexCandidates(regex: string) {
   const trimmed = regex.trim();
   const unescapedCommonTokens = trimmed.replace(/\\\\([sSdDwWbB])/g, "\\$1");
-  return Array.from(new Set([trimmed, unescapedCommonTokens]));
+  return Array.from(
+    new Set([
+      trimmed,
+      unescapedCommonTokens,
+      stripWrappingAnchors(trimmed),
+      stripWrappingAnchors(unescapedCommonTokens),
+    ]),
+  );
 }
 
 function createBeautificationRegex(regex: string) {
@@ -102,6 +115,18 @@ function createBeautificationRegex(regex: string) {
   const rawFlags = parsed?.flags ?? "";
   const flags = Array.from(new Set(`${rawFlags}gs`.split(""))).join("");
   return new RegExp(source, flags);
+}
+
+function stripWrappingAnchors(regex: string) {
+  const parsed = parseRegexLiteral(regex);
+  const source = parsed?.source ?? regex;
+  const flags = parsed?.flags;
+  const unanchored = source
+    .replace(/^\^/, "")
+    .replace(/\$$/, "")
+    .replace(/^\(\?s\)\^?/, "(?s)");
+
+  return flags == null ? unanchored : `/${unanchored}/${flags}`;
 }
 
 function parseRegexLiteral(value: string) {

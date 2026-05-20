@@ -42,6 +42,21 @@ describe("applyHelloBeautificationsForPreview", () => {
     expect(result.didReplace).toBe(true);
     expect(result.content).toContain("状态：有点紧张");
   });
+
+  it("后续回复包含正文和锚定正则时仍会替换状态块", () => {
+    const result = applyHelloBeautificationsForPreview(
+      "她停顿了一下。\n<statusblock>\n状态：继续观察\n</statusblock>",
+      [
+        createAsset({
+          regex: "^<statusblock>\\s*状态：\\s*(.*?)\\s*</statusblock>$",
+        }),
+      ],
+    );
+
+    expect(result.didReplace).toBe(true);
+    expect(result.content).toContain("她停顿了一下。");
+    expect(result.content).toContain('<div class="status">状态：继续观察</div>');
+  });
 });
 
 describe("buildHelloChatMessages", () => {
