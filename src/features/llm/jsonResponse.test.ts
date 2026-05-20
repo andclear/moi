@@ -28,7 +28,7 @@ describe("jsonResponse", () => {
   });
 
   it("可以解析 fenced JSON", () => {
-    expect(extractJsonValue('```json\n{"title":"回音"}\n```')).toEqual({ title: "回音" });
+    expect(extractJsonValue('```json\n{"title":"来岛上"}\n```')).toEqual({ title: "来岛上" });
   });
 
   it("登岛问卷解析不会因为模型多给选项直接失败", () => {
@@ -53,12 +53,12 @@ describe("jsonResponse", () => {
       modes: {
         interview: { title: "三席岛访", questions: [{ id: "interview_1", question: "问题" }] },
         stress: { title: "风浪压测", questions: [{ id: "stress_1", question: "问题" }] },
-        diary: { title: "日记回声", questions: [{ id: "diary_1", question: "问题" }] },
+        diary: { title: "日记来信", questions: [{ id: "diary_1", question: "问题" }] },
       },
     });
 
     expect(parseLlmJson(content, trialQuestionnaireSetResponseSchema).modes.diary.title).toBe(
-      "日记回声",
+      "日记来信",
     );
   });
 
@@ -90,7 +90,7 @@ describe("jsonResponse", () => {
           riskNotes: ["风险说明"],
         },
         diary: {
-          title: "日记回声",
+          title: "日记来信",
           answers: [
             {
               questionId: "diary_1",

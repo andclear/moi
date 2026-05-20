@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://echo.local/schemas/character-card-v3.schema.json",
+  "$id": "https://moi.local/schemas/character-card-v3.schema.json",
   "title": "SillyTavern Character Card V3 Schema",
   "description": "基于 docs/SillyTavern角色卡完整字段文档.md 冻结的 Character Card V3 JSON Schema。Schema 定义 SillyTavern 可读取和设置的核心字段，并允许保留生态插件产生的未知扩展字段。",
   "type": "object",

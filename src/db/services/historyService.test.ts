@@ -92,7 +92,7 @@ describe("historyService", () => {
   it("可以从历史节点复制新版本且不覆盖原项目", async () => {
     const projects = createProjectRepository(db);
     const history = createHistoryService(db);
-    const project = await projects.create({ title: "原始回音" });
+    const project = await projects.create({ title: "原始来岛上" });
     await projects.update(project.id, {
       currentStep: "world",
       worldEntries: [

@@ -2,7 +2,7 @@ import { Navigate } from "react-router";
 
 import { LandingPage } from "@/pages/landing/LandingPage";
 
-const INTRO_STORAGE_KEY = "echo.hasEntered";
+const INTRO_STORAGE_KEY = "moi.hasEntered";
 
 export function LandingGate() {
   const hasEntered =

@@ -30,7 +30,7 @@ export function createProjectDraft(input?: {
 
   return {
     id: input?.id ?? createId("project"),
-    title: input?.title ?? "未命名的回音",
+    title: input?.title ?? "未命名的小岛",
     currentStep: input?.currentStep ?? "post",
     dossier: {
       ...dossier,

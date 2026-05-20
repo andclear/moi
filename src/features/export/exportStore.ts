@@ -35,7 +35,7 @@ function previewJson(formattedJson: string) {
 }
 
 function createDownloadName(project: Project, format: ExportFormat) {
-  const safeTitle = project.title.replace(/[\\/:*?"<>|]/g, "_").trim() || "echo-character";
+  const safeTitle = project.title.replace(/[\\/:*?"<>|]/g, "_").trim() || "moi-character";
   return `${safeTitle}.${format}`;
 }
 

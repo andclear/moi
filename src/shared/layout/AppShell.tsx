@@ -34,7 +34,7 @@ export function AppShell() {
           <NavLink to="/workspace" className="group flex items-center gap-3">
             <AnimalIcon name="icon-miles" size={34} />
             <span className="font-display text-2xl font-black tracking-normal text-[var(--animal-text)]">
-              回音
+              来岛上
             </span>
           </NavLink>
           <nav className="flex items-center gap-2" aria-label="主导航">

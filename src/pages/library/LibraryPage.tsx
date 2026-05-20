@@ -24,7 +24,7 @@ interface ProjectLibraryItem {
 function hasRecognizableDossier(markdown: string) {
   return parseDossierSections(markdown).some(
     (block) =>
-      block.section !== "最初的回音" &&
+      block.section !== "最初的来岛上" &&
       block.section !== "最初的印象" &&
       block.content.trim() &&
       block.content.trim() !== "尚未听见",
@@ -132,7 +132,7 @@ export function LibraryPage() {
       versionLabel: "library-reexport",
       jsonPreview: formattedJson.slice(0, 5000),
     });
-    downloadText(formattedJson, `${project.title.replace(/[\\/:*?"<>|]/g, "_") || "echo-character"}.json`);
+    downloadText(formattedJson, `${project.title.replace(/[\\/:*?"<>|]/g, "_") || "moi-character"}.json`);
     await reload();
   }
 

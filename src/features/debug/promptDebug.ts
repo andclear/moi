@@ -137,7 +137,7 @@ function makeQuestionnairesPreview() {
           questions: [{ id: "stress_1", question: "调试用问题", intent: "检查变量" }],
         },
         diary: {
-          title: "日记回声",
+          title: "日记来信",
           questions: [{ id: "diary_1", question: "调试用问题", intent: "检查变量" }],
         },
       },

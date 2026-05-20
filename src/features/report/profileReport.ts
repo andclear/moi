@@ -4,7 +4,7 @@ import { parseDossierSections } from "@/features/dossier/dossierSections";
 const trialReportLabels = {
   interview: "多面试官对话",
   stress: "风浪压测",
-  diary: "日记回声",
+  diary: "日记来信",
 } satisfies Record<keyof TrialModeResults, string>;
 
 function escapeHtml(value: string) {
@@ -191,7 +191,7 @@ export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
 <body>
   <main>
     <header>
-      <p class="meta">Echo Island Report · ${escapeHtml(versionLabel)} · ${escapeHtml(new Date().toLocaleString("zh-CN"))}</p>
+      <p class="meta">MOI Report · ${escapeHtml(versionLabel)} · ${escapeHtml(new Date().toLocaleString("zh-CN"))}</p>
       <h1>${escapeHtml(project.title)}</h1>
       <p class="meta">这份报告记录 TA 被慢慢找到的路径，不参与角色卡运行。</p>
     </header>
@@ -205,7 +205,7 @@ export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
 }
 
 export function createReportFileName(project: Project, versionLabel: string) {
-  const safeTitle = project.title.replace(/[\\/:*?"<>|]/g, "_").trim() || "echo-report";
+  const safeTitle = project.title.replace(/[\\/:*?"<>|]/g, "_").trim() || "moi-report";
   const safeVersion = versionLabel.replace(/[\\/:*?"<>|]/g, "_").trim() || "1.0";
   return `${safeTitle}-岛民报告-${safeVersion}.html`;
 }

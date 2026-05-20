@@ -29,7 +29,7 @@ export function StepExport() {
   const [project, setProject] = useState<Project>();
   const [cardName, setCardName] = useState("");
   const [versionLabel, setVersionLabel] = useState("1.0");
-  const [creator, setCreator] = useState("Echo");
+  const [creator, setCreator] = useState("MOI");
   const [imageFile, setImageFile] = useState<File>();
   const [pageError, setPageError] = useState("");
   const [completionStatus, setCompletionStatus] = useState<"idle" | "running" | "succeeded" | "failed">("idle");
@@ -50,7 +50,7 @@ export function StepExport() {
         }
         setProject(resolvedProject);
         setCardName(resolvedProject.title);
-        setCreator(resolvedProject.exportDraft?.creator || "Echo");
+        setCreator(resolvedProject.exportDraft?.creator || "MOI");
       })
       .catch((loadError: unknown) => {
         if (mounted) {
@@ -71,7 +71,7 @@ export function StepExport() {
     const nextTitle = cardName.trim();
     const nextCreator = creator.trim();
     const titleChanged = nextTitle && nextTitle !== project.title;
-    const creatorChanged = nextCreator !== (project.exportDraft?.creator ?? "Echo");
+    const creatorChanged = nextCreator !== (project.exportDraft?.creator ?? "MOI");
     if (!titleChanged && !creatorChanged) {
       return;
     }

@@ -22,7 +22,7 @@ export function buildCompanionMessages(input: BuildCompanionMessagesInput): LlmM
     {
       role: "system",
       content: [
-        "你是回音项目中的关系网整理助手，负责寻找主角周边已经存在的人。",
+        "你是来岛上项目中的关系网整理助手，负责寻找主角周边已经存在的人。",
         "这不是创建配角，而是从主角的气息、世界逻辑和用户请求中整理 TA 身边的人。",
         "生成结果用于小岛式关系整理流程：3 个可能方向、2 个不合适方向、1 个碎片。",
         "每个配角都必须有独立欲望、与主角双向关系、可写入 WorldInfo 的生活痕迹。",

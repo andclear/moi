@@ -11,7 +11,7 @@ function createInitialDossierMarkdown(brief: string) {
 function createTitleFromBrief(brief: string) {
   const normalizedBrief = brief.trim().replace(/\s+/g, " ");
   if (!normalizedBrief) {
-    return "未命名的回音";
+    return "未命名的小岛";
   }
 
   return normalizedBrief.length > 18 ? `${normalizedBrief.slice(0, 18)}…` : normalizedBrief;

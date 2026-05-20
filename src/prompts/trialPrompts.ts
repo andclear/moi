@@ -64,7 +64,7 @@ export function buildTrialQuestionnaireMessages(
         "必须同时生成 interview、stress、diary 三个模式，不能漏项，不能新增其他模式。",
         "每个模式生成 4 个问题。问题 ID 必须稳定，格式为 interview_1、stress_1、diary_1。",
         "输出只能是标准 JSON 对象，不要输出 Markdown 代码块，不要输出解释。",
-        'JSON 结构必须是：{"modes":{"interview":{"title":"三席岛访","questions":[{"id":"interview_1","interviewer":"提问者名称","question":"问题","intent":"测试目的"}]},"stress":{"title":"风浪压测","questions":[]},"diary":{"title":"日记回声","questions":[]}}}',
+        'JSON 结构必须是：{"modes":{"interview":{"title":"三席岛访","questions":[{"id":"interview_1","interviewer":"提问者名称","question":"问题","intent":"测试目的"}]},"stress":{"title":"风浪压测","questions":[]},"diary":{"title":"日记来信","questions":[]}}}',
       ].join("\n"),
     },
     {
@@ -93,7 +93,7 @@ export function buildTrialAnswerMessages(input: BuildTrialAnswerMessagesInput): 
         "riskSentences 只填写回答中可能 OOC、和关键事实冲突、或情绪推进过猛的句子；没有风险返回空数组。",
         "必须同时回答 interview、stress、diary 三份问卷，不能漏题，questionId 必须和问卷 ID 一致。",
         "输出只能是标准 JSON 对象，不要输出 Markdown 代码块，不要输出解释。",
-        'JSON 结构必须是：{"modes":{"interview":{"title":"三席岛访","answers":[{"questionId":"interview_1","formalReply":"正式回复","innerMonologue":"内心独白","riskSentences":[]}],"riskNotes":[]},"stress":{"title":"风浪压测","answers":[],"riskNotes":[]},"diary":{"title":"日记回声","answers":[],"riskNotes":[]}}}',
+        'JSON 结构必须是：{"modes":{"interview":{"title":"三席岛访","answers":[{"questionId":"interview_1","formalReply":"正式回复","innerMonologue":"内心独白","riskSentences":[]}],"riskNotes":[]},"stress":{"title":"风浪压测","answers":[],"riskNotes":[]},"diary":{"title":"日记来信","answers":[],"riskNotes":[]}}}',
       ].join("\n"),
     },
     {

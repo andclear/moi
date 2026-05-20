@@ -12,7 +12,7 @@ describe("App", () => {
   });
 
   it("已进入过的用户默认进入工作台", async () => {
-    window.localStorage.setItem("echo.hasEntered", "true");
+    window.localStorage.setItem("moi.hasEntered", "true");
     render(<App />);
 
     expect(await screen.findByRole("heading", { name: "你记得 TA 的哪一部分？" })).toBeInTheDocument();

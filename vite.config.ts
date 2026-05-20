@@ -38,7 +38,7 @@ function createHeaders(headers: import("node:http").IncomingHttpHeaders) {
 
 function localApiPlugin(): Plugin {
   return {
-    name: "echo-local-api",
+    name: "moi-local-api",
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
         const pathname = request.url?.split("?")[0] ?? "";

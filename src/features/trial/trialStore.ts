@@ -18,7 +18,7 @@ export const trialModes = ["interview", "stress", "diary"] as const satisfies re
 export const trialModeLabels = {
   interview: "多面试官对话",
   stress: "风浪压测",
-  diary: "日记回声",
+  diary: "日记来信",
 } satisfies Record<TrialMode, string>;
 
 export const trialModeIntentLabels = {

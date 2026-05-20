@@ -6,7 +6,7 @@ import { buildProfileReportHtml, createReportFileName } from "@/features/report/
 describe("profileReport", () => {
   it("生成包含记录和结构化相处测试的 HTML 报告，不包含 WorldInfo 与开场白", () => {
     const project = createProjectDraft({
-      title: "雨夜的回音",
+      title: "雨夜的来岛上",
       dossierMarkdown: "## 核心人格\n\n**温和**但谨慎。\n\n## 开场白\n\n不应出现在报告。",
     });
     project.worldEntries = [
@@ -77,7 +77,7 @@ describe("profileReport", () => {
             riskNotes: ["保持边界"],
           },
           diary: {
-            title: "日记回声",
+            title: "日记来信",
             questions: [{ id: "diary_1", question: "看到旧日记会怎么做？" }],
             answers: [
               {
@@ -96,13 +96,13 @@ describe("profileReport", () => {
 
     const html = buildProfileReportHtml(project, "2.0");
 
-    expect(html).toContain("雨夜的回音");
+    expect(html).toContain("雨夜的来岛上");
     expect(html).toContain("<strong>温和</strong>");
     expect(html).toContain("<strong>你会如何回应旧友？</strong>");
     expect(html).toContain("<strong>正式</strong>回应");
     expect(html).toContain("多面试官对话");
     expect(html).toContain("风浪压测");
-    expect(html).toContain("日记回声");
+    expect(html).toContain("日记来信");
     expect(html).toContain("问题 1");
     expect(html).toContain("正式回复");
     expect(html).toContain("内心独白");

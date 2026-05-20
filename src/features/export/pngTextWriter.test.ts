@@ -17,7 +17,7 @@ function tinyPngBytes() {
 
 describe("pngTextWriter", () => {
   it("向 PNG 同时写入 chara 与 ccv3，并可优先读取 ccv3", () => {
-    const formattedJson = JSON.stringify({ spec: "chara_card_v3", data: { name: "回音" } }, null, 2);
+    const formattedJson = JSON.stringify({ spec: "chara_card_v3", data: { name: "来岛上" } }, null, 2);
     const output = writeCharacterCardTextChunks(tinyPngBytes(), formattedJson);
     const chunks = readPngTextChunks(output);
 

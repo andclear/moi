@@ -147,7 +147,7 @@ export function buildCharacterCard({
   exportedAt = new Date().toISOString(),
 }: BuildCharacterCardInput): CharacterCard {
   const markdown = project.dossier.markdown;
-  const title = normalizeText(project.title, "未命名的回音");
+  const title = normalizeText(project.title, "未命名的小岛");
   const core = normalizeText(getSection(markdown, "核心人格"));
   const appearance = normalizeText(getSection(markdown, "外貌特征"));
   const background = normalizeText(getSection(markdown, "背景故事"));
@@ -161,8 +161,8 @@ export function buildCharacterCard({
   const completion = project.exportDraft?.cardCompletion;
   const description = normalizeText(completion?.description ?? "", fallbackDescription);
   const personality = normalizeText(completion?.personality ?? "", fallbackPersonality);
-  const tags = completion?.tags?.length ? completion.tags : ["回音", "Echo"];
-  const creatorName = normalizeText(creator ?? project.exportDraft?.creator ?? "", "Echo");
+  const tags = completion?.tags?.length ? completion.tags : ["来岛上", "MOI"];
+  const creatorName = normalizeText(creator ?? project.exportDraft?.creator ?? "", "MOI");
   const creatorNotes = markdown;
   const alternateGreetings = adoptedGreetings(project.greetingVariants)
     .filter((item) => item.id !== greeting?.id)

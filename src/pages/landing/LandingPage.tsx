@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { AnimalIcon } from "@/shared/components/AnimalIcon";
 import { Button } from "@/shared/components/ui/button";
 
-const INTRO_STORAGE_KEY = "echo.hasEntered";
+const INTRO_STORAGE_KEY = "moi.hasEntered";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -24,23 +24,26 @@ export function LandingPage() {
           <AnimalIcon name="icon-miles" size={116} />
         </div>
         <p className="fade-line mt-8 text-sm font-black uppercase tracking-[0.3em] text-[var(--animal-text-muted)]">
-          Echo Island
+          MOI
         </p>
         <h1 className="mt-4 font-display text-5xl font-black text-[var(--animal-text)] drop-shadow-[0_3px_0_rgba(255,255,255,0.72)]">
-          回音
+          来岛上
         </h1>
         <div className="mt-10 space-y-5 font-mono text-xl leading-10 text-[var(--animal-text-body)] md:text-2xl md:leading-[3.25rem]">
           <p className="fade-line [animation-delay:400ms]">
-            在这里，你不是为了"创建"一个 TA
+            TA 并非诞生于键盘敲击之中
           </p>
           <p className="fade-line [animation-delay:1600ms]">
-            TA 一直都在某个地方，TA 一直在等你……
+            TA 正在某座小岛上
           </p>
-          <p className="fade-line font-black text-[var(--animal-primary)] [animation-delay:2800ms]">
-            找到 TA……
+          <p className="fade-line [animation-delay:2800ms]">
+            你来，不是为了寻找，而是与 TA 相遇
+          </p>
+          <p className="fade-line font-black text-[var(--animal-primary)] [animation-delay:4000ms]">
+            TA 就在那里，只为遇见你
           </p>
         </div>
-        <div className="fade-line mt-12 [animation-delay:4200ms]">
+        <div className="fade-line mt-12 [animation-delay:5400ms]">
           <Button type="button" onClick={enterWorkspace} className="h-12 px-6">
             <AnimalIcon name="icon-map" size={20} />
             去小岛上找 TA

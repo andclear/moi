@@ -49,7 +49,7 @@ describe("trialStore", () => {
           questions: [{ id: "stress_1", question: "如果信念被质疑呢？" }],
         },
         diary: {
-          title: "日记回声",
+          title: "日记来信",
           questions: [{ id: "diary_1", question: "旧誓言还算数吗？" }],
         },
       },
@@ -79,7 +79,7 @@ describe("trialStore", () => {
           riskNotes: ["语气可能偏软"],
         },
         diary: {
-          title: "日记回声",
+          title: "日记来信",
           answers: [
             {
               questionId: "diary_1",
