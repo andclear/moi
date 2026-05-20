@@ -1,6 +1,11 @@
-import type { Project } from "@/db/types";
+import type { Project, TrialModeResults, TrialRun } from "@/db/types";
 import { parseDossierSections } from "@/features/dossier/dossierSections";
-import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
+
+const trialReportLabels = {
+  interview: "多面试官对话",
+  stress: "风浪压测",
+  diary: "日记回声",
+} satisfies Record<keyof TrialModeResults, string>;
 
 function escapeHtml(value: string) {
   return value
@@ -10,25 +15,136 @@ function escapeHtml(value: string) {
     .replace(/"/g, "&quot;");
 }
 
+function renderInlineMarkdown(value: string) {
+  return escapeHtml(value)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+function renderMarkdown(value: string) {
+  const normalized = value.trim();
+  if (!normalized) {
+    return "<p>尚未听见</p>";
+  }
+
+  const blocks: string[] = [];
+  let listItems: string[] = [];
+
+  function flushList() {
+    if (listItems.length === 0) {
+      return;
+    }
+    blocks.push(`<ul>${listItems.map((item) => `<li>${item}</li>`).join("")}</ul>`);
+    listItems = [];
+  }
+
+  normalized.split(/\n{2,}/).forEach((block) => {
+    const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      return;
+    }
+
+    lines.forEach((line) => {
+      const heading = /^(#{1,3})\s+(.+)$/.exec(line);
+      const list = /^[-*]\s+(.+)$/.exec(line);
+      if (heading) {
+        flushList();
+        const level = Math.min(heading[1].length + 2, 4);
+        blocks.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+        return;
+      }
+      if (list) {
+        listItems.push(renderInlineMarkdown(list[1]));
+        return;
+      }
+
+      flushList();
+      blocks.push(`<p>${renderInlineMarkdown(line)}</p>`);
+    });
+    flushList();
+  });
+
+  return blocks.join("");
+}
+
 function sectionHtml(title: string, body: string) {
-  return `<section><h2>${escapeHtml(title)}</h2><div>${escapeHtml(body || "尚未听见").replace(/\n/g, "<br>")}</div></section>`;
+  return `<section><h2>${escapeHtml(title)}</h2><div class="markdown-body">${renderMarkdown(body || "尚未听见")}</div></section>`;
+}
+
+function legacyTrialHtml(trialRun?: TrialRun) {
+  return `<section><h2>相处测试结果</h2><div class="markdown-body">${renderMarkdown(trialRun?.resultMarkdown ?? "尚未留下相处测试记录。")}</div></section>`;
+}
+
+function structuredTrialHtml(trialRun?: TrialRun) {
+  const modeResults = trialRun?.modeResults;
+  if (!modeResults) {
+    return legacyTrialHtml(trialRun);
+  }
+
+  const modeHtml = (Object.keys(trialReportLabels) as Array<keyof TrialModeResults>)
+    .map((mode) => {
+      const result = modeResults[mode];
+      const questionsHtml = result.questions
+        .map((question, index) => {
+          const answer = result.answers.find((item) => item.questionId === question.id);
+          const riskHtml = answer?.riskSentences.length
+            ? `<div class="risk-lines"><strong>风险句</strong><ul>${answer.riskSentences
+                .map((sentence) => `<li>${renderInlineMarkdown(sentence)}</li>`)
+                .join("")}</ul></div>`
+            : "";
+
+          return `<article class="qa-card">
+            <div class="question-block">
+              <span class="qa-label">问题 ${index + 1}</span>
+              <p>${renderInlineMarkdown(`${question.interviewer ? `${question.interviewer}：` : ""}${question.question}`)}</p>
+              ${question.intent ? `<p class="intent">测试目的：${renderInlineMarkdown(question.intent)}</p>` : ""}
+            </div>
+            <div class="answer-grid">
+              <div class="answer-block">
+                <span class="qa-label answer-label">正式回复</span>
+                <div class="markdown-body">${renderMarkdown(answer?.formalReply ?? "尚未回答。")}</div>
+              </div>
+              <div class="inner-block">
+                <span class="qa-label inner-label">内心独白</span>
+                <div class="markdown-body">${renderMarkdown(answer?.innerMonologue ?? "尚未回答。")}</div>
+              </div>
+            </div>
+            ${riskHtml}
+          </article>`;
+        })
+        .join("");
+      const riskNotesHtml = result.riskNotes.length
+        ? `<div class="mode-risks"><strong>OOC 风险</strong><ul>${result.riskNotes
+            .map((note) => `<li>${renderInlineMarkdown(note)}</li>`)
+            .join("")}</ul></div>`
+        : "";
+
+      return `<article class="trial-mode">
+        <div class="mode-heading">
+          <span>${escapeHtml(trialReportLabels[mode])}</span>
+          <small>${result.questions.length} 个问题</small>
+        </div>
+        <div class="qa-list">${questionsHtml || "<p>尚未留下问答记录。</p>"}</div>
+        ${riskNotesHtml}
+      </article>`;
+    })
+    .join("");
+
+  return `<section><h2>相处测试结果</h2><div class="trial-tabs">${modeHtml}</div></section>`;
 }
 
 export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
   const sections = parseDossierSections(project.dossier.markdown);
-  const worldEntries = (project.worldEntries ?? []).filter((entry) => entry.enabled);
-  const selectedGreeting = getAdoptedGreetingVariants(project)[0];
   const latestTrial = project.trialRuns[0];
   const companions = (project.companions ?? []).filter((node) => node.status === "confirmed");
 
-  const dossierHtml = sections
+  const reportSections = sections.filter((section) => section.section !== "开场白");
+  const dossierHtml = reportSections
     .map((section) => sectionHtml(section.section, section.content.trim()))
     .join("\n");
-  const worldHtml = worldEntries
-    .map((entry) => `<li><strong>${escapeHtml(entry.title)}</strong><p>${escapeHtml(entry.content)}</p></li>`)
-    .join("\n");
   const companionHtml = companions
-    .map((node) => `<li><strong>${escapeHtml(node.name)}</strong><p>${escapeHtml(node.relationToMain)}</p></li>`)
+    .map((node) => `<li><strong>${escapeHtml(node.name)}</strong><p>${renderInlineMarkdown(node.relationToMain)}</p></li>`)
     .join("\n");
 
   return `<!doctype html>
@@ -46,9 +162,30 @@ export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
     .meta { margin-top: 16px; color: var(--muted); font-weight: 700; }
     section { margin-top: 24px; border: 2px solid var(--line); border-radius: 20px; padding: 24px; background: var(--paper); box-shadow: 0 3px 10px rgba(61,52,40,.1); }
     h2 { margin: 0 0 14px; color: var(--ink); font-size: 1.4rem; }
+    h3, h4 { color: var(--ink); }
     div, p, li { line-height: 1.9; }
+    p { margin: 0.45rem 0; }
     ul { padding-left: 1.2rem; }
     strong { color: var(--ink); }
+    em { color: var(--muted); }
+    code { border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; background: rgba(255,255,255,.38); color: var(--ink); }
+    .markdown-body h3, .markdown-body h4 { margin: 1rem 0 .45rem; }
+    .trial-tabs { display: grid; gap: 18px; }
+    .trial-mode { border: 1px solid var(--line); border-radius: 16px; padding: 18px; background: rgba(255,255,255,.38); }
+    .mode-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 12px; color: var(--ink); font-weight: 900; }
+    .mode-heading span { display: inline-flex; border: 2px solid var(--primary); border-radius: 999px; padding: 6px 12px; background: rgba(25,200,185,.14); }
+    .mode-heading small { color: var(--muted); font-weight: 800; }
+    .qa-list { display: grid; gap: 14px; margin-top: 16px; }
+    .qa-card { border: 1px solid rgba(196,184,158,.9); border-radius: 14px; padding: 14px; background: rgba(247,243,223,.82); }
+    .question-block { border-left: 4px solid var(--ink); padding-left: 12px; color: var(--ink); font-weight: 800; }
+    .intent { color: var(--muted); font-size: .92rem; font-weight: 600; }
+    .answer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; }
+    .answer-block, .inner-block { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,.44); }
+    .inner-block { background: rgba(138,123,102,.08); }
+    .qa-label { display: inline-flex; margin-bottom: 6px; border-radius: 999px; padding: 3px 9px; background: rgba(121,79,39,.12); color: var(--ink); font-size: .78rem; font-weight: 900; }
+    .answer-label { background: rgba(25,200,185,.16); }
+    .inner-label { background: rgba(138,123,102,.16); }
+    .risk-lines, .mode-risks { margin-top: 12px; border: 1px solid rgba(122,43,38,.28); border-radius: 12px; padding: 10px 12px; background: rgba(122,43,38,.08); color: #7a2b26; }
   </style>
 </head>
 <body>
@@ -58,11 +195,9 @@ export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
       <h1>${escapeHtml(project.title)}</h1>
       <p class="meta">这份报告记录 TA 被慢慢找到的路径，不参与角色卡运行。</p>
     </header>
-    ${sectionHtml("岛民便笺", sections[0]?.content.trim() ?? project.title)}
+    ${sectionHtml("岛民便笺", reportSections[0]?.content.trim() ?? project.title)}
     ${dossierHtml}
-    <section><h2>WorldInfo 摘要</h2><ul>${worldHtml || "<li>尚未确认 WorldInfo。</li>"}</ul></section>
-    <section><h2>开场白选择</h2><div>${escapeHtml(selectedGreeting?.content ?? "尚未锁定开场白。").replace(/\n/g, "<br>")}</div></section>
-    <section><h2>相处测试结果</h2><div>${escapeHtml(latestTrial?.resultMarkdown ?? "尚未留下相处测试记录。").replace(/\n/g, "<br>")}</div></section>
+    ${structuredTrialHtml(latestTrial)}
     <section><h2>关系网</h2><ul>${companionHtml || "<li>尚未确认配角关系。</li>"}</ul></section>
   </main>
 </body>

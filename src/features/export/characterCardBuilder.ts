@@ -7,6 +7,7 @@ import type {
 import type { CharacterCard } from "@/schemas/characterCardSchema";
 import { characterCardSchema } from "@/schemas/characterCardSchema";
 import { parseDossierSections } from "@/features/dossier/dossierSections";
+import { getBeautificationWorldEntryId } from "@/features/world/worldPromptContext";
 import { stripRuntimeTimestamps } from "@/shared/lib/jsonSanitizer";
 
 export interface BuildCharacterCardInput {
@@ -100,6 +101,27 @@ function buildWorldEntry(entry: ExportWorldEntry, index: number) {
   };
 }
 
+function buildBeautificationWorldEntry(asset: BeautificationAsset, index: number) {
+  const worldInfo = asset.worldInfo;
+  if (!asset.enabled || !worldInfo) {
+    return null;
+  }
+
+  return buildWorldEntry(
+    {
+      title: worldInfo.comment || asset.title,
+      content: worldInfo.content,
+      keys: worldInfo.constant ? [] : worldInfo.keys,
+      constant: worldInfo.constant,
+      position: worldInfo.position,
+      depth: typeof worldInfo.depth === "number" ? worldInfo.depth : undefined,
+      insertionOrder: worldInfo.insertion_order,
+      enabled: true,
+    },
+    index,
+  );
+}
+
 function buildRegexScript(asset: BeautificationAsset) {
   return {
     id: asset.id,
@@ -147,6 +169,11 @@ export function buildCharacterCard({
     .map((item) => item.content.trim());
   const worldEntries = project.worldEntries.filter((entry) => entry.enabled);
   const beautifications = project.beautifications ?? [];
+  const worldEntryIds = new Set(worldEntries.map((entry) => entry.id));
+  const beautificationWorldEntries = beautifications
+    .filter((asset) => !worldEntryIds.has(getBeautificationWorldEntryId(asset.id)))
+    .map((asset, index) => buildBeautificationWorldEntry(asset, worldEntries.length + index))
+    .filter((entry): entry is ReturnType<typeof buildWorldEntry> => Boolean(entry));
   const card = {
     name: title,
     description,
@@ -186,7 +213,7 @@ export function buildCharacterCard({
       },
       group_only_greetings: [],
       character_book: {
-        entries: worldEntries.map(buildWorldEntry),
+        entries: [...worldEntries.map(buildWorldEntry), ...beautificationWorldEntries],
         name: title,
       },
     },

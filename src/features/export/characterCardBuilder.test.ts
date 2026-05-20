@@ -159,7 +159,7 @@ describe("characterCardBuilder", () => {
     expect(card.data.character_version).toBe("1.0");
     expect(card.data.extensions.world).toBe("雨夜来客");
     expect(card.data.character_book?.name).toBe("雨夜来客");
-    expect(card.data.character_book?.entries).toHaveLength(1);
+    expect(card.data.character_book?.entries).toHaveLength(2);
     expect(card.data.character_book?.entries[0]).toMatchObject({
       keys: ["旧馆", "雨水"],
       constant: true,
@@ -171,6 +171,19 @@ describe("characterCardBuilder", () => {
       },
     });
     expect(card.data.character_book?.entries[0]?.keys).not.toContain("旧图书馆");
+    expect(card.data.character_book?.entries[1]).toMatchObject({
+      keys: [],
+      comment: "雨夜状态栏",
+      content: "角色输出状态时使用 <statusblock>。",
+      constant: true,
+      position: "4",
+      insertion_order: 999,
+      extensions: {
+        display_index: 1,
+        position: 4,
+      },
+    });
+    expect(JSON.stringify(card.data.character_book?.entries[1])).not.toContain("echo_category");
     expect(card.data.extensions.regex_scripts).toHaveLength(1);
     expect(card.data.extensions.regex_scripts[0]).toMatchObject({
       placement: [1, 2],
