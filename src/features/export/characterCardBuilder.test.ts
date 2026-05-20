@@ -159,22 +159,158 @@ describe("characterCardBuilder", () => {
     expect(card.data.character_version).toBe("1.0");
     expect(card.data.extensions.world).toBe("雨夜来客");
     expect(card.data.character_book?.name).toBe("雨夜来客");
-    expect(card.data.character_book?.entries).toHaveLength(3);
+    expect(card.data.character_book?.entries).toHaveLength(1);
     expect(card.data.character_book?.entries[0]).toMatchObject({
       keys: ["旧馆", "雨水"],
       constant: true,
-      position: 4,
+      position: "4",
       insertion_order: 140,
       extensions: {
         depth: 3,
         position: 4,
       },
     });
+    expect(card.data.character_book?.entries[0]?.keys).not.toContain("旧图书馆");
     expect(card.data.extensions.regex_scripts).toHaveLength(1);
+    expect(card.data.extensions.regex_scripts[0]).toMatchObject({
+      placement: [1, 2],
+      markdownOnly: true,
+      trimStrings: [],
+    });
     expect(card.data.first_mes).toContain("{{user}}");
     expect(json).not.toContain("createdAt");
     expect(json).not.toContain("updatedAt");
+    expect(json).not.toContain("system_prompt");
+    expect(json).not.toContain("post_history_instructions");
+    expect(json).not.toContain('"echo"');
     expect(() => JSON.parse(json)).not.toThrow();
+  });
+
+  it("严格按参考角色卡字段导出，不添加额外字段", () => {
+    const project = createProjectDraft({
+      title: "字段顺序测试",
+      dossierMarkdown: "## 核心人格\n\n稳定。\n\n## 开场白\n\n你好。",
+    });
+    project.exportDraft = {
+      creator: "测试作者",
+      cardCompletion: {
+        description: "角色简介",
+        personality: "性格简述",
+        tags: ["标签1", "标签2"],
+        updatedAt: project.updatedAt,
+      },
+    };
+    project.worldEntries = [
+      {
+        id: "world_exact",
+        projectId: project.id,
+        title: "条目名称",
+        content: "条目内容",
+        keys: ["触发词1", "触发词2"],
+        constant: false,
+        position: 2,
+        depth: 4,
+        insertionOrder: 100,
+        enabled: true,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+      },
+    ];
+
+    const card = buildCharacterCard({ project, versionLabel: "1.0", creator: "测试作者" });
+    const entry = card.data.character_book?.entries[0];
+
+    expect(Object.keys(card)).toEqual([
+      "name",
+      "description",
+      "personality",
+      "scenario",
+      "first_mes",
+      "mes_example",
+      "creatorcomment",
+      "avatar",
+      "talkativeness",
+      "fav",
+      "tags",
+      "spec",
+      "spec_version",
+      "data",
+      "create_date",
+    ]);
+    expect(Object.keys(card.data)).toEqual([
+      "name",
+      "description",
+      "personality",
+      "scenario",
+      "first_mes",
+      "mes_example",
+      "creator_notes",
+      "tags",
+      "creator",
+      "character_version",
+      "alternate_greetings",
+      "extensions",
+      "group_only_greetings",
+      "character_book",
+    ]);
+    expect(Object.keys(card.data.extensions)).toEqual([
+      "talkativeness",
+      "fav",
+      "world",
+      "depth_prompt",
+      "regex_scripts",
+    ]);
+    expect(Object.keys(card.data.character_book ?? {})).toEqual(["entries", "name"]);
+    expect(entry ? Object.keys(entry) : []).toEqual([
+      "id",
+      "keys",
+      "secondary_keys",
+      "comment",
+      "content",
+      "constant",
+      "selective",
+      "insertion_order",
+      "enabled",
+      "position",
+      "use_regex",
+      "extensions",
+    ]);
+    expect(entry?.keys).toEqual(["触发词1", "触发词2"]);
+    expect(entry?.comment).toBe("条目名称");
+    expect(entry?.position).toBe("2");
+    expect(entry ? Object.keys(entry.extensions) : []).toEqual([
+      "position",
+      "exclude_recursion",
+      "display_index",
+      "probability",
+      "useProbability",
+      "depth",
+      "selectiveLogic",
+      "outlet_name",
+      "group",
+      "group_override",
+      "group_weight",
+      "prevent_recursion",
+      "delay_until_recursion",
+      "scan_depth",
+      "match_whole_words",
+      "use_group_scoring",
+      "case_sensitive",
+      "automation_id",
+      "role",
+      "vectorized",
+      "sticky",
+      "cooldown",
+      "delay",
+      "match_persona_description",
+      "match_character_description",
+      "match_character_personality",
+      "match_character_depth_prompt",
+      "match_scenario",
+      "match_creator_notes",
+      "triggers",
+      "ignore_budget",
+    ]);
   });
 
   it("按采用排序导出主开场白和备用开场白", () => {

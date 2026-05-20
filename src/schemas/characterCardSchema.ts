@@ -96,35 +96,38 @@ export const worldInfoEntrySchema = z
     secondary_keys: z.array(z.string()).optional(),
     comment: z.string().default(""),
     content: z.string(),
-    constant: z.boolean().default(false),
-    vectorized: z.boolean().default(false),
-    selective: z.boolean().default(true),
-    selectiveLogic: selectiveLogicSchema.default(0),
+    constant: z.boolean().optional(),
+    vectorized: z.boolean().optional(),
+    selective: z.boolean().optional(),
+    selectiveLogic: selectiveLogicSchema.optional(),
     order: z.number().optional(),
     insertion_order: z.number().optional(),
+    enabled: z.boolean().optional(),
     position: z.union([worldPositionSchema, z.string()]).default(4),
     disable: z.boolean().optional(),
-    enabled: z.boolean().optional(),
     use_regex: z.boolean().optional(),
     extensions: z
       .object({
         position: worldPositionSchema.default(4),
-        depth: z.number().default(4),
-        role: worldRoleSchema.default(0),
+        exclude_recursion: z.boolean().default(false),
         display_index: z.number().optional(),
-        selectiveLogic: selectiveLogicSchema.default(0),
         probability: z.number().min(0).max(100).default(100),
         useProbability: z.boolean().default(true),
-        scan_depth: nullableNumberSchema.default(null),
-        case_sensitive: nullableBooleanSchema.default(null),
-        match_whole_words: nullableBooleanSchema.default(null),
-        exclude_recursion: z.boolean().default(false),
-        prevent_recursion: z.boolean().default(false),
-        delay_until_recursion: z.union([z.boolean(), z.number()]).default(false),
+        depth: z.number().default(4),
+        selectiveLogic: selectiveLogicSchema.default(0),
+        outlet_name: z.string().default(""),
         group: z.string().default(""),
         group_override: z.boolean().default(false),
         group_weight: z.number().default(100),
+        prevent_recursion: z.boolean().default(false),
+        delay_until_recursion: z.union([z.boolean(), z.number()]).default(false),
+        scan_depth: nullableNumberSchema.default(null),
+        match_whole_words: nullableBooleanSchema.default(null),
         use_group_scoring: z.boolean().default(false),
+        case_sensitive: nullableBooleanSchema.default(null),
+        automation_id: z.string().default(""),
+        role: worldRoleSchema.default(0),
+        vectorized: z.boolean().default(false),
         sticky: nullableNumberSchema.default(null),
         cooldown: nullableNumberSchema.default(null),
         delay: nullableNumberSchema.default(null),
@@ -134,13 +137,10 @@ export const worldInfoEntrySchema = z
         match_character_depth_prompt: z.boolean().default(false),
         match_scenario: z.boolean().default(false),
         match_creator_notes: z.boolean().default(false),
-        automation_id: z.string().default(""),
-        vectorized: z.boolean().default(false),
         triggers: z
           .array(z.enum(["normal", "continue", "impersonate", "swipe", "regenerate", "quiet"]))
           .default([]),
         ignore_budget: z.boolean().default(false),
-        outlet_name: z.string().default(""),
       })
       .passthrough()
       .default(defaultWorldEntryExtensions),
@@ -165,7 +165,6 @@ export const characterCardSchema = z
     tags: z.array(z.string()).default([]),
     spec: z.literal("chara_card_v3"),
     spec_version: z.literal("3.0"),
-    create_date: z.string().optional(),
     data: z
       .object({
         name: z.string(),
@@ -175,24 +174,12 @@ export const characterCardSchema = z
         first_mes: z.string(),
         mes_example: z.string().default(""),
         creator_notes: z.string().default(""),
-        system_prompt: z.string().default(""),
-        post_history_instructions: z.string().default(""),
+        system_prompt: z.string().optional(),
+        post_history_instructions: z.string().optional(),
         tags: z.array(z.string()).default([]),
         creator: z.string().default(""),
         character_version: z.string().default(""),
         alternate_greetings: z.array(z.string()).default([]),
-        character_book: z
-          .object({
-            name: z.string().default(""),
-            description: z.string().default(""),
-            scan_depth: z.number().optional(),
-            token_budget: z.number().optional(),
-            recursive_scanning: z.boolean().optional(),
-            extensions: z.record(z.string(), z.unknown()).default({}),
-            entries: z.array(worldInfoEntrySchema).default([]),
-          })
-          .passthrough()
-          .optional(),
         extensions: z
           .object({
             talkativeness: talkativenessSchema,
@@ -211,8 +198,21 @@ export const characterCardSchema = z
           .passthrough()
           .default(defaultCharacterExtensions),
         group_only_greetings: z.array(z.string()).default([]),
+        character_book: z
+          .object({
+            entries: z.array(worldInfoEntrySchema).default([]),
+            name: z.string().default(""),
+            description: z.string().optional(),
+            scan_depth: z.number().optional(),
+            token_budget: z.number().optional(),
+            recursive_scanning: z.boolean().optional(),
+            extensions: z.record(z.string(), z.unknown()).optional(),
+          })
+          .passthrough()
+          .optional(),
       })
       .passthrough(),
+    create_date: z.string().optional(),
   })
   .passthrough();
 
