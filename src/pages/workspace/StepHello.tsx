@@ -624,7 +624,7 @@ function ChatBubble({
   return (
     <article className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser && <Avatar label="TA" />}
-      <div className={cn("max-w-[min(760px,82%)]", isUser && "order-first")}>
+      <div className={cn(isUser ? "order-first max-w-[min(780px,84%)]" : "max-w-[min(980px,92%)]")}>
         <div
           className={cn(
             "border-2 p-3 shadow-[0_3px_0_0_var(--animal-shadow-input)]",
@@ -748,7 +748,7 @@ function RenderedReply({ content }: { content: string }) {
       srcDoc={buildRenderedDocument(content, frameId)}
       sandbox="allow-scripts"
       style={{ height }}
-      className="w-full border border-[var(--echo-line)] bg-[var(--animal-bg-content)]"
+      className="block w-full border-0 bg-transparent"
     />
   );
 }
@@ -1010,9 +1010,10 @@ function buildRenderedDocument(body: string, frameId: string) {
       font-family: Nunito, "Noto Sans SC", "PingFang SC", sans-serif;
     }
     body {
-      padding: 16px;
+      padding: 0;
       box-sizing: border-box;
       white-space: pre-wrap;
+      overflow: hidden;
     }
     details {
       width: min(100%, 760px);
