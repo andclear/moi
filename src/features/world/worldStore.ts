@@ -1,5 +1,6 @@
 import type { Project, WorldEntry } from "@/db/types";
 import { buildDossierBlockMeta, parseDossierSections } from "@/features/dossier/dossierSections";
+import { collectPromptWorldEntries } from "@/features/world/worldPromptContext";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -32,7 +33,7 @@ function replaceDossierSection(markdown: string, section: string, content: strin
 }
 
 export function getConfirmedWorldEntries(project: Project) {
-  return project.worldEntries.filter((entry) => entry.enabled);
+  return collectPromptWorldEntries(project);
 }
 
 export function formatWorldInfoForDossier(entries: WorldEntry[]) {

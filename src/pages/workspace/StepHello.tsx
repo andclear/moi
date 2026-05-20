@@ -22,6 +22,7 @@ import {
 } from "@/features/hello/helloBeautificationPreview";
 import { generateHelloChatReply, generateHelloRevision } from "@/features/llm/llmClient";
 import { useSettingsStore } from "@/features/settings/settingsStore";
+import { collectPromptWorldEntries } from "@/features/world/worldPromptContext";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { Button } from "@/shared/components/ui/button";
 import { nowIso } from "@/shared/lib/date";
@@ -258,7 +259,7 @@ export function StepHello() {
         mode,
         dossierMarkdown: baseProject.dossier.markdown,
         characterInfoYaml: baseProject.characterProfile?.yaml,
-        confirmedEntries: baseProject.worldEntries.filter((entry) => entry.enabled),
+        confirmedEntries: collectPromptWorldEntries(baseProject),
         selectedGreeting: mode === "greeting" ? selectedGreeting : undefined,
         historyMessages: session.messages,
         userInput: text,
@@ -344,7 +345,7 @@ export function StepHello() {
         mode,
         dossierMarkdown: project.dossier.markdown,
         characterInfoYaml: project.characterProfile?.yaml,
-        confirmedEntries: project.worldEntries.filter((entry) => entry.enabled),
+        confirmedEntries: collectPromptWorldEntries(project),
         selectedGreeting: mode === "greeting" ? selectedGreeting : undefined,
         historyMessages,
         userInput: text,
@@ -413,7 +414,7 @@ export function StepHello() {
         mode: revisionTarget.session.mode,
         dossierMarkdown: project.dossier.markdown,
         characterInfoYaml: project.characterProfile?.yaml,
-        confirmedEntries: project.worldEntries.filter((entry) => entry.enabled),
+        confirmedEntries: collectPromptWorldEntries(project),
         selectedGreeting:
           revisionTarget.session.mode === "greeting"
             ? adoptedGreetings.find((greeting) => greeting.id === revisionTarget.session.selectedGreetingId)
@@ -640,9 +641,11 @@ const ChatBubble = memo(function ChatBubble({
       {!isUser && <Avatar label="TA" />}
       <div
         className={cn(
-          isUser
-            ? "order-first max-w-[min(780px,84%)]"
-            : "w-[min(980px,92%)] max-w-[calc(100%-4rem)]",
+          isUser && isEditing
+            ? "order-first w-[min(920px,84%)] max-w-[calc(100%-4rem)]"
+            : isUser
+              ? "order-first max-w-[min(780px,84%)]"
+              : "w-[min(980px,92%)] max-w-[calc(100%-4rem)]",
         )}
       >
         <div

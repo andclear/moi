@@ -1,5 +1,6 @@
 import type { CompanionNode, CompanionRelation, Project } from "@/db/types";
 import { generateCompanionCandidates } from "@/features/llm/llmClient";
+import { collectPromptWorldEntries } from "@/features/world/worldPromptContext";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -24,7 +25,8 @@ export async function createCompanionCandidates(project: Project, userRequest: s
   const result = await generateCompanionCandidates({
     projectId: project.id,
     dossierMarkdown: project.dossier.markdown,
-    confirmedEntries: project.worldEntries.filter((entry) => entry.enabled),
+    characterInfoYaml: project.characterProfile?.yaml,
+    confirmedEntries: collectPromptWorldEntries(project),
     userRequest,
   });
   const now = nowIso();

@@ -151,6 +151,7 @@ export async function generateBeautificationKeywords(input: {
 export async function generateCompanionCandidates(input: {
   projectId: string;
   dossierMarkdown: string;
+  characterInfoYaml?: string;
   confirmedEntries: WorldEntry[];
   userRequest: string;
   signal?: AbortSignal;

@@ -7,6 +7,7 @@ import type {
   WorldEntry,
 } from "@/db/types";
 import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
+import { collectPromptWorldEntries } from "@/features/world/worldPromptContext";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -31,7 +32,7 @@ export function getSelectedGreeting(project: Project): GreetingVariant | undefin
 }
 
 export function getConfirmedWorldEntries(project: Project): WorldEntry[] {
-  return project.worldEntries.filter((entry) => entry.enabled);
+  return collectPromptWorldEntries(project);
 }
 
 function flattenQuestionnaire(modeResults: TrialModeResults) {

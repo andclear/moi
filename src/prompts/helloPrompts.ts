@@ -83,6 +83,7 @@ export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmM
     input.mode === "greeting"
       ? [
           "当前是“从开场白开始”模式。开场白算作第 0 轮聊天记录；你可以延续开场白里的场景、格式、HTML/CSS/JavaScript 结构和可被正则匹配的文本。",
+          "如果 WorldInfo 或开场白要求持续输出状态栏、statusblock、HUD、数值面板或其他固定结构，你必须在本轮回复中保留对应结构，并保持字段名、标签和换行稳定，方便前端正则匹配和渲染。",
           greetingCharacterCount > 0
             ? `本轮回复的可见正文长度应和开场白接近。当前选中开场白约 ${greetingCharacterCount} 字，请控制在约 ${Math.max(80, Math.round(greetingCharacterCount * 0.75))} 到 ${Math.round(greetingCharacterCount * 1.25)} 字之间。`
             : "本轮回复的可见正文长度应和开场白接近，不要明显短于或长于开场白。",

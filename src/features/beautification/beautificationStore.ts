@@ -10,6 +10,7 @@ import {
   generateBeautificationKeywords,
 } from "@/features/llm/llmClient";
 import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
+import { collectPromptWorldEntries } from "@/features/world/worldPromptContext";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -83,7 +84,7 @@ export async function createBeautificationAsset(project: Project, input: Beautif
     projectId: project.id,
     dossierMarkdown: project.dossier.markdown,
     characterInfoYaml: project.characterProfile?.yaml,
-    confirmedWorldEntries: project.worldEntries.filter((entry) => entry.enabled),
+    confirmedWorldEntries: collectPromptWorldEntries(project),
     adoptedGreetings: getAdoptedGreetingVariants(project),
     userRequest: input.userRequest,
     uiStyle: input.uiStyle,

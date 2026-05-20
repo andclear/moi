@@ -3,6 +3,7 @@ import type { WorldEntry } from "@/db/types";
 
 export interface BuildCompanionMessagesInput {
   dossierMarkdown: string;
+  characterInfoYaml?: string;
   confirmedEntries: WorldEntry[];
   userRequest: string;
 }
@@ -34,6 +35,7 @@ export function buildCompanionMessages(input: BuildCompanionMessagesInput): LlmM
       role: "user",
       content: [
         `角色记录：\n${input.dossierMarkdown}`,
+        `角色信息 YAML：\n${input.characterInfoYaml?.trim() || "尚未生成角色信息 YAML。"}`,
         `已确认 WorldInfo：\n${formatWorldInfo(input.confirmedEntries)}`,
         `这次想寻找的关系：${input.userRequest || "请寻找一个与主角关系最紧密、最能照出主角矛盾的配角。"}`,
         "silhouettes 必须恰好 3 个，每个包含 name、role、summary、personality、relationToMain。",
