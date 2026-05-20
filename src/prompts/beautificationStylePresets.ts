@@ -1,5 +1,5 @@
 import type { BeautificationUiStyleId } from "@/db/types";
-import stylePromptMarkdown from "../../docs/临时.md?raw";
+import stylePromptMarkdown from "@/prompts/beautificationStylePromptCatalog.md?raw";
 
 export interface BeautificationStylePreset {
   id: BeautificationUiStyleId;
