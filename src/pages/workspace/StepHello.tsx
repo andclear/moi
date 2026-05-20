@@ -1,6 +1,6 @@
 import { Collapse } from "animal-island-ui";
 import { Archive, Check, MessageCircle, Pencil, Search, Send, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import type {
@@ -45,6 +45,25 @@ type RevisionDraft = {
 type RevisionTarget = {
   message: HelloChatMessage;
   session: HelloChatSession;
+};
+
+type ChatBubbleProps = {
+  message: HelloChatMessage;
+  mode: HelloChatMode;
+  canEdit: boolean;
+  canInspect: boolean;
+  isOldRenderedCode: boolean;
+  beautifications: Project["beautifications"];
+  adoptedGreetings: GreetingVariant[];
+  selectedGreetingId?: string;
+  isEditing: boolean;
+  editingText: string;
+  onEditingTextChange: (value: string) => void;
+  onGreetingChange: (greetingId: string) => void;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
+  onConfirmEdit: () => void;
+  onInspect: () => void;
 };
 
 const chatModeLabels: Record<HelloChatMode, string> = {
@@ -122,6 +141,10 @@ export function StepHello() {
   const adoptedGreetings = useMemo(
     () => (project ? getAdoptedGreetingVariants(project) : []),
     [project],
+  );
+  const enabledBeautifications = useMemo(
+    () => project?.beautifications.filter((asset) => asset.enabled) ?? [],
+    [project?.beautifications],
   );
   const selectedGreeting = adoptedGreetings.find((greeting) => greeting.id === selectedGreetingId);
   const currentSession = project
@@ -500,7 +523,7 @@ export function StepHello() {
                     !message.isOpening &&
                     isOlderThanRenderDepth(currentSession, index)
                   }
-                  beautifications={project.beautifications.filter((asset) => asset.enabled)}
+                  beautifications={enabledBeautifications}
                   adoptedGreetings={adoptedGreetings}
                   selectedGreetingId={selectedGreetingId}
                   isEditing={editingMessageId === message.id}
@@ -578,7 +601,7 @@ export function StepHello() {
   );
 }
 
-function ChatBubble({
+const ChatBubble = memo(function ChatBubble({
   message,
   mode,
   canEdit,
@@ -595,24 +618,7 @@ function ChatBubble({
   onCancelEdit,
   onConfirmEdit,
   onInspect,
-}: {
-  message: HelloChatMessage;
-  mode: HelloChatMode;
-  canEdit: boolean;
-  canInspect: boolean;
-  isOldRenderedCode: boolean;
-  beautifications: Project["beautifications"];
-  adoptedGreetings: GreetingVariant[];
-  selectedGreetingId?: string;
-  isEditing: boolean;
-  editingText: string;
-  onEditingTextChange: (value: string) => void;
-  onGreetingChange: (greetingId: string) => void;
-  onStartEdit: () => void;
-  onCancelEdit: () => void;
-  onConfirmEdit: () => void;
-  onInspect: () => void;
-}) {
+}: ChatBubbleProps) {
   const isUser = message.role === "user";
   const renderedContent = applyHelloBeautificationsForPreview(message.content, beautifications);
   const shouldRender =
@@ -710,6 +716,24 @@ function ChatBubble({
       </div>
       {isUser && <Avatar label="UU" />}
     </article>
+  );
+}, areChatBubblePropsEqual);
+
+function areChatBubblePropsEqual(prev: ChatBubbleProps, next: ChatBubbleProps) {
+  return (
+    prev.message.id === next.message.id &&
+    prev.message.role === next.message.role &&
+    prev.message.content === next.message.content &&
+    prev.message.isOpening === next.message.isOpening &&
+    prev.mode === next.mode &&
+    prev.canEdit === next.canEdit &&
+    prev.canInspect === next.canInspect &&
+    prev.isOldRenderedCode === next.isOldRenderedCode &&
+    prev.selectedGreetingId === next.selectedGreetingId &&
+    prev.isEditing === next.isEditing &&
+    prev.editingText === next.editingText &&
+    prev.beautifications === next.beautifications &&
+    prev.adoptedGreetings === next.adoptedGreetings
   );
 }
 
@@ -913,8 +937,15 @@ function getOrCreateSession(
   }
 
   const now = nowIso();
+  const isPreview = !options.persist;
+  const sessionId =
+    isPreview && mode === "greeting" && selectedGreeting
+      ? `hello_preview_${project.id}_${selectedGreeting.id}`
+      : isPreview
+        ? `hello_preview_${project.id}_${mode}`
+        : createId("hello");
   const session: HelloChatSession = {
-    id: createId("hello"),
+    id: sessionId,
     projectId: project.id,
     mode,
     selectedGreetingId: mode === "greeting" ? selectedGreeting?.id : undefined,
@@ -922,7 +953,7 @@ function getOrCreateSession(
       mode === "greeting" && selectedGreeting
         ? [
             {
-              id: createId("msg"),
+              id: isPreview ? `msg_opening_${selectedGreeting.id}` : createId("msg"),
               role: "assistant",
               content: selectedGreeting.content,
               createdAt: now,
