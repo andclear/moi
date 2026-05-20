@@ -11,6 +11,7 @@ import type {
 import type { CharacterCard } from "@/schemas/characterCardSchema";
 import { characterCardSchema } from "@/schemas/characterCardSchema";
 import { parseDossierSections } from "@/features/dossier/dossierSections";
+import { getBeautificationWorldEntryId } from "@/features/world/worldPromptContext";
 
 export interface BuildCharacterCardInput {
   project: Project;
@@ -247,8 +248,9 @@ export function buildCharacterCard({
     .map((item) => item.content.trim());
   const worldEntries = project.worldEntries.filter((entry) => entry.enabled);
   const beautifications = project.beautifications ?? [];
+  const worldEntryIds = new Set(worldEntries.map((entry) => entry.id));
   const beautificationWorldEntries = beautifications
-    .filter((asset) => asset.worldInfo)
+    .filter((asset) => asset.worldInfo && !worldEntryIds.has(getBeautificationWorldEntryId(asset.id)))
     .map((asset, index) =>
       buildSyntheticWorldEntry({
         title: asset.worldInfo?.comment ?? asset.title,

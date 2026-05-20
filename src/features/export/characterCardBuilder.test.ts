@@ -199,6 +199,55 @@ describe("characterCardBuilder", () => {
     expect(card.data.alternate_greetings).toEqual(["备用开场一。"]);
   });
 
+  it("美化世界书已经同步到世界书列表时不会重复导出", () => {
+    const project = createProjectDraft({ title: "美化去重测试" });
+    project.worldEntries = [
+      {
+        id: "beautification_world_beauty_1",
+        projectId: project.id,
+        title: "美化规则：状态栏",
+        content: "输出 <statusblock> 状态栏。",
+        keys: [],
+        constant: true,
+        position: 4,
+        depth: 4,
+        insertionOrder: 999,
+        enabled: true,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+      },
+    ];
+    project.beautifications = [
+      {
+        id: "beauty_1",
+        projectId: project.id,
+        title: "状态栏",
+        originalText: "",
+        userRequest: "状态栏",
+        strategy: "complex",
+        worldInfo: {
+          comment: "状态栏",
+          content: "输出 <statusblock> 状态栏。",
+          constant: true,
+          keys: [],
+          position: 4,
+          depth: 4,
+          insertion_order: 999,
+        },
+        regex: "<statusblock>([\\s\\S]*?)</statusblock>",
+        html: "$1",
+        formattedOriginalText: "",
+        enabled: true,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+      },
+    ];
+
+    const card = buildCharacterCard({ project });
+
+    expect(card.data.character_book?.entries).toHaveLength(1);
+  });
+
   it("没有采用开场白时回退到档案开场白", () => {
     const project = createProjectDraft({
       title: "未采用测试",

@@ -16,6 +16,27 @@ function normalizeBaseUrl(url: string) {
   return url.replace(/\/+$/, "");
 }
 
+function shouldEnableDeepSeekThinking(settings: ApiSettings) {
+  const signature = `${settings.apiBaseUrl} ${settings.model}`.toLowerCase();
+  return signature.includes("deepseek");
+}
+
+function buildRequestBody(settings: ApiSettings, messages: LlmMessage[]) {
+  const body: Record<string, unknown> = {
+    model: settings.model,
+    temperature: settings.temperature,
+    messages: adaptMessagesForSystemSupport(messages, settings.supportsSystemPrompt),
+    stream: true,
+  };
+
+  if (shouldEnableDeepSeekThinking(settings)) {
+    body.reasoning_effort = "high";
+    body.thinking = { type: "enabled" };
+  }
+
+  return body;
+}
+
 export async function callOpenAiCompatible(
   settings: ApiSettings,
   messages: LlmMessage[],
@@ -33,12 +54,7 @@ export async function callOpenAiCompatible(
       "Content-Type": "application/json",
       Authorization: `Bearer ${settings.apiKey}`,
     },
-    body: JSON.stringify({
-      model: settings.model,
-      temperature: settings.temperature,
-      messages: adaptMessagesForSystemSupport(messages, settings.supportsSystemPrompt),
-      stream: true,
-    }),
+    body: JSON.stringify(buildRequestBody(settings, messages)),
     signal,
   });
 

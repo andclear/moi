@@ -46,6 +46,7 @@ import {
   markGenerationFailed,
   markGenerationSucceeded,
 } from "@/features/llm/usageTracker";
+import { readTextResponse } from "@/features/llm/streamParser";
 import {
   beautificationKeywordResponseSchema,
   beautificationResponseSchema,
@@ -79,6 +80,7 @@ async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
       projectId: request.projectId,
       type: request.type,
       inputSummary: request.inputSummary,
+      stream: Boolean(request.onDelta),
     }),
     signal: request.signal,
   });
@@ -86,6 +88,18 @@ async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
   if (!response.ok) {
     const payload = (await response.json().catch(() => null)) as { error?: string } | null;
     throw new LlmError(payload?.error ?? "预置模型请求失败。", "preset_api_failed");
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("text/event-stream")) {
+    const content = await readTextResponse(response, request.onDelta);
+    return {
+      content,
+      raw: { streamed: true },
+      usage: {
+        durationMs: Math.round(performance.now() - startedAt),
+      },
+    };
   }
 
   const payload = (await response.json()) as LlmResponse;

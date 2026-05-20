@@ -1,4 +1,4 @@
-import { proxyPresetLlm } from "../src/server/llm/presetProxy";
+import { proxyPresetLlm, proxyPresetLlmStream } from "../src/server/llm/presetProxy";
 
 export const config = {
   maxDuration: 60,
@@ -16,9 +16,16 @@ export default async function handler(request: Request) {
       return Response.json({ error: "缺少激活会话。" }, { status: 401 });
     }
 
-    const payload = (await request.json()) as { messages?: unknown };
+    const payload = (await request.json()) as { messages?: unknown; stream?: unknown };
     if (!Array.isArray(payload.messages)) {
       return Response.json({ error: "缺少模型消息。" }, { status: 400 });
+    }
+
+    if (payload.stream === true) {
+      return proxyPresetLlmStream({
+        sessionToken,
+        messages: payload.messages as Parameters<typeof proxyPresetLlm>[0]["messages"],
+      });
     }
 
     return Response.json(

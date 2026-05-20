@@ -61,10 +61,15 @@ function appendStreamEvent(
 
     try {
       const payload = JSON.parse(data) as {
-        choices?: Array<{ delta?: { content?: string }; message?: { content?: string }; text?: string }>;
+        choices?: Array<{
+          delta?: { content?: string | Array<{ text?: string }>; reasoning_content?: string };
+          message?: { content?: string };
+          text?: string;
+        }>;
       };
+      const deltaContent = payload.choices?.[0]?.delta?.content;
       const delta =
-        payload.choices?.[0]?.delta?.content ??
+        normalizeDeltaContent(deltaContent) ??
         payload.choices?.[0]?.message?.content ??
         payload.choices?.[0]?.text ??
         "";
@@ -79,4 +84,12 @@ function appendStreamEvent(
   }
 
   return result;
+}
+
+function normalizeDeltaContent(content?: string | Array<{ text?: string }>) {
+  if (Array.isArray(content)) {
+    return content.map((item) => item.text ?? "").join("");
+  }
+
+  return content;
 }

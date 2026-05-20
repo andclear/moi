@@ -10,7 +10,11 @@ import {
   generateBeautificationKeywords,
 } from "@/features/llm/llmClient";
 import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
-import { collectPromptWorldEntries } from "@/features/world/worldPromptContext";
+import {
+  buildBeautificationWorldEntry,
+  collectPromptWorldEntries,
+  getBeautificationWorldEntryId,
+} from "@/features/world/worldPromptContext";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -220,5 +224,23 @@ export function applyBeautificationToGreetings(project: Project, asset: Beautifi
     ...project,
     greetingVariants: nextVariants,
     updatedAt: now,
+  } satisfies Project;
+}
+
+export function syncBeautificationWorldEntries(project: Project) {
+  const generatedEntries = (project.beautifications ?? [])
+    .map((asset, index) => buildBeautificationWorldEntry(project, asset, index))
+    .filter((entry): entry is Project["worldEntries"][number] => Boolean(entry));
+  const generatedIds = new Set(
+    (project.beautifications ?? []).map((asset) => getBeautificationWorldEntryId(asset.id)),
+  );
+
+  return {
+    ...project,
+    worldEntries: [
+      ...project.worldEntries.filter((entry) => !generatedIds.has(entry.id)),
+      ...generatedEntries,
+    ],
+    updatedAt: nowIso(),
   } satisfies Project;
 }

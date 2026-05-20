@@ -4,6 +4,7 @@ import {
   applyBeautificationToGreetings,
   buildFallbackBeautification,
   inferBeautificationStrategy,
+  syncBeautificationWorldEntries,
   testBeautificationRegex,
 } from "@/features/beautification/beautificationStore";
 import { createProjectDraft } from "@/db/defaults";
@@ -60,6 +61,18 @@ describe("beautificationStore", () => {
 
     expect(nextProject.greetingVariants[0]?.content).toContain("<statusblock>");
     expect(nextProject.greetingVariants[1]?.content).not.toContain("<statusblock>");
+  });
+
+  it("保存美化方案时同步生成世界书条目", () => {
+    const project = createProjectDraft({ id: "project_beauty_world" });
+    project.beautifications = [createFallbackBeautificationAssetForTest(project.id, project.createdAt)];
+
+    const nextProject = syncBeautificationWorldEntries(project);
+
+    expect(nextProject.worldEntries).toHaveLength(1);
+    expect(nextProject.worldEntries[0]?.id).toBe("beautification_world_beauty_1");
+    expect(nextProject.worldEntries[0]?.content).toContain("输出状态栏");
+    expect(nextProject.worldEntries[0]?.content).toContain("常驻：是");
   });
 });
 

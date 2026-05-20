@@ -23,4 +23,26 @@ describe("streamParser", () => {
     expect(deltas).toEqual(["<cot>先看线索", "，再设计题目</cot>"]);
     expect(content).toBe("<cot>先看线索，再设计题目</cot>");
   });
+
+  it("会忽略 DeepSeek 推理增量，只把正文内容流式输出", async () => {
+    const response = new Response(
+      [
+        'data: {"choices":[{"delta":{"reasoning_content":"这里是思考过程"}}]}\n\n',
+        'data: {"choices":[{"delta":{"content":"你好"}}]}\n\n',
+        'data: {"choices":[{"delta":{"content":"，我在。"}}]}\n\n',
+        "data: [DONE]\n\n",
+      ].join(""),
+      {
+        headers: {
+          "content-type": "text/event-stream",
+        },
+      },
+    );
+    const deltas: string[] = [];
+
+    const content = await readTextResponse(response, (delta) => deltas.push(delta));
+
+    expect(deltas).toEqual(["你好", "，我在。"]);
+    expect(content).toBe("你好，我在。");
+  });
 });

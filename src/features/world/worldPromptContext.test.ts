@@ -58,6 +58,7 @@ describe("collectPromptWorldEntries", () => {
 
     expect(entries.map((entry) => entry.title)).toEqual(["岛上天气", "美化规则：状态栏格式说明"]);
     expect(entries[1]?.content).toContain("<statusblock>");
+    expect(entries[1]?.content).toContain("常驻：是");
     expect(entries[1]?.constant).toBe(true);
   });
 

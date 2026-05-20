@@ -23,6 +23,7 @@ import type {
 import {
   applyBeautificationToGreetings,
   createBeautificationAsset,
+  syncBeautificationWorldEntries,
   testBeautificationRegex,
 } from "@/features/beautification/beautificationStore";
 import { projectService } from "@/db/services/projectService";
@@ -169,7 +170,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
       beautifications: [...assets, asset],
       updatedAt: nowIso(),
     };
-    const nextProject = applyBeautificationToGreetings(nextBaseProject, asset);
+    const nextProject = syncBeautificationWorldEntries(applyBeautificationToGreetings(nextBaseProject, asset));
     setSelectedId(asset.id);
     await persist(nextProject);
   }
@@ -199,7 +200,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     const nextAssets = assets.map((asset) =>
       asset.id === selectedAsset.id ? { ...asset, ...patch, updatedAt: nowIso() } : asset,
     );
-    await persist({ ...project, beautifications: nextAssets, updatedAt: nowIso() });
+    await persist(syncBeautificationWorldEntries({ ...project, beautifications: nextAssets, updatedAt: nowIso() }));
   }
 
   async function updateWorldInfo(patch: Partial<NonNullable<BeautificationAsset["worldInfo"]>>) {
@@ -223,7 +224,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
   async function deleteAsset(assetId: string) {
     const nextAssets = assets.filter((asset) => asset.id !== assetId);
     setSelectedId(nextAssets[0]?.id ?? "");
-    await persist({ ...project, beautifications: nextAssets, updatedAt: nowIso() });
+    await persist(syncBeautificationWorldEntries({ ...project, beautifications: nextAssets, updatedAt: nowIso() }));
   }
 
   return (
