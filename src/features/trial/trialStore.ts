@@ -15,7 +15,7 @@ export type TrialMode = TrialRun["mode"];
 export const trialModes = ["interview", "stress", "diary"] as const satisfies readonly TrialMode[];
 
 export const trialModeLabels = {
-  interview: "三席岛访",
+  interview: "多面试官对话",
   stress: "风浪压测",
   diary: "日记回声",
 } satisfies Record<TrialMode, string>;
