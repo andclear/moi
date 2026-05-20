@@ -5,5 +5,6 @@ type RuntimeGlobal = typeof globalThis & {
 };
 
 export function getEnv(name: string) {
-  return (globalThis as RuntimeGlobal).process?.env?.[name];
+  const value = (globalThis as RuntimeGlobal).process?.env?.[name];
+  return value?.trim().replace(/^["']|["']$/g, "");
 }

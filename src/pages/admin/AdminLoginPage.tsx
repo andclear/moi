@@ -236,6 +236,7 @@ export function AdminLoginPage() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             type="password"
+            autoComplete="current-password"
             className="w-full border-0 border-b-2 border-[var(--echo-ink)] bg-transparent py-2 font-mono outline-none"
             placeholder="输入后台口令"
           />
