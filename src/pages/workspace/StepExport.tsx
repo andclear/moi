@@ -5,7 +5,6 @@ import { Link, useParams } from "react-router";
 import { exportRepository } from "@/db/repositories/exportRepository";
 import { projectService } from "@/db/services/projectService";
 import type { ExportRecord, Project } from "@/db/types";
-import { BeautificationLab } from "@/features/beautification/BeautificationLab";
 import { CompanionNetwork } from "@/features/companions/CompanionNetwork";
 import { useExportStore } from "@/features/export/exportStore";
 import { useFlowStore } from "@/features/flow/flowStore";
@@ -241,7 +240,6 @@ export function StepExport() {
 
       {project && (
         <div className="echo-workspace-inner mt-6 space-y-6">
-          <BeautificationLab project={project} onProjectChange={setProject} />
           <CompanionNetwork project={project} onProjectChange={setProject} />
           <ProfileReportPanel project={project} />
         </div>

@@ -102,6 +102,10 @@ function buildSyntheticWorldEntry(input: {
   title: string;
   content: string;
   keys: string[];
+  constant?: boolean;
+  position?: number;
+  depth?: number | "";
+  insertionOrder?: number;
   index: number;
   category: "beautification" | "companion";
 }) {
@@ -113,6 +117,10 @@ function buildSyntheticWorldEntry(input: {
         title: input.title,
         content: input.content,
         keys: input.keys,
+        constant: input.constant,
+        position: input.position,
+        depth: typeof input.depth === "number" ? input.depth : undefined,
+        insertionOrder: input.insertionOrder,
         enabled: true,
         createdAt: new Date(0).toISOString(),
         updatedAt: new Date(0).toISOString(),
@@ -127,6 +135,10 @@ function buildSyntheticWorldEntry(input: {
           title: input.title,
           content: input.content,
           keys: input.keys,
+          constant: input.constant,
+          position: input.position,
+          depth: typeof input.depth === "number" ? input.depth : undefined,
+          insertionOrder: input.insertionOrder,
           enabled: true,
           createdAt: new Date(0).toISOString(),
           updatedAt: new Date(0).toISOString(),
@@ -239,9 +251,13 @@ export function buildCharacterCard({
     .filter((asset) => asset.worldInfo)
     .map((asset, index) =>
       buildSyntheticWorldEntry({
-        title: asset.worldInfo?.key ?? asset.title,
+        title: asset.worldInfo?.comment ?? asset.title,
         content: asset.worldInfo?.content ?? "",
-        keys: [asset.worldInfo?.key ?? asset.title],
+        keys: asset.worldInfo?.constant ? [] : asset.worldInfo?.keys ?? [asset.title],
+        constant: asset.worldInfo?.constant,
+        position: asset.worldInfo?.position,
+        depth: asset.worldInfo?.depth,
+        insertionOrder: asset.worldInfo?.insertion_order,
         index: worldEntries.length + index,
         category: "beautification",
       }),

@@ -5,6 +5,7 @@ import {
   FileSearch,
   MessagesSquare,
   PenLine,
+  Sparkles,
   ScrollText,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -18,6 +19,7 @@ import type { FlowStep } from "@/features/flow/flowTypes";
 import { StepPost } from "@/pages/workspace/StepPost";
 import { StepProfile } from "@/pages/workspace/StepProfile";
 import { StepExport } from "@/pages/workspace/StepExport";
+import { StepBeautification } from "@/pages/workspace/StepBeautification";
 import { StepGreeting } from "@/pages/workspace/StepGreeting";
 import { StepTrial } from "@/pages/workspace/StepTrial";
 import { StepWorld } from "@/pages/workspace/StepWorld";
@@ -29,6 +31,7 @@ const steps: FlowStep[] = [
   { id: "profile", label: "认识岛民", description: "从几种可能里靠近 TA 的样子。", icon: FileSearch },
   { id: "world", label: "小岛背景", description: "整理 TA 所在的世界。", icon: BookMarked },
   { id: "greeting", label: "初次招呼", description: "生成第一次见面的场景。", icon: MessagesSquare },
+  { id: "beautification", label: "添加美化", description: "生成状态栏、正则与渲染代码。", icon: Sparkles },
   { id: "trial", label: "相处测试", description: "测试角色一致性。", icon: ScrollText },
   { id: "export", label: "带 TA 回来（导出）", description: "生成角色卡记录。", icon: Archive },
 ];
@@ -123,6 +126,8 @@ export function WorkspacePage() {
               <StepWorld />
             ) : currentStepId === "greeting" ? (
               <StepGreeting />
+            ) : currentStepId === "beautification" ? (
+              <StepBeautification />
             ) : currentStepId === "trial" ? (
               <StepTrial />
             ) : currentStepId === "export" ? (

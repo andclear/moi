@@ -220,14 +220,23 @@ export const trialAnswerResponseSchema = z.object({
 export const beautificationResponseSchema = z.object({
   worldinfo: z
     .object({
-      key: z.string().min(1),
+      comment: z.string().min(1),
       content: z.string().min(1),
+      constant: booleanLikeSchema,
+      keys: z.array(z.string()).default([]),
+      position: positionLikeSchema,
+      depth: z.union([nonNegativeNumberLikeSchema, z.literal("")]).optional(),
+      insertion_order: numberLikeSchema,
     })
     .nullable(),
   regex: z.string().min(1),
   html: z.string().min(1),
   original_text: z.string().default(""),
   formatted_original_text: z.string().min(1),
+});
+
+export const beautificationKeywordResponseSchema = z.object({
+  keys: z.array(z.string().min(1)).min(2).max(5),
 });
 
 export const companionResponseSchema = z.object({

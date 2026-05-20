@@ -14,6 +14,7 @@ export type GenerationType =
   | "beautification"
   | "companion"
   | "export";
+export type BeautificationGreetingInsertMode = "none" | "primary" | "all_adopted";
 export type ExportFormat = "json" | "png";
 
 export interface DossierBlockMeta {
@@ -77,12 +78,18 @@ export interface BeautificationAsset {
   userRequest: string;
   strategy: "simple" | "complex";
   worldInfo?: {
-    key: string;
+    comment: string;
     content: string;
+    constant: boolean;
+    keys: string[];
+    position: number;
+    depth?: number | "";
+    insertion_order: number;
   } | null;
   regex: string;
   html: string;
   formattedOriginalText: string;
+  insertIntoGreeting?: BeautificationGreetingInsertMode;
   enabled: boolean;
   createdAt: string;
   updatedAt: string;

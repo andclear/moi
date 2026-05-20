@@ -17,7 +17,10 @@ import {
   buildProfileStageMessages,
 } from "@/prompts/profilePrompts";
 import { buildGreetingMessages } from "@/prompts/greetingPrompts";
-import { buildBeautificationMessages } from "@/prompts/beautificationPrompts";
+import {
+  buildBeautificationKeywordMessages,
+  buildBeautificationMessages,
+} from "@/prompts/beautificationPrompts";
 import { buildCompanionMessages } from "@/prompts/companionPrompts";
 import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
 import { buildWorldDossierUpdateMessages, buildWorldEntryMessages } from "@/prompts/worldPrompts";
@@ -37,6 +40,7 @@ import {
 } from "@/features/llm/usageTracker";
 import type { TrialMode } from "@/features/trial/trialStore";
 import {
+  beautificationKeywordResponseSchema,
   beautificationResponseSchema,
   companionResponseSchema,
   intakeQuestionnaireResponseSchema,
@@ -92,21 +96,45 @@ async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
 export async function generateBeautificationAsset(input: {
   projectId: string;
   dossierMarkdown: string;
-  originalText: string;
+  characterInfoYaml?: string;
+  confirmedWorldEntries?: WorldEntry[];
+  adoptedGreetings?: GreetingVariant[];
   userRequest: string;
+  insertIntoGreeting: "none" | "primary" | "all_adopted";
   signal?: AbortSignal;
 }) {
   const result = await callLlm({
     projectId: input.projectId,
     type: "beautification",
     messages: buildBeautificationMessages(input),
-    inputSummary: `生成美化与正则：${input.userRequest.slice(0, 80) || input.originalText.slice(0, 80)}`,
+    inputSummary: `生成美化与正则：${input.userRequest.slice(0, 80) || "自动生成美化方案"}`,
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
     data: parseLlmJson(result.response.content, beautificationResponseSchema),
+    response: result.response,
+  };
+}
+
+export async function generateBeautificationKeywords(input: {
+  projectId: string;
+  userRequest: string;
+  worldInfoContent: string;
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "beautification",
+    messages: buildBeautificationKeywordMessages(input),
+    inputSummary: `补全美化关键词：${input.userRequest.slice(0, 80)}`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, beautificationKeywordResponseSchema),
     response: result.response,
   };
 }

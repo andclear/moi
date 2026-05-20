@@ -6,6 +6,7 @@ export type FlowStepId =
   | "profile"
   | "world"
   | "greeting"
+  | "beautification"
   | "trial"
   | "export";
 

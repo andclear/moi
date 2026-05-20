@@ -195,14 +195,14 @@ export function StepGreeting() {
     const updatedProject = await persistProject(
       {
         ...project,
-        currentStep: "trial",
+        currentStep: "beautification",
       },
       "完成开场白阶段",
     );
 
     if (updatedProject) {
       markStepCompleted("greeting");
-      navigate(`/workspace/${updatedProject.id}/trial`);
+      navigate(`/workspace/${updatedProject.id}/beautification`);
     }
   }
 
@@ -307,7 +307,7 @@ export function StepGreeting() {
               onClick={() => void handleNextStep()}
             >
               <CheckCircle2 aria-hidden="true" size={16} />
-              进入相处测试
+              进入添加美化
             </Button>
           </aside>
 

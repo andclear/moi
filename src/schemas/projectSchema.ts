@@ -6,6 +6,7 @@ export const flowStepIdSchema = z.enum([
   "profile",
   "world",
   "greeting",
+  "beautification",
   "trial",
   "export",
 ]);
@@ -72,14 +73,20 @@ export const beautificationAssetSchema = z.object({
   strategy: z.enum(["simple", "complex"]),
   worldInfo: z
     .object({
-      key: z.string().min(1),
+      comment: z.string().min(1),
       content: z.string().min(1),
+      constant: z.boolean(),
+      keys: z.array(z.string()).default([]),
+      position: z.number().int().min(0).max(4),
+      depth: z.union([z.number().int().min(0), z.literal("")]).optional(),
+      insertion_order: z.number().int(),
     })
     .nullable()
     .optional(),
   regex: z.string(),
   html: z.string(),
   formattedOriginalText: z.string(),
+  insertIntoGreeting: z.enum(["none", "primary", "all_adopted"]).optional(),
   enabled: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
