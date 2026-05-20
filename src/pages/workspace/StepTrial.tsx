@@ -308,40 +308,34 @@ export function StepTrial() {
         </section>
 
         <section className="echo-text-card">
-          <div className="flex items-center gap-3">
-            <ScrollText aria-hidden="true" size={22} className="text-[var(--animal-primary)]" />
-            <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">测试模式</h2>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {trialModes.map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setActiveMode(mode)}
-                className={cn(
-                  "border-2 px-4 py-3 text-left font-display text-lg font-black transition-colors",
-                  activeMode === mode
-                    ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
-                    : "border-[var(--echo-line)] bg-[rgba(247,243,223,0.88)] text-[var(--echo-text)] hover:border-[var(--echo-paper)]",
-                )}
-              >
-                {trialModeLabels[mode]}
-              </button>
-            ))}
-          </div>
-          <div className="mt-5 max-w-sm">
-            <GenerationButton
-              idleLabel={latestRun ? "重新测试" : "开始终审"}
-              runningLabel={runningLabel}
-              retryLabel="重新测试"
-              status={generationTask.status}
-              errorMessage={errorMessage ?? generationTask.errorMessage}
-              onGenerate={handleRunTrial}
-              onCancel={() => {
-                cancel(generationKey);
-                setGenerationStage("idle");
-              }}
-            />
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-primary)] shadow-[0_3px_0_0_var(--animal-shadow-input)]">
+                <ScrollText aria-hidden="true" size={24} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                  终审测试
+                </h2>
+                <p className="mt-2 max-w-2xl font-mono text-sm leading-6 text-[var(--echo-muted)]">
+                  点击后会一次性发放三组问卷并完成作答，生成后在下方切换查看。
+                </p>
+              </div>
+            </div>
+            <div className="w-full max-w-sm lg:shrink-0">
+              <GenerationButton
+                idleLabel={latestRun ? "重新测试" : "开始终审"}
+                runningLabel={runningLabel}
+                retryLabel="重新测试"
+                status={generationTask.status}
+                errorMessage={errorMessage ?? generationTask.errorMessage}
+                onGenerate={handleRunTrial}
+                onCancel={() => {
+                  cancel(generationKey);
+                  setGenerationStage("idle");
+                }}
+              />
+            </div>
           </div>
         </section>
 
