@@ -45,7 +45,7 @@ export function StepGreeting() {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [wordCount, setWordCount] = useState(800);
-  const [personType, setPersonType] = useState<GreetingPersonType>("第二人称");
+  const [personType, setPersonType] = useState<GreetingPersonType>("第三人称");
   const [userRequest, setUserRequest] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { load: loadSettings, getAvailability } = useSettingsStore();
@@ -164,7 +164,7 @@ export function StepGreeting() {
       return;
     }
 
-    await persistProject(adoptGreetingVariant(project, variant.id), `采用开场白：${variant.title}`);
+    await persistProject(adoptGreetingVariant(project, variant.id), "采用开场白");
   }
 
   async function handleDiscardVariant(variant: GreetingVariant) {
@@ -229,7 +229,7 @@ export function StepGreeting() {
           </p>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]">
+        <section className="grid gap-6 xl:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]">
           <aside className="echo-side-panel h-fit space-y-5">
             <div className="flex items-center gap-3">
               <SlidersHorizontal aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
@@ -320,13 +320,6 @@ export function StepGreeting() {
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-[220px] flex-1 space-y-2">
-                        <input
-                          value={variant.title}
-                          onChange={(event) =>
-                            void handleEditVariant(variant, { title: event.target.value })
-                          }
-                          className="min-h-14 w-full rounded-[22px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-5 font-display text-2xl font-black leading-tight text-[var(--echo-paper)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none transition focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
-                        />
                         <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold">
                           {isPrimary ? (
                             <span className="rounded-full border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] px-3 py-1 text-[var(--animal-primary-active)]">

@@ -45,7 +45,6 @@ export const greetingVariantSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
   userRole: z.string(),
-  title: z.string(),
   content: z.string(),
   selected: z.boolean(),
   adopted: z.boolean().optional(),

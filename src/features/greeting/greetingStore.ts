@@ -11,13 +11,34 @@ export type GreetingPersonType = "第一人称" | "第二人称" | "第三人称
 export const greetingPersonTypes: GreetingPersonType[] = ["第一人称", "第二人称", "第三人称"];
 
 export interface GeneratedGreetingInput {
-  title: string;
   content: string;
-  atmosphere?: string;
 }
+
+export const greetingTextSeparator = "---GREETING---";
 
 function stripCotBlocks(text: string) {
   return text.replace(/<cot>[\s\S]*?<\/cot>/gi, "").trim();
+}
+
+export function parseGreetingResponseText(text: string): GeneratedGreetingInput[] {
+  const cleaned = stripCotBlocks(text);
+  const separatorPattern = new RegExp(`^\\s*${greetingTextSeparator}\\s*$`, "gim");
+  const separatedParts = cleaned
+    .split(separatorPattern)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (separatedParts.length > 1) {
+    return separatedParts.map((content) => ({ content }));
+  }
+
+  const numberedParts = cleaned
+    .split(/\n(?=\s*\d+[.、)]\s+)/g)
+    .map((part) => part.replace(/^\s*\d+[.、)]\s+/, "").trim())
+    .filter(Boolean);
+
+  const parts = numberedParts.length > 1 ? numberedParts : [cleaned].filter(Boolean);
+  return parts.map((content) => ({ content }));
 }
 
 function replaceDossierSection(markdown: string, section: string, content: string) {
@@ -91,13 +112,12 @@ export function createGreetingCandidates(
   variants: GeneratedGreetingInput[],
   now = nowIso(),
 ) {
-  return variants.map((variant, index) => {
+  return variants.map((variant) => {
     const content = stripCotBlocks(variant.content);
     return {
       id: createId("greeting"),
       projectId,
       userRole: "开场白",
-      title: stripCotBlocks(variant.title) || `开场白 ${index + 1}`,
       content,
       selected: false,
       adopted: false,
@@ -173,18 +193,18 @@ export function setGreetingSortOrder(project: Project, variantId: string, sortOr
   reordered.splice(nextIndex, 0, target);
   const orderMap = new Map(reordered.map((variant, index) => [variant.id, index + 1]));
   const nextVariants = project.greetingVariants.map((variant) => {
-      const nextOrder = orderMap.get(variant.id);
+    const nextOrder = orderMap.get(variant.id);
     if (!nextOrder) {
       return variant;
     }
 
-      return {
-        ...variant,
-        adopted: true,
-        selected: false,
-        sortOrder: nextOrder,
-        updatedAt: now,
-      };
+    return {
+      ...variant,
+      adopted: true,
+      selected: false,
+      sortOrder: nextOrder,
+      updatedAt: now,
+    };
   });
   const primary = nextVariants.find((variant) => variant.sortOrder === 1);
   const nextMarkdown = replaceDossierSection(

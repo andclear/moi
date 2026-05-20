@@ -1,5 +1,6 @@
 import type { Project } from "@/db/types";
 import { parseDossierSections } from "@/features/dossier/dossierSections";
+import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
 
 function escapeHtml(value: string) {
   return value
@@ -16,7 +17,7 @@ function sectionHtml(title: string, body: string) {
 export function buildProfileReportHtml(project: Project, versionLabel = "1.0") {
   const sections = parseDossierSections(project.dossier.markdown);
   const worldEntries = (project.worldEntries ?? []).filter((entry) => entry.enabled);
-  const selectedGreeting = project.greetingVariants.find((variant) => variant.selected);
+  const selectedGreeting = getAdoptedGreetingVariants(project)[0];
   const latestTrial = project.trialRuns[0];
   const companions = (project.companions ?? []).filter((node) => node.status === "confirmed");
 

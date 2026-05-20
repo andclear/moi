@@ -7,8 +7,9 @@ import type {
   TrialRun,
   WorldEntry,
 } from "@/db/types";
-import type {
-  GreetingPersonType,
+import {
+  parseGreetingResponseText,
+  type GreetingPersonType,
 } from "@/features/greeting/greetingStore";
 import {
   buildProfileDossierUpdateMessages,
@@ -36,7 +37,6 @@ import {
 } from "@/features/llm/usageTracker";
 import type { TrialMode } from "@/features/trial/trialStore";
 import {
-  greetingVariantResponseSchema,
   beautificationResponseSchema,
   companionResponseSchema,
   intakeQuestionnaireResponseSchema,
@@ -519,7 +519,7 @@ export async function generateGreetingVariants(input: {
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, greetingVariantResponseSchema),
+    data: parseGreetingResponseText(result.response.content),
     response: result.response,
   };
 }

@@ -51,7 +51,6 @@ export interface GreetingVariant {
   id: string;
   projectId: string;
   userRole: string;
-  title: string;
   content: string;
   selected: boolean;
   adopted?: boolean;

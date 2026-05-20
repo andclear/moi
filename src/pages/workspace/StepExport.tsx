@@ -9,6 +9,7 @@ import { BeautificationLab } from "@/features/beautification/BeautificationLab";
 import { CompanionNetwork } from "@/features/companions/CompanionNetwork";
 import { useExportStore } from "@/features/export/exportStore";
 import { useFlowStore } from "@/features/flow/flowStore";
+import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
 import { ProfileReportPanel } from "@/features/report/ProfileReportPanel";
 import { Button } from "@/shared/components/ui/button";
 
@@ -51,7 +52,7 @@ export function StepExport() {
   }, [projectId, lastRecord]);
 
   const selectedGreeting = useMemo(
-    () => project?.greetingVariants.find((variant) => variant.selected),
+    () => (project ? getAdoptedGreetingVariants(project)[0] : undefined),
     [project],
   );
   const confirmedWorldCount = project?.worldEntries.filter((entry) => entry.enabled).length ?? 0;
@@ -197,7 +198,7 @@ export function StepExport() {
               </div>
               <div>
                 <dt className="font-bold text-[var(--echo-paper)]">开场白</dt>
-                <dd>{selectedGreeting ? selectedGreeting.title : "尚未锁定"}</dd>
+                <dd>{selectedGreeting ? "已采用" : "尚未采用"}</dd>
               </div>
               <div>
                 <dt className="font-bold text-[var(--echo-paper)]">相处测试</dt>

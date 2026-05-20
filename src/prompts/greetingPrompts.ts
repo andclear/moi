@@ -1,5 +1,8 @@
 import type { WorldEntry } from "@/db/types";
-import type { GreetingPersonType } from "@/features/greeting/greetingStore";
+import {
+  greetingTextSeparator,
+  type GreetingPersonType,
+} from "@/features/greeting/greetingStore";
 import type { LlmMessage } from "@/features/llm/llmTypes";
 
 export interface BuildGreetingMessagesInput {
@@ -38,9 +41,10 @@ export function buildGreetingMessages(input: BuildGreetingMessagesInput): LlmMes
       content: [
         "你是打造角色扮演场景“黄金开场”的专家。你的目标是用高风险的氛围和生动的感官细节立刻吸引用户。",
         "严格使用简体中文。最终开场白必须保留字面占位符 {{char}} 和 {{user}}，不要替换成具体姓名。",
-        "输出必须是标准 JSON 数组，不要输出 Markdown 代码块。每个元素只允许包含 title、content、atmosphere 三个字段。",
-        "你可以先在每个 content 内部生成 <cot></cot> 自检，但最终开场白正文必须放在同一个 content 字段里；系统会自动移除 <cot></cot>，所以不要依赖它传递正文信息。",
+        "输出纯文本即可，不要输出 JSON、标题字段、atmosphere 字段、Markdown 代码块或其他结构化包装。",
+        "你可以先输出 <cot></cot> 自检，但最终开场白正文必须紧跟在自检之后；系统会自动移除 <cot></cot>，所以不要依赖它传递正文信息。",
         "如果用户生成要求以数字序号分段，例如 1.xxx 2.xxx 或每行一个编号，必须按编号逐条生成对应数量的开场白；如果没有编号，只生成 1 条开场白。",
+        `如果需要输出多条开场白，每两条开场白之间只用单独一行 ${greetingTextSeparator} 分隔。不要给开场白添加标题、编号或字段名。`,
       ].join("\n"),
     },
     {
@@ -78,14 +82,13 @@ export function buildGreetingMessages(input: BuildGreetingMessagesInput): LlmMes
         "12. {{char}} 与 {{user}} 的互动建立在人格平等上，张力来自观点碰撞、未完成的事和真实摩擦。",
         "",
         "## 输出流程",
-        "生成每条开场白前，在对应 content 字段内用 <cot></cot> 简短自检：分析请求、确认视角、设计钩子、检查禁用套路、确认 {{char}} 与 {{user}} 占位符、检查所有对话是否使用双引号。",
+        "生成开场白前，用 <cot></cot> 简短自检：分析请求、确认视角、设计钩子、检查禁用套路、确认 {{char}} 与 {{user}} 占位符、检查所有对话是否使用双引号。",
         "",
         "## 输出格式",
-        "只输出 JSON 数组。数组长度必须等于用户编号数量；没有编号时长度为 1。",
-        "字段说明：",
-        "- title：这一条开场白的简短标题。",
-        "- content：先写 <cot>自检</cot>，然后直接写最终开场白纯文本。最终开场白不得包含 Markdown 语法。",
-        "- atmosphere：一句话说明场景氛围。",
+        "只输出纯文本开场白，不要输出 JSON。",
+        "不要输出标题、编号、字段名、atmosphere、解释文字或 Markdown 标题。",
+        `如果有多条开场白，条数必须等于用户编号数量，并使用单独一行 ${greetingTextSeparator} 分隔。`,
+        "没有编号时只输出 1 条开场白。",
       ].join("\n"),
     },
   ];

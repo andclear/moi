@@ -205,17 +205,6 @@ export const worldEntryResponseSchema = z
   .min(1)
   .max(10);
 
-export const greetingVariantResponseSchema = z
-  .array(
-    z.object({
-      title: z.string().min(1),
-      content: z.string().min(1),
-      atmosphere: z.string().optional(),
-    }),
-  )
-  .min(1)
-  .max(10);
-
 export const trialQuestionnaireResponseSchema = z.object({
   title: z.string().min(1),
   questionnaireMarkdown: z.string().min(1),
