@@ -64,11 +64,29 @@ function formatChatHistory(messages: HelloChatMessage[]) {
     .join("\n\n");
 }
 
+function countVisibleCharacters(value?: string) {
+  if (!value) {
+    return 0;
+  }
+
+  return value
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, "").length;
+}
+
 export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmMessage[] {
   const hasHistory = input.historyMessages.length > 0;
+  const greetingCharacterCount = countVisibleCharacters(input.selectedGreeting?.content);
   const modeRule =
     input.mode === "greeting"
-      ? "当前是“从开场白开始”模式。开场白算作第 0 轮聊天记录；你可以延续开场白里的场景、格式、HTML/CSS/JavaScript 结构和可被正则匹配的文本。"
+      ? [
+          "当前是“从开场白开始”模式。开场白算作第 0 轮聊天记录；你可以延续开场白里的场景、格式、HTML/CSS/JavaScript 结构和可被正则匹配的文本。",
+          greetingCharacterCount > 0
+            ? `本轮回复的可见正文长度应和开场白接近。当前选中开场白约 ${greetingCharacterCount} 字，请控制在约 ${Math.max(80, Math.round(greetingCharacterCount * 0.75))} 到 ${Math.round(greetingCharacterCount * 1.25)} 字之间。`
+            : "本轮回复的可见正文长度应和开场白接近，不要明显短于或长于开场白。",
+        ].join("\n")
       : "当前是“简单聊聊”模式。只进行纯文字对话，像朋友聊天一样，不要主动输出 HTML、CSS、JavaScript 或状态栏代码。";
 
   return [

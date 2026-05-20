@@ -469,10 +469,14 @@ export function StepHello() {
                 和 TA 试着聊一聊
               </h1>
               <p className="mt-3 max-w-3xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
-                根据已完成的角色档案、角色信息和小岛背景进行对话。喜欢这位岛民后，可以带走并导出角色卡。
+                体验性功能，由于无预设、prompt构建差异等因素，生成的结果可能与在SillyTavern中的不同
               </p>
             </div>
-            <Button type="button" onClick={() => void handleTakeAway()}>
+            <Button
+              type="button"
+              className="border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)]"
+              onClick={() => void handleTakeAway()}
+            >
               <Archive aria-hidden="true" size={16} />
               带走岛民
             </Button>
@@ -553,7 +557,11 @@ export function StepHello() {
                 <p className="font-mono text-sm font-bold text-[var(--echo-muted)]">
                   已经聊了很多啦，喜欢TA就带走TA吧
                 </p>
-                <Button type="button" onClick={() => void handleTakeAway()}>
+                <Button
+                  type="button"
+                  className="border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)]"
+                  onClick={() => void handleTakeAway()}
+                >
                   <Archive aria-hidden="true" size={16} />
                   带走岛民
                 </Button>
@@ -569,7 +577,7 @@ export function StepHello() {
                 />
                 <Button
                   type="button"
-                  className="self-end"
+                  className="self-end border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)]"
                   loading={isSending}
                   disabled={!inputText.trim() || isSending}
                   onClick={() => void handleSend()}
