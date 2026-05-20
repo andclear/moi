@@ -25,7 +25,18 @@ export interface BuildHelloRevisionMessagesInput {
 function formatWorldInfo(entries: WorldEntry[]) {
   return entries.length
     ? entries
-        .map((entry) => `WorldInfo ID：${entry.id}\n标题：${entry.title}\n内容：${entry.content}`)
+        .map((entry) =>
+          [
+            `WorldInfo ID：${entry.id}`,
+            `标题：${entry.title}`,
+            `常驻：${entry.constant ? "是" : "否"}`,
+            `关键词：${entry.constant ? "无，常驻生效" : entry.keys.join("、") || "未设置"}`,
+            `插入位置：${entry.position ?? "未设置"}`,
+            `深度：${entry.depth ?? "未设置"}`,
+            `插入顺序：${entry.insertionOrder ?? "未设置"}`,
+            `内容：${entry.content}`,
+          ].join("\n"),
+        )
         .join("\n\n")
     : "尚未确认 WorldInfo。";
 }
@@ -79,6 +90,7 @@ function countVisibleCharacters(value?: string) {
 export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmMessage[] {
   const hasHistory = input.historyMessages.length > 0;
   const greetingCharacterCount = countVisibleCharacters(input.selectedGreeting?.content);
+  const worldInfoText = formatWorldInfo(input.confirmedEntries);
   const modeRule =
     input.mode === "greeting"
       ? [
@@ -96,6 +108,8 @@ export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmM
       content: [
         "你从现在开始进行角色扮演对话，只扮演 {{char}}，不要替 {{user}} 说话。",
         "必须严格参考 WorldInfo、角色档案和角色信息 YAML，保持人物设定、事实、关系和语气稳定。",
+        "下面的 WorldInfo 是高优先级硬约束，不是普通背景。凡是常驻 WorldInfo，必须在每一轮回复中持续遵守；凡是要求输出固定结构、状态栏、statusblock、HUD 或数值面板的条目，必须按条目要求输出对应文本。",
+        `高优先级 WorldInfo：\n${worldInfoText}`,
         modeRule,
         "回复必须使用简体中文，简单、直白、清晰易懂，不追求文学性，不增加用户阅读成本。",
         "保留 {{char}} 与 {{user}} 字面占位符，不要替换成具体姓名。",

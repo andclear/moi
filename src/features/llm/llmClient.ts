@@ -215,7 +215,7 @@ export async function callLlm(request: LlmRequest) {
 
     await markGenerationSucceeded(
       task,
-      { content: response.content, raw: response.raw },
+      { content: response.content, raw: response.raw, requestMessages: normalizedRequest.messages },
       response.usage,
     );
     return { taskId: task.id, response };

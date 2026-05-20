@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { BeautificationAsset } from "@/db/types";
 import { applyHelloBeautificationsForPreview } from "@/features/hello/helloBeautificationPreview";
+import { buildHelloChatMessages } from "@/prompts/helloPrompts";
 
 function createAsset(input: Partial<BeautificationAsset>): BeautificationAsset {
   return {
@@ -40,5 +41,47 @@ describe("applyHelloBeautificationsForPreview", () => {
 
     expect(result.didReplace).toBe(true);
     expect(result.content).toContain("状态：有点紧张");
+  });
+});
+
+describe("buildHelloChatMessages", () => {
+  it("把 WorldInfo 状态栏规则写入系统硬约束", () => {
+    const messages = buildHelloChatMessages({
+      mode: "greeting",
+      dossierMarkdown: "## 核心人格\n\n稳定。",
+      characterInfoYaml: "姓名: 林知晚",
+      confirmedEntries: [
+        {
+          id: "beautification_world_beauty_1",
+          projectId: "project_test",
+          title: "美化规则：状态栏",
+          content: "每轮回复都必须输出 <statusblock> 状态栏。",
+          keys: [],
+          constant: true,
+          position: 4,
+          depth: 4,
+          insertionOrder: 999,
+          enabled: true,
+          createdAt: new Date(0).toISOString(),
+          updatedAt: new Date(0).toISOString(),
+        },
+      ],
+      selectedGreeting: {
+        id: "greeting_1",
+        projectId: "project_test",
+        userRole: "开场白",
+        content: "{{char}}看向{{user}}。",
+        selected: false,
+        adopted: true,
+        createdAt: new Date(0).toISOString(),
+        updatedAt: new Date(0).toISOString(),
+      },
+      historyMessages: [],
+      userInput: "继续",
+    });
+
+    expect(messages[0]?.content).toContain("高优先级 WorldInfo");
+    expect(messages[0]?.content).toContain("<statusblock>");
+    expect(messages[0]?.content).toContain("常驻：是");
   });
 });
