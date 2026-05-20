@@ -1,5 +1,5 @@
-import { getEnv } from "@/server/runtime/env";
-import { createId } from "@/shared/lib/ids";
+import { createId } from "../../shared/lib/ids";
+import { getEnv } from "../runtime/env";
 
 export async function hashAdminSecret(secret: string) {
   const bytes = new TextEncoder().encode(secret);

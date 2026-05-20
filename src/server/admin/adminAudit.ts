@@ -1,5 +1,5 @@
-import { createPostgresClient } from "@/server/db/postgres";
-import { createId } from "@/shared/lib/ids";
+import { createId } from "../../shared/lib/ids";
+import { createPostgresClient } from "../db/postgres";
 
 export async function writeAdminAuditLog(input: {
   actor: string;

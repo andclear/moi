@@ -1,8 +1,8 @@
-import { createPostgresClient } from "@/server/db/postgres";
-import { getEnv } from "@/server/runtime/env";
-import { createId } from "@/shared/lib/ids";
-import { hashSessionSecret } from "@/server/activation/activationCodes";
-import { getModelChannelSettings } from "@/server/admin/modelChannel";
+import { createId } from "../../shared/lib/ids";
+import { getModelChannelSettings } from "../admin/modelChannel";
+import { createPostgresClient } from "../db/postgres";
+import { getEnv } from "../runtime/env";
+import { hashSessionSecret } from "./activationCodes";
 
 export async function activateCode(code: string, sql = createPostgresClient()) {
   const channel = await getModelChannelSettings(sql);

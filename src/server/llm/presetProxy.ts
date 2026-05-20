@@ -1,11 +1,11 @@
-import type { LlmMessage } from "@/features/llm/llmTypes";
-import { getModelChannelSettings } from "@/server/admin/modelChannel";
+import type { LlmMessage } from "../../features/llm/llmTypes";
+import { getModelChannelSettings } from "../admin/modelChannel";
 import {
   incrementActivationUsage,
   verifyActivationSession,
-} from "@/server/activation/activationSessions";
-import { createPostgresClient } from "@/server/db/postgres";
-import { getEnv } from "@/server/runtime/env";
+} from "../activation/activationSessions";
+import { createPostgresClient } from "../db/postgres";
+import { getEnv } from "../runtime/env";
 
 function normalizeBaseUrl(url: string) {
   return url.replace(/\/+$/, "");

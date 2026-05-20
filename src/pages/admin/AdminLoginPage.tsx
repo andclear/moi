@@ -225,6 +225,16 @@ export function AdminLoginPage() {
           后台接口会校验管理员口令，并把生成激活码、模型渠道调整等操作写入审计日志。
         </p>
         <form className="mt-6 space-y-5" onSubmit={handleLogin}>
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            value="admin"
+            readOnly
+            className="sr-only"
+            aria-hidden="true"
+            tabIndex={-1}
+          />
           <label
             className="block text-sm font-black uppercase tracking-[0.12em]"
             htmlFor="admin-password"
