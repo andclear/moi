@@ -8,6 +8,7 @@ export type FlowStepId =
   | "greeting"
   | "beautification"
   | "trial"
+  | "hello"
   | "export";
 
 interface FlowState {

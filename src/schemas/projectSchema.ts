@@ -8,6 +8,7 @@ export const flowStepIdSchema = z.enum([
   "greeting",
   "beautification",
   "trial",
+  "hello",
   "export",
 ]);
 
@@ -57,10 +58,35 @@ export const greetingVariantSchema = z.object({
 export const trialRunSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
-  mode: z.enum(["interview", "stress", "diary", "silent"]),
+  mode: z.enum(["interview", "stress", "diary"]),
   questionnaireMarkdown: z.string(),
   resultMarkdown: z.string(),
   riskNotes: z.array(z.string()),
+  modeResults: z
+    .record(
+      z.enum(["interview", "stress", "diary"]),
+      z.object({
+        title: z.string().min(1),
+        questions: z.array(
+          z.object({
+            id: z.string().min(1),
+            question: z.string().min(1),
+            interviewer: z.string().optional(),
+            intent: z.string().optional(),
+          }),
+        ),
+        answers: z.array(
+          z.object({
+            questionId: z.string().min(1),
+            formalReply: z.string().min(1),
+            innerMonologue: z.string().min(1),
+            riskSentences: z.array(z.string()).default([]),
+          }),
+        ),
+        riskNotes: z.array(z.string()).default([]),
+      }),
+    )
+    .optional(),
   createdAt: z.string().datetime(),
 });
 
@@ -71,7 +97,14 @@ export const beautificationAssetSchema = z.object({
   originalText: z.string(),
   userRequest: z.string(),
   uiStyle: z
-    .enum(["none", "aurora_glass", "digital_garden", "soft_future", "cyber_elegant", "nordic_minimal"])
+    .enum([
+      "none",
+      "aurora_glass",
+      "digital_garden",
+      "soft_future",
+      "cyber_elegant",
+      "nordic_minimal",
+    ])
     .optional(),
   strategy: z.enum(["simple", "complex"]),
   worldInfo: z

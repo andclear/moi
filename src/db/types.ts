@@ -11,6 +11,7 @@ export type GenerationType =
   | "greeting"
   | "trial_questionnaire"
   | "trial_answer"
+  | "trial_revision"
   | "beautification"
   | "companion"
   | "export";
@@ -70,12 +71,36 @@ export interface GreetingVariant {
 export interface TrialRun {
   id: string;
   projectId: string;
-  mode: "interview" | "stress" | "diary" | "silent";
+  mode: "interview" | "stress" | "diary";
   questionnaireMarkdown: string;
   resultMarkdown: string;
   riskNotes: string[];
+  modeResults?: TrialModeResults;
   createdAt: string;
 }
+
+export interface TrialQuestion {
+  id: string;
+  question: string;
+  interviewer?: string;
+  intent?: string;
+}
+
+export interface TrialAnswer {
+  questionId: string;
+  formalReply: string;
+  innerMonologue: string;
+  riskSentences: string[];
+}
+
+export interface TrialModeResult {
+  title: string;
+  questions: TrialQuestion[];
+  answers: TrialAnswer[];
+  riskNotes: string[];
+}
+
+export type TrialModeResults = Record<TrialRun["mode"], TrialModeResult>;
 
 export interface BeautificationAsset {
   id: string;

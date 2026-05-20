@@ -18,6 +18,7 @@ export const generationTaskSchema = z.object({
     "greeting",
     "trial_questionnaire",
     "trial_answer",
+    "trial_revision",
     "beautification",
     "companion",
     "export",
@@ -159,36 +160,39 @@ const nonNegativeNumberLikeSchema = z.preprocess((value) => {
   return value;
 }, z.number().int().min(0).optional());
 
-const stringArrayLikeSchema = z.preprocess((value) => {
-  if (Array.isArray(value)) {
-    return value;
-  }
-
-  if (typeof value !== "string") {
-    return value;
-  }
-
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(trimmed);
-    if (Array.isArray(parsed)) {
-      return parsed;
+const stringArrayLikeSchema = z.preprocess(
+  (value) => {
+    if (Array.isArray(value)) {
+      return value;
     }
-  } catch {
-    // 不是 JSON 数组时，按常见分隔符拆分。
-  }
 
-  return trimmed
-    .replace(/^\[/, "")
-    .replace(/\]$/, "")
-    .split(/[、,\s]+/)
-    .map((item) => item.trim().replace(/^["']|["']$/g, ""))
-    .filter(Boolean);
-}, z.array(z.string().min(1)));
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      // 不是 JSON 数组时，按常见分隔符拆分。
+    }
+
+    return trimmed
+      .replace(/^\[/, "")
+      .replace(/\]$/, "")
+      .split(/[、,\s]+/)
+      .map((item) => item.trim().replace(/^["']|["']$/g, ""))
+      .filter(Boolean);
+  },
+  z.array(z.string().min(1)),
+);
 
 export const worldEntryResponseSchema = z
   .array(
@@ -210,11 +214,68 @@ export const trialQuestionnaireResponseSchema = z.object({
   questionnaireMarkdown: z.string().min(1),
 });
 
+const trialModeSchema = z.enum(["interview", "stress", "diary"]);
+
+export const trialQuestionnaireSetResponseSchema = z.object({
+  modes: z.record(
+    trialModeSchema,
+    z.object({
+      title: z.string().min(1),
+      questions: z
+        .array(
+          z.object({
+            id: z.string().min(1),
+            question: z.string().min(1),
+            interviewer: z.string().optional(),
+            intent: z.string().optional(),
+          }),
+        )
+        .min(1),
+    }),
+  ),
+});
+
 export const trialAnswerResponseSchema = z.object({
   resultMarkdown: z.string().min(1),
   formalReplies: z.array(z.string().min(1)).min(1),
   innerMonologues: z.array(z.string().min(1)).min(1),
   riskNotes: z.array(z.string().min(1)).default([]),
+});
+
+export const trialAnswerSetResponseSchema = z.object({
+  modes: z.record(
+    trialModeSchema,
+    z.object({
+      title: z.string().min(1),
+      answers: z
+        .array(
+          z.object({
+            questionId: z.string().min(1),
+            formalReply: z.string().min(1),
+            innerMonologue: z.string().min(1),
+            riskSentences: z.array(z.string()).default([]),
+          }),
+        )
+        .min(1),
+      riskNotes: z.array(z.string()).default([]),
+    }),
+  ),
+});
+
+export const trialRevisionResponseSchema = z.object({
+  summary: z.string().min(1),
+  changes: z
+    .array(
+      z.object({
+        source: z.enum(["dossier", "character_info", "worldinfo", "greeting"]),
+        targetId: z.string().optional(),
+        title: z.string().min(1),
+        before: z.string().min(1),
+        after: z.string().min(1),
+        reason: z.string().min(1),
+      }),
+    )
+    .min(1),
 });
 
 export const beautificationResponseSchema = z.object({

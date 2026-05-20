@@ -4,6 +4,7 @@ import {
   ClipboardList,
   FileSearch,
   MessagesSquare,
+  MessageCircle,
   PenLine,
   Sparkles,
   ScrollText,
@@ -21,18 +22,40 @@ import { StepProfile } from "@/pages/workspace/StepProfile";
 import { StepExport } from "@/pages/workspace/StepExport";
 import { StepBeautification } from "@/pages/workspace/StepBeautification";
 import { StepGreeting } from "@/pages/workspace/StepGreeting";
+import { StepHello } from "@/pages/workspace/StepHello";
 import { StepTrial } from "@/pages/workspace/StepTrial";
 import { StepWorld } from "@/pages/workspace/StepWorld";
 import { WorkspaceLayout } from "@/shared/layout/WorkspaceLayout";
 
 const steps: FlowStep[] = [
   { id: "post", label: "岛民便笺", description: "写下你记得的 TA。", icon: PenLine },
-  { id: "questionnaire", label: "登岛小问卷", description: "先确认几个创作方向。", icon: ClipboardList },
-  { id: "profile", label: "认识岛民", description: "从几种可能里靠近 TA 的样子。", icon: FileSearch },
+  {
+    id: "questionnaire",
+    label: "登岛小问卷",
+    description: "先确认几个创作方向。",
+    icon: ClipboardList,
+  },
+  {
+    id: "profile",
+    label: "认识岛民",
+    description: "从几种可能里靠近 TA 的样子。",
+    icon: FileSearch,
+  },
   { id: "world", label: "小岛背景", description: "整理 TA 所在的世界。", icon: BookMarked },
-  { id: "greeting", label: "初次招呼", description: "生成第一次见面的场景。", icon: MessagesSquare },
-  { id: "beautification", label: "添加美化", description: "生成状态栏、正则与渲染代码。", icon: Sparkles },
+  {
+    id: "greeting",
+    label: "初次招呼",
+    description: "生成第一次见面的场景。",
+    icon: MessagesSquare,
+  },
+  {
+    id: "beautification",
+    label: "添加美化",
+    description: "生成状态栏、正则与渲染代码。",
+    icon: Sparkles,
+  },
   { id: "trial", label: "相处测试", description: "测试角色一致性。", icon: ScrollText },
+  { id: "hello", label: "打个招呼", description: "终审通过后和 TA 见面。", icon: MessageCircle },
   { id: "export", label: "带 TA 回来（导出）", description: "生成角色卡记录。", icon: Archive },
 ];
 
@@ -130,6 +153,8 @@ export function WorkspacePage() {
               <StepBeautification />
             ) : currentStepId === "trial" ? (
               <StepTrial />
+            ) : currentStepId === "hello" ? (
+              <StepHello />
             ) : currentStepId === "export" ? (
               <StepExport />
             ) : (

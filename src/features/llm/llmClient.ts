@@ -23,7 +23,11 @@ import {
   buildBeautificationMessages,
 } from "@/prompts/beautificationPrompts";
 import { buildCompanionMessages } from "@/prompts/companionPrompts";
-import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
+import {
+  buildTrialAnswerMessages,
+  buildTrialQuestionnaireMessages,
+  buildTrialRevisionMessages,
+} from "@/prompts/trialPrompts";
 import { buildWorldDossierUpdateMessages, buildWorldEntryMessages } from "@/prompts/worldPrompts";
 import { buildIntakeQuestionnaireMessages } from "@/prompts/intakePrompts";
 import {
@@ -39,7 +43,6 @@ import {
   markGenerationFailed,
   markGenerationSucceeded,
 } from "@/features/llm/usageTracker";
-import type { TrialMode } from "@/features/trial/trialStore";
 import {
   beautificationKeywordResponseSchema,
   beautificationResponseSchema,
@@ -49,8 +52,9 @@ import {
   profileDiaryResponseSchema,
   profileDossierUpdateResponseSchema,
   profileDraftResponseSchema,
-  trialAnswerResponseSchema,
-  trialQuestionnaireResponseSchema,
+  trialAnswerSetResponseSchema,
+  trialQuestionnaireSetResponseSchema,
+  trialRevisionResponseSchema,
   worldEntryResponseSchema,
 } from "@/schemas/llmResponseSchemas";
 
@@ -191,12 +195,30 @@ export async function callLlm(request: LlmRequest) {
             normalizedRequest.onDelta,
           );
 
-    await markGenerationSucceeded(task, { content: response.content, raw: response.raw }, response.usage);
+    await markGenerationSucceeded(
+      task,
+      { content: response.content, raw: response.raw },
+      response.usage,
+    );
     return { taskId: task.id, response };
   } catch (error) {
     await markGenerationFailed(task, error);
     throw error;
   }
+}
+
+async function withLlmRetry<T>(factory: () => Promise<T>, maxAttempts = 3) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await factory();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("模型请求失败，请重试。");
 }
 
 function extractDesignNote(content: string) {
@@ -213,9 +235,7 @@ function extractDesignNote(content: string) {
   return leadingText.startsWith("{") ? "" : leadingText;
 }
 
-function normalizeIntakeOptions(
-  options: Array<{ label: string; allowCustom?: boolean }>,
-) {
+function normalizeIntakeOptions(options: Array<{ label: string; allowCustom?: boolean }>) {
   const dedupedOptions = options.reduce<Array<{ label: string; allowCustom: boolean }>>(
     (result, option) => {
       const label = option.label.trim();
@@ -236,7 +256,9 @@ function normalizeIntakeOptions(
     return dedupedOptions;
   }
 
-  const customOption = dedupedOptions.find((option) => option.allowCustom || option.label.includes("其他"));
+  const customOption = dedupedOptions.find(
+    (option) => option.allowCustom || option.label.includes("其他"),
+  );
   const fixedOptions = dedupedOptions.filter((option) => option !== customOption).slice(0, 5);
   return customOption ? [...fixedOptions, customOption] : dedupedOptions.slice(0, 6);
 }
@@ -246,7 +268,10 @@ function buildQuestionnaireDesignFallback(data: {
 }) {
   const directions = data.questions
     .slice(0, 7)
-    .map((question, index) => `${index + 1}. 围绕“${question.title}”确认方向，方便后续把角色写得更具体。`)
+    .map(
+      (question, index) =>
+        `${index + 1}. 围绕“${question.title}”确认方向，方便后续把角色写得更具体。`,
+    )
     .join("\n");
 
   return [
@@ -274,7 +299,8 @@ export async function generateIntakeQuestionnaire(input: {
   });
   const data = parseLlmJson(result.response.content, intakeQuestionnaireResponseSchema);
   const questions = data.questions.slice(0, 7);
-  const designNote = extractDesignNote(result.response.content) || buildQuestionnaireDesignFallback(data);
+  const designNote =
+    extractDesignNote(result.response.content) || buildQuestionnaireDesignFallback(data);
 
   return {
     taskId: result.taskId,
@@ -420,7 +446,10 @@ export async function generateCharacterProfileYaml(input: {
   const result = await callLlm({
     projectId: input.projectId,
     type: "character_profile",
-    messages: buildCharacterProfileYamlMessages(input.characterProfile, input.previousCharacterInfo),
+    messages: buildCharacterProfileYamlMessages(
+      input.characterProfile,
+      input.previousCharacterInfo,
+    ),
     inputSummary: "生成角色信息 YAML",
     signal: input.signal,
   });
@@ -493,7 +522,9 @@ export async function generateWorldEntries(input: {
 
   const data = parseLlmJson(result.response.content, worldEntryResponseSchema);
   if (data.length !== input.entryCount) {
-    throw new Error(`模型返回了 ${data.length} 条 WorldInfo，但本次要求必须是 ${input.entryCount} 条。请重新生成。`);
+    throw new Error(
+      `模型返回了 ${data.length} 条 WorldInfo，但本次要求必须是 ${input.entryCount} 条。请重新生成。`,
+    );
   }
 
   return {
@@ -554,49 +585,81 @@ export async function generateGreetingVariants(input: {
   };
 }
 
-export async function generateTrialQuestionnaire(input: {
+export async function generateTrialQuestionnaireSet(input: {
   projectId: string;
   dossierMarkdown: string;
+  characterInfoYaml?: string;
   confirmedEntries: WorldEntry[];
   selectedGreeting?: GreetingVariant;
-  mode: TrialMode;
   signal?: AbortSignal;
 }) {
-  const result = await callLlm({
-    projectId: input.projectId,
-    type: "trial_questionnaire",
-    messages: buildTrialQuestionnaireMessages(input),
-    inputSummary: `相处测试问卷：${input.mode}`,
-    signal: input.signal,
-  });
+  return withLlmRetry(async () => {
+    const result = await callLlm({
+      projectId: input.projectId,
+      type: "trial_questionnaire",
+      messages: buildTrialQuestionnaireMessages(input),
+      inputSummary: "终审测试三份问卷",
+      signal: input.signal,
+    });
 
-  return {
-    taskId: result.taskId,
-    data: parseLlmJson(result.response.content, trialQuestionnaireResponseSchema),
-    response: result.response,
-  };
+    return {
+      taskId: result.taskId,
+      data: parseLlmJson(result.response.content, trialQuestionnaireSetResponseSchema),
+      response: result.response,
+    };
+  });
 }
 
-export async function generateTrialAnswer(input: {
+export async function generateTrialAnswerSet(input: {
   projectId: string;
   dossierMarkdown: string;
+  characterInfoYaml?: string;
+  confirmedEntries: WorldEntry[];
+  selectedGreeting?: GreetingVariant;
+  questionnaires: string;
+  signal?: AbortSignal;
+}) {
+  return withLlmRetry(async () => {
+    const result = await callLlm({
+      projectId: input.projectId,
+      type: "trial_answer",
+      messages: buildTrialAnswerMessages(input),
+      inputSummary: "终审测试三份回答",
+      signal: input.signal,
+    });
+
+    return {
+      taskId: result.taskId,
+      data: parseLlmJson(result.response.content, trialAnswerSetResponseSchema),
+      response: result.response,
+    };
+  });
+}
+
+export async function generateTrialRevision(input: {
+  projectId: string;
+  dossierMarkdown: string;
+  characterInfoYaml?: string;
   confirmedEntries: WorldEntry[];
   selectedGreeting?: GreetingVariant;
   mode: TrialRun["mode"];
-  questionnaireMarkdown: string;
+  question: string;
+  formalReply: string;
+  innerMonologue: string;
+  revisionNotes: string;
   signal?: AbortSignal;
 }) {
   const result = await callLlm({
     projectId: input.projectId,
-    type: "trial_answer",
-    messages: buildTrialAnswerMessages(input),
-    inputSummary: `相处测试回答：${input.mode}`,
+    type: "trial_revision",
+    messages: buildTrialRevisionMessages(input),
+    inputSummary: `终审不满意修改：${input.question.slice(0, 60)}`,
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, trialAnswerResponseSchema),
+    data: parseLlmJson(result.response.content, trialRevisionResponseSchema),
     response: result.response,
   };
 }
