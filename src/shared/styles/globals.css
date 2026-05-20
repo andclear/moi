@@ -103,6 +103,7 @@ input[type="radio"]:focus {
     transparent 8px,
     transparent 16px
   );
+  background-size: 22px 22px;
   animation: animal-loading-stripes 0.8s linear infinite;
 }
 
@@ -418,6 +419,10 @@ code {
 }
 
 @keyframes animal-loading-stripes {
+  from {
+    background-position: 0 0;
+  }
+
   to {
     background-position: 22px 0;
   }
@@ -450,7 +455,8 @@ code {
     transition-duration: 1ms !important;
   }
 
-  [class*="animal-btn-loading"] {
+  .animal-button-loading::before,
+  .animal-button-loading svg {
     animation-duration: 1s !important;
     animation-iteration-count: infinite !important;
   }
