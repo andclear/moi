@@ -1,43 +1,54 @@
 import { proxyPresetLlm, proxyPresetLlmStream } from "../src/server/llm/presetProxy";
+import {
+  getRequestHeader,
+  getRequestMethod,
+  readJsonBody,
+  sendJson,
+  type ApiRequest,
+  type ApiResponse,
+} from "../src/server/runtime/http";
 
 export const config = {
   maxDuration: 60,
 };
 
-export default async function handler(request: Request) {
-  if (request.method !== "POST") {
-    return Response.json({ error: "仅支持 POST 请求。" }, { status: 405 });
+export default async function handler(request: ApiRequest, response?: ApiResponse) {
+  if (getRequestMethod(request) !== "POST") {
+    return sendJson({ error: "仅支持 POST 请求。" }, { status: 405 }, response);
   }
 
   try {
-    const authorization = request.headers.get("authorization") ?? "";
+    const authorization = getRequestHeader(request, "authorization");
     const sessionToken = authorization.replace(/^Bearer\s+/i, "");
     if (!sessionToken) {
-      return Response.json({ error: "缺少激活会话。" }, { status: 401 });
+      return sendJson({ error: "缺少激活会话。" }, { status: 401 }, response);
     }
 
-    const payload = (await request.json()) as { messages?: unknown; stream?: unknown };
+    const payload = await readJsonBody<{ messages?: unknown; stream?: unknown }>(request, {});
     if (!Array.isArray(payload.messages)) {
-      return Response.json({ error: "缺少模型消息。" }, { status: 400 });
+      return sendJson({ error: "缺少模型消息。" }, { status: 400 }, response);
     }
 
-    if (payload.stream === true) {
+    if (payload.stream === true && !response) {
       return proxyPresetLlmStream({
         sessionToken,
         messages: payload.messages as Parameters<typeof proxyPresetLlm>[0]["messages"],
       });
     }
 
-    return Response.json(
+    return sendJson(
       await proxyPresetLlm({
         sessionToken,
         messages: payload.messages as Parameters<typeof proxyPresetLlm>[0]["messages"],
       }),
+      undefined,
+      response,
     );
   } catch (error) {
-    return Response.json(
+    return sendJson(
       { error: error instanceof Error ? error.message : "模型调用失败。" },
       { status: 500 },
+      response,
     );
   }
 }

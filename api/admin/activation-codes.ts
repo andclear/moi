@@ -5,6 +5,14 @@ import {
   listActivationCodes,
 } from "../../src/server/activation/activationCodes";
 import { writeAdminAuditLog } from "../../src/server/admin/adminAudit";
+import {
+  getRequestMethod,
+  getRequestUrl,
+  readJsonBody,
+  sendJson,
+  type ApiRequest,
+  type ApiResponse,
+} from "../../src/server/runtime/http";
 
 function createPlainActivationCode() {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -34,34 +42,38 @@ function normalizeStatusFilter(value: string | null) {
   return value === "unused" || value === "used" ? value : "all";
 }
 
-export default async function handler(request: Request) {
+export default async function handler(request: ApiRequest, response?: ApiResponse) {
   if (!isAdminRequest(request)) {
-    return Response.json({ error: "未登录后台。" }, { status: 401 });
+    return sendJson({ error: "未登录后台。" }, { status: 401 }, response);
   }
 
-  if (request.method === "GET") {
-    const url = new URL(request.url);
+  if (getRequestMethod(request) === "GET") {
+    const url = new URL(getRequestUrl(request), "https://local.invalid");
     const page = normalizePositiveInteger(url.searchParams.get("page"), 1, 100000);
     const pageSize = normalizePositiveInteger(url.searchParams.get("pageSize"), 30, 30);
     const status = normalizeStatusFilter(url.searchParams.get("status"));
     const result = await listActivationCodes({ page, pageSize, status });
-    return Response.json({
-      codes: result.rows,
-      page: result.page,
-      pageSize: result.pageSize,
-      total: result.total,
-      status: result.status,
-    });
+    return sendJson(
+      {
+        codes: result.rows,
+        page: result.page,
+        pageSize: result.pageSize,
+        total: result.total,
+        status: result.status,
+      },
+      undefined,
+      response,
+    );
   }
 
-  if (request.method === "POST") {
+  if (getRequestMethod(request) === "POST") {
     try {
-      const payload = (await request.json().catch(() => ({}))) as {
+      const payload = await readJsonBody<{
         usageLimit?: number;
         quantity?: number;
         durationHours?: number;
         customCodes?: string[];
-      };
+      }>(request, {});
       const customCodes =
         payload.customCodes
           ?.map((code) => code.trim())
@@ -88,23 +100,28 @@ export default async function handler(request: Request) {
           ids: records.map((record) => record.id),
         },
       }).catch(() => undefined);
-      return Response.json({
-        codes: records.map((record, index) => ({ ...record, code: codes[index] })),
-        durationHours,
-        usageLimit,
-      });
+      return sendJson(
+        {
+          codes: records.map((record, index) => ({ ...record, code: codes[index] })),
+          durationHours,
+          usageLimit,
+        },
+        undefined,
+        response,
+      );
     } catch (error) {
-      return Response.json(
+      return sendJson(
         { error: error instanceof Error ? error.message : "生成激活码失败。" },
         { status: 400 },
+        response,
       );
     }
   }
 
-  if (request.method === "DELETE") {
-    const payload = (await request.json().catch(() => ({}))) as { id?: string };
+  if (getRequestMethod(request) === "DELETE") {
+    const payload = await readJsonBody<{ id?: string }>(request, {});
     if (!payload.id) {
-      return Response.json({ error: "缺少激活码 ID。" }, { status: 400 });
+      return sendJson({ error: "缺少激活码 ID。" }, { status: 400 }, response);
     }
     await deleteActivationCode(payload.id);
     await writeAdminAuditLog({
@@ -112,8 +129,8 @@ export default async function handler(request: Request) {
       action: "activation_code.delete",
       metadata: { id: payload.id },
     }).catch(() => undefined);
-    return Response.json({ ok: true });
+    return sendJson({ ok: true }, undefined, response);
   }
 
-  return Response.json({ error: "不支持的请求方法。" }, { status: 405 });
+  return sendJson({ error: "不支持的请求方法。" }, { status: 405 }, response);
 }

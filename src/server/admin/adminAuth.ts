@@ -1,4 +1,5 @@
 import { createId } from "../../shared/lib/ids";
+import { getRequestHeader, type ApiRequest } from "../runtime/http";
 import { getEnv } from "../runtime/env";
 
 export async function hashAdminSecret(secret: string) {
@@ -24,12 +25,12 @@ export async function createAdminSessionToken() {
   return { token, hash };
 }
 
-export function isAdminRequest(request: Request) {
+export function isAdminRequest(request: ApiRequest) {
   const expected = getEnv("ADMIN_SESSION_TOKEN");
   if (!expected) {
     return false;
   }
 
-  const header = request.headers.get("authorization") ?? "";
+  const header = getRequestHeader(request, "authorization");
   return header === `Bearer ${expected}`;
 }

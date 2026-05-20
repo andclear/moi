@@ -4,18 +4,25 @@ import {
   getModelChannelSettings,
   saveModelChannelSettings,
 } from "../../src/server/admin/modelChannel";
+import {
+  getRequestMethod,
+  readJsonBody,
+  sendJson,
+  type ApiRequest,
+  type ApiResponse,
+} from "../../src/server/runtime/http";
 
-export default async function handler(request: Request) {
+export default async function handler(request: ApiRequest, response?: ApiResponse) {
   if (!isAdminRequest(request)) {
-    return Response.json({ error: "未登录后台。" }, { status: 401 });
+    return sendJson({ error: "未登录后台。" }, { status: 401 }, response);
   }
 
-  if (request.method === "GET") {
-    return Response.json(await getModelChannelSettings());
+  if (getRequestMethod(request) === "GET") {
+    return sendJson(await getModelChannelSettings(), undefined, response);
   }
 
-  if (request.method === "POST") {
-    const payload = (await request.json()) as { presetEnabled?: boolean; model?: string };
+  if (getRequestMethod(request) === "POST") {
+    const payload = await readJsonBody<{ presetEnabled?: boolean; model?: string }>(request, {});
     const settings = await saveModelChannelSettings({
       presetEnabled: Boolean(payload.presetEnabled),
       model: payload.model?.trim() || "预置调用",
@@ -26,8 +33,8 @@ export default async function handler(request: Request) {
       action: "model_channel.update",
       metadata: settings,
     }).catch(() => undefined);
-    return Response.json(settings);
+    return sendJson(settings, undefined, response);
   }
 
-  return Response.json({ error: "不支持的请求方法。" }, { status: 405 });
+  return sendJson({ error: "不支持的请求方法。" }, { status: 405 }, response);
 }
