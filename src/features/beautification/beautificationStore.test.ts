@@ -13,6 +13,7 @@ describe("beautificationStore", () => {
     const originalText = "姓名：{{char}}\n状态：平静\n距离：三步之外";
     const fallback = buildFallbackBeautification({
       userRequest: "生成状态栏",
+      uiStyle: "none",
       insertIntoGreeting: "primary",
     });
 

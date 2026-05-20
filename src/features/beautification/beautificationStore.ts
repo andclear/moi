@@ -1,6 +1,7 @@
 import type {
   BeautificationAsset,
   BeautificationGreetingInsertMode,
+  BeautificationUiStyleId,
   GreetingVariant,
   Project,
 } from "@/db/types";
@@ -14,6 +15,7 @@ import { createId } from "@/shared/lib/ids";
 
 export interface BeautificationDraftInput {
   userRequest: string;
+  uiStyle: BeautificationUiStyleId;
   insertIntoGreeting: BeautificationGreetingInsertMode;
 }
 
@@ -84,6 +86,7 @@ export async function createBeautificationAsset(project: Project, input: Beautif
     confirmedWorldEntries: project.worldEntries.filter((entry) => entry.enabled),
     adoptedGreetings: getAdoptedGreetingVariants(project),
     userRequest: input.userRequest,
+    uiStyle: input.uiStyle,
     insertIntoGreeting: input.insertIntoGreeting,
   });
   const worldInfo = normalizeBeautificationWorldInfo(data.data.worldinfo, input);
@@ -109,6 +112,7 @@ export async function createBeautificationAsset(project: Project, input: Beautif
     title: worldInfo?.comment ?? (input.userRequest.trim() || "美化方案"),
     originalText: data.data.original_text || data.data.formatted_original_text,
     userRequest: input.userRequest,
+    uiStyle: input.uiStyle,
     strategy: inferBeautificationStrategy(data.data.formatted_original_text),
     worldInfo,
     regex: data.data.regex,
@@ -134,6 +138,7 @@ export function createFallbackBeautificationAsset(project: Project, input: Beaut
     title: data.worldinfo?.comment ?? (input.userRequest.trim() || "美化方案"),
     originalText: data.original_text,
     userRequest: input.userRequest,
+    uiStyle: input.uiStyle,
     strategy: inferBeautificationStrategy(data.formatted_original_text),
     worldInfo: data.worldinfo,
     regex: data.regex,

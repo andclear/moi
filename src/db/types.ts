@@ -15,6 +15,13 @@ export type GenerationType =
   | "companion"
   | "export";
 export type BeautificationGreetingInsertMode = "none" | "primary" | "all_adopted";
+export type BeautificationUiStyleId =
+  | "none"
+  | "aurora_glass"
+  | "digital_garden"
+  | "soft_future"
+  | "cyber_elegant"
+  | "nordic_minimal";
 export type ExportFormat = "json" | "png";
 
 export interface DossierBlockMeta {
@@ -76,6 +83,7 @@ export interface BeautificationAsset {
   title: string;
   originalText: string;
   userRequest: string;
+  uiStyle?: BeautificationUiStyleId;
   strategy: "simple" | "complex";
   worldInfo?: {
     comment: string;

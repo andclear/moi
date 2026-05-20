@@ -17,6 +17,7 @@ import { useMemo, useState } from "react";
 import type {
   BeautificationAsset,
   BeautificationGreetingInsertMode,
+  BeautificationUiStyleId,
   Project,
 } from "@/db/types";
 import {
@@ -29,6 +30,7 @@ import { nowIso } from "@/shared/lib/date";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
+import { beautificationStylePresets } from "@/prompts/beautificationStylePresets";
 
 interface BeautificationLabProps {
   project: Project;
@@ -79,8 +81,14 @@ const insertOptions: Array<{ key: BeautificationGreetingInsertMode; label: strin
   },
 ];
 
+const styleOptions = beautificationStylePresets.map((preset) => ({
+  key: preset.id,
+  label: preset.label,
+}));
+
 export function BeautificationLab({ project, onProjectChange }: BeautificationLabProps) {
   const [userRequest, setUserRequest] = useState("");
+  const [uiStyle, setUiStyle] = useState<BeautificationUiStyleId>("none");
   const [insertIntoGreeting, setInsertIntoGreeting] =
     useState<BeautificationGreetingInsertMode>("none");
   const [selectedId, setSelectedId] = useState(project.beautifications?.[0]?.id ?? "");
@@ -135,6 +143,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     try {
       const { asset } = await createBeautificationAsset(project, {
         userRequest,
+        uiStyle,
         insertIntoGreeting,
       });
       await addAsset(asset);
@@ -199,6 +208,15 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
             className="mt-2 min-h-56 w-full resize-y rounded-[28px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-5 py-4 text-base leading-7 text-[var(--echo-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none focus:border-[var(--animal-focus-yellow)]"
           />
         </label>
+
+        <div className="space-y-3">
+          <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">预置UI风格</p>
+          <Select
+            options={styleOptions}
+            value={uiStyle}
+            onChange={(value) => setUiStyle(value as BeautificationUiStyleId)}
+          />
+        </div>
 
         <div className="space-y-3">
           <p className="font-mono text-xs font-bold text-[var(--echo-muted)]">是否插入开场白</p>

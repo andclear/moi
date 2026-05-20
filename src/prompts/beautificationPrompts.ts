@@ -1,5 +1,11 @@
 import type { LlmMessage } from "@/features/llm/llmTypes";
-import type { BeautificationGreetingInsertMode, GreetingVariant, WorldEntry } from "@/db/types";
+import type {
+  BeautificationGreetingInsertMode,
+  BeautificationUiStyleId,
+  GreetingVariant,
+  WorldEntry,
+} from "@/db/types";
+import { getBeautificationStylePreset } from "@/prompts/beautificationStylePresets";
 import { formatWorldEntriesJson } from "@/prompts/worldPrompts";
 
 export interface BuildBeautificationMessagesInput {
@@ -8,6 +14,7 @@ export interface BuildBeautificationMessagesInput {
   confirmedWorldEntries?: WorldEntry[];
   adoptedGreetings?: GreetingVariant[];
   userRequest: string;
+  uiStyle?: BeautificationUiStyleId;
   insertIntoGreeting: BeautificationGreetingInsertMode;
 }
 
@@ -17,6 +24,7 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
     .map((item) => `排序 ${item.sortOrder ?? "未排序"}：\n${item.content}`)
     .join("\n\n---\n\n");
   const shouldInsertGreeting = input.insertIntoGreeting !== "none";
+  const selectedStyle = getBeautificationStylePreset(input.uiStyle ?? "none");
   const worldInfoRule = shouldInsertGreeting
     ? "本次用户选择把结构化文本插入开场白，因此 worldinfo.constant 必须为 true，worldinfo.keys 必须为 []，worldinfo.insertion_order 必须为 999。"
     : "本次用户不插入开场白，因此 worldinfo.constant 必须为 false，并且 worldinfo.keys 必须提供 2 到 5 个能触发这套美化规则的关键词。";
@@ -51,6 +59,11 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         "7. 视觉要精致、有层次，但文字必须清楚易读，不要为了装饰牺牲可读性。",
         "8. 不要用 Emoji 代替 UI 图标要求；如果结构化文本本身已有符号或用户要求保留符号，可以原样保留。",
         "",
+        "## 预置 UI 风格",
+        `用户选择的设计风格：${selectedStyle.label}`,
+        "生成 html、css、交互和视觉细节时必须遵守下列风格要求；如果用户选择“不使用任何设计风格”，则不强行套用固定风格。",
+        selectedStyle.prompt,
+        "",
         "## WorldInfo 字段硬规则",
         "worldinfo 必须是对象，不能为 null。",
         "worldinfo 只能包含 comment、content、constant、keys、position、depth、insertion_order 这七个字段。",
@@ -73,6 +86,8 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         `已确认世界书条目 JSON：\n${worldEntriesJson}`,
         `已采用开场白：\n${adoptedGreetings || "尚未采用开场白"}`,
         `用户想生成的美化：\n${input.userRequest || "请根据角色档案和开场白，生成一套适合当前角色卡的状态栏或场景美化。"}`,
+        `预置 UI 风格：${selectedStyle.label}`,
+        `风格要求：\n${selectedStyle.prompt}`,
         `是否插入开场白：${shouldInsertGreeting ? "是" : "否"}`,
         "",
         "请返回严格 JSON：",

@@ -1,6 +1,7 @@
 import { activationRepository } from "@/db/repositories/activationRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
 import type {
+  BeautificationUiStyleId,
   GreetingVariant,
   ProfileDiaryBlank,
   ProfileStageId,
@@ -100,6 +101,7 @@ export async function generateBeautificationAsset(input: {
   confirmedWorldEntries?: WorldEntry[];
   adoptedGreetings?: GreetingVariant[];
   userRequest: string;
+  uiStyle?: BeautificationUiStyleId;
   insertIntoGreeting: "none" | "primary" | "all_adopted";
   signal?: AbortSignal;
 }) {

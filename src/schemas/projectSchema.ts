@@ -70,6 +70,9 @@ export const beautificationAssetSchema = z.object({
   title: z.string().min(1),
   originalText: z.string(),
   userRequest: z.string(),
+  uiStyle: z
+    .enum(["none", "aurora_glass", "digital_garden", "soft_future", "cyber_elegant", "nordic_minimal"])
+    .optional(),
   strategy: z.enum(["simple", "complex"]),
   worldInfo: z
     .object({
