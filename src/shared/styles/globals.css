@@ -224,6 +224,7 @@ input[type="radio"]:focus {
 }
 
 [data-danger="true"][data-variant="secondary"] {
+  color: var(--animal-error-active) !important;
   background: var(--animal-bg-content) !important;
   box-shadow: 0 4px 0 0 var(--animal-error-active) !important;
 }

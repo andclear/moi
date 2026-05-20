@@ -11,8 +11,9 @@ import {
 } from "@/features/greeting/greetingStore";
 
 describe("greetingStore", () => {
-  it("采用开场白后设置主开场白并同步记录", () => {
+  it("采用开场白后设置排序但不写入角色档案", () => {
     const project = createProjectDraft({ id: "project_greeting" });
+    const originalMarkdown = project.dossier.markdown;
     const [first, second] = createGreetingCandidates("project_greeting", [
       { content: "{{char}} 递来一封湿透的信。" },
       { content: "{{user}} 看见 {{char}} 站在末班车前。" },
@@ -29,7 +30,7 @@ describe("greetingStore", () => {
       sortOrder: 1,
     });
     expect(selected.greetingVariants.filter((variant) => variant.selected)).toHaveLength(0);
-    expect(selected.dossier.markdown).toContain("{{user}} 看见 {{char}}");
+    expect(selected.dossier.markdown).toBe(originalMarkdown);
   });
 
   it("重新排序后排序第一的开场白成为主开场白", () => {
@@ -46,7 +47,7 @@ describe("greetingStore", () => {
       selected: false,
       sortOrder: 1,
     });
-    expect(reordered.dossier.markdown).toContain("第二条。");
+    expect(reordered.dossier.markdown).toBe(project.dossier.markdown);
   });
 
   it("再次生成前会清理未采用候选并保留已采用开场白", () => {

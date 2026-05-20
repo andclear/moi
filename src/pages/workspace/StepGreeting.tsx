@@ -2,11 +2,12 @@ import { CheckCircle2, MessagesSquare, SlidersHorizontal, Trash2 } from "lucide-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import type { GreetingVariant, Project } from "@/db/types";
 import { historyService } from "@/db/services/historyService";
 import { projectService } from "@/db/services/projectService";
+import type { GreetingVariant, Project } from "@/db/types";
 import { useDossierStore } from "@/features/dossier/dossierStore";
 import { useFlowStore } from "@/features/flow/flowStore";
+import { useGenerationStore } from "@/features/generation/generationStore";
 import {
   adoptGreetingVariant,
   createGreetingCandidates,
@@ -19,7 +20,6 @@ import {
   updateGreetingVariant,
   type GreetingPersonType,
 } from "@/features/greeting/greetingStore";
-import { useGenerationStore } from "@/features/generation/generationStore";
 import { generateGreetingVariants } from "@/features/llm/llmClient";
 import { useSettingsStore } from "@/features/settings/settingsStore";
 import { getConfirmedWorldEntries } from "@/features/world/worldStore";
@@ -92,7 +92,11 @@ export function StepGreeting() {
     [project],
   );
 
-  async function persistProject(nextProject: Project, snapshotTitle?: string, generationIds: string[] = []) {
+  async function persistProject(
+    nextProject: Project,
+    snapshotTitle?: string,
+    generationIds: string[] = [],
+  ) {
     const { id, createdAt, ...patch } = nextProject;
     void createdAt;
     const updatedProject = await projectService.updateProject(id, patch);
@@ -203,7 +207,9 @@ export function StepGreeting() {
   }
 
   if (isLoading) {
-    return <div className="p-6 font-mono text-sm text-[var(--echo-muted)]">正在整理初次相遇的场景……</div>;
+    return (
+      <div className="p-6 font-mono text-sm text-[var(--echo-muted)]">正在整理初次相遇的场景……</div>
+    );
   }
 
   if (!project) {
@@ -232,8 +238,14 @@ export function StepGreeting() {
         <section className="grid gap-6 xl:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]">
           <aside className="echo-side-panel h-fit space-y-5">
             <div className="flex items-center gap-3">
-              <SlidersHorizontal aria-hidden="true" size={22} className="text-[var(--echo-muted)]" />
-              <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">生成条件</h2>
+              <SlidersHorizontal
+                aria-hidden="true"
+                size={22}
+                className="text-[var(--echo-muted)]"
+              />
+              <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                生成条件
+              </h2>
             </div>
 
             <label className="block font-mono text-xs font-bold text-[var(--echo-muted)]">
@@ -241,7 +253,9 @@ export function StepGreeting() {
               <textarea
                 value={userRequest}
                 onChange={(event) => setUserRequest(event.target.value)}
-                placeholder={"描述开场的情景、冲突点等。\n\n如果需要一次生成多个开场白，可以这样写：\n1. 雨夜里 TA 带着一封不能公开的信来找 {{user}}\n2. 庆典后台，TA 发现 {{user}} 拿错了关键道具"}
+                placeholder={
+                  "描述开场的情景、冲突点等。\n\n如果需要一次生成多个开场白，可以这样写：\n1. 雨夜里 TA 带着一封不能公开的信来找 {{user}}\n2. 庆典后台，TA 发现 {{user}} 拿错了关键道具"
+                }
                 className="mt-2 min-h-72 w-full resize-y rounded-[28px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-5 py-4 text-base leading-7 text-[var(--echo-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none transition focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
               />
             </label>
@@ -301,7 +315,7 @@ export function StepGreeting() {
             {visibleVariants.length === 0 ? (
               <EmptyState
                 icon={MessagesSquare}
-                title="这里还没有第一句话"
+                title="还没有开场白"
                 description="写下开场要求后，可以一次生成一条或多条开场白候选。"
               />
             ) : (

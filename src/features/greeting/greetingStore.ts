@@ -1,8 +1,4 @@
 import type { GreetingVariant, Project } from "@/db/types";
-import {
-  buildDossierBlockMeta,
-  parseDossierSections,
-} from "@/features/dossier/dossierSections";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -39,24 +35,6 @@ export function parseGreetingResponseText(text: string): GeneratedGreetingInput[
 
   const parts = numberedParts.length > 1 ? numberedParts : [cleaned].filter(Boolean);
   return parts.map((content) => ({ content }));
-}
-
-function replaceDossierSection(markdown: string, section: string, content: string) {
-  const blocks = parseDossierSections(markdown);
-  const hasSection = blocks.some((block) => block.section === section);
-  const nextBlocks = blocks.map((block) => {
-    if (block.section !== section) {
-      return `## ${block.section}\n\n${block.content || "尚未听见"}`;
-    }
-
-    return `## ${block.section}\n\n${content || "尚未听见"}`;
-  });
-
-  if (!hasSection) {
-    nextBlocks.push(`## ${section}\n\n${content || "尚未听见"}`);
-  }
-
-  return nextBlocks.join("\n\n");
 }
 
 export function isGreetingAdopted(variant: GreetingVariant) {
@@ -149,21 +127,10 @@ export function adoptGreetingVariant(project: Project, variantId: string) {
     ),
     now,
   );
-  const primary = nextVariants.find((variant) => variant.sortOrder === 1);
-  const nextMarkdown = replaceDossierSection(
-    project.dossier.markdown,
-    "开场白",
-    primary?.content ?? "尚未听见",
-  );
 
   return {
     ...project,
     greetingVariants: nextVariants,
-    dossier: {
-      markdown: nextMarkdown,
-      blocks: buildDossierBlockMeta(nextMarkdown, project.dossier.blocks, "user_confirmed", now),
-      updatedAt: now,
-    },
     updatedAt: now,
   } satisfies Project;
 }
@@ -206,21 +173,10 @@ export function setGreetingSortOrder(project: Project, variantId: string, sortOr
       updatedAt: now,
     };
   });
-  const primary = nextVariants.find((variant) => variant.sortOrder === 1);
-  const nextMarkdown = replaceDossierSection(
-    project.dossier.markdown,
-    "开场白",
-    primary?.content ?? "尚未听见",
-  );
 
   return {
     ...project,
     greetingVariants: nextVariants,
-    dossier: {
-      markdown: nextMarkdown,
-      blocks: buildDossierBlockMeta(nextMarkdown, project.dossier.blocks, "user_confirmed", now),
-      updatedAt: now,
-    },
     updatedAt: now,
   } satisfies Project;
 }
