@@ -73,8 +73,8 @@ const chatModeLabels: Record<HelloChatMode, string> = {
 };
 
 const chatModeLimits: Record<HelloChatMode, number> = {
-  greeting: 10,
-  casual: 20,
+  greeting: 8,
+  casual: 12,
 };
 
 const sourceLabels: Record<RevisionChange["source"], string> = {
