@@ -214,7 +214,7 @@ export const greetingVariantResponseSchema = z
     }),
   )
   .min(1)
-  .max(3);
+  .max(10);
 
 export const trialQuestionnaireResponseSchema = z.object({
   title: z.string().min(1),

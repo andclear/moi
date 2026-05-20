@@ -28,8 +28,21 @@ function normalizeText(value: string, fallback = "") {
   return next && next !== "尚未听见" ? next : fallback;
 }
 
-function selectedGreeting(greetings: GreetingVariant[]) {
-  return greetings.find((item) => item.selected) ?? greetings[0];
+function isAdoptedGreeting(greeting: GreetingVariant) {
+  return greeting.adopted === true;
+}
+
+function adoptedGreetings(greetings: GreetingVariant[]) {
+  const adopted = greetings.filter((item) => item.content.trim() && isAdoptedGreeting(item));
+  return adopted.sort((left, right) => {
+    const leftOrder = left.sortOrder ?? 999;
+    const rightOrder = right.sortOrder ?? 999;
+    return leftOrder - rightOrder;
+  });
+}
+
+function primaryGreeting(greetings: GreetingVariant[]) {
+  return adoptedGreetings(greetings)[0];
 }
 
 function buildWorldEntry(entry: WorldEntry, index: number) {
@@ -213,12 +226,12 @@ export function buildCharacterCard({
   const conflict = normalizeText(getSection(markdown, "核心矛盾"));
   const speech = normalizeText(getSection(markdown, "说话风格"));
   const world = normalizeText(getSection(markdown, "世界观"));
-  const greeting = selectedGreeting(project.greetingVariants);
+  const greeting = primaryGreeting(project.greetingVariants);
   const firstMes = normalizeText(greeting?.content ?? getSection(markdown, "开场白"), "{{char}}终于看见了{{user}}。");
   const description = [core, appearance, background, conflict, speech].filter(Boolean).join("\n\n");
   const creatorNotes = buildCreatorNotes({ note, versionLabel, trialRuns: project.trialRuns });
-  const alternateGreetings = project.greetingVariants
-    .filter((item) => item.content.trim() && item.id !== greeting?.id)
+  const alternateGreetings = adoptedGreetings(project.greetingVariants)
+    .filter((item) => item.id !== greeting?.id)
     .map((item) => item.content.trim());
   const worldEntries = project.worldEntries.filter((entry) => entry.enabled);
   const beautifications = (project.beautifications ?? []).filter((asset) => asset.enabled);

@@ -146,4 +146,78 @@ describe("characterCardBuilder", () => {
     expect(card.data.creator_notes).toContain("相处测试摘要");
     expect(() => JSON.parse(json)).not.toThrow();
   });
+
+  it("按采用排序导出主开场白和备用开场白", () => {
+    const project = createProjectDraft({
+      title: "多开场测试",
+      dossierMarkdown: "## 核心人格\n\n稳定。\n\n## 开场白\n\n尚未听见",
+    });
+    project.greetingVariants = [
+      {
+        id: "greeting_1",
+        projectId: project.id,
+        userRole: "开场白",
+        title: "备用一",
+        content: "备用开场一。",
+        selected: false,
+        adopted: true,
+        sortOrder: 2,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+      },
+      {
+        id: "greeting_2",
+        projectId: project.id,
+        userRole: "开场白",
+        title: "主开场",
+        content: "主开场。",
+        selected: false,
+        adopted: true,
+        sortOrder: 1,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+      },
+      {
+        id: "greeting_3",
+        projectId: project.id,
+        userRole: "开场白",
+        title: "候选",
+        content: "不应导出。",
+        selected: false,
+        adopted: false,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+      },
+    ];
+
+    const card = buildCharacterCard({ project });
+
+    expect(card.data.first_mes).toBe("主开场。");
+    expect(card.data.alternate_greetings).toEqual(["备用开场一。"]);
+  });
+
+  it("没有采用开场白时回退到档案开场白", () => {
+    const project = createProjectDraft({
+      title: "未采用测试",
+      dossierMarkdown: "## 核心人格\n\n稳定。\n\n## 开场白\n\n档案里的开场白。",
+    });
+    project.greetingVariants = [
+      {
+        id: "greeting_old",
+        projectId: project.id,
+        userRole: "开场白",
+        title: "未采用开场",
+        content: "不应导出。",
+        selected: true,
+        adopted: false,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+      },
+    ];
+
+    const card = buildCharacterCard({ project });
+
+    expect(card.data.first_mes).toBe("档案里的开场白。");
+    expect(card.data.alternate_greetings).toEqual([]);
+  });
 });

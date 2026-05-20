@@ -1,4 +1,5 @@
 import type { GreetingVariant, Project, TrialRun, WorldEntry } from "@/db/types";
+import { getAdoptedGreetingVariants } from "@/features/greeting/greetingStore";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -19,7 +20,7 @@ export const trialModeDescriptions = {
 } satisfies Record<TrialMode, string>;
 
 export function getSelectedGreeting(project: Project): GreetingVariant | undefined {
-  return project.greetingVariants.find((variant) => variant.selected);
+  return getAdoptedGreetingVariants(project)[0];
 }
 
 export function getConfirmedWorldEntries(project: Project): WorldEntry[] {

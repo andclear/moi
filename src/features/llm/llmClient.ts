@@ -9,7 +9,6 @@ import type {
 } from "@/db/types";
 import type {
   GreetingPersonType,
-  GreetingRoleTone,
 } from "@/features/greeting/greetingStore";
 import {
   buildProfileDossierUpdateMessages,
@@ -503,19 +502,18 @@ export async function generateWorldDossierUpdate(input: {
 export async function generateGreetingVariants(input: {
   projectId: string;
   dossierMarkdown: string;
+  characterInfoYaml?: string;
   confirmedEntries: WorldEntry[];
-  userRole: GreetingRoleTone;
   wordCount: number;
   personType: GreetingPersonType;
-  mustInclude: string;
-  heatLevel: number;
+  userRequest: string;
   signal?: AbortSignal;
 }) {
   const result = await callLlm({
     projectId: input.projectId,
     type: "greeting",
     messages: buildGreetingMessages(input),
-    inputSummary: `生成开场白：${input.userRole} / ${input.personType} / ${input.wordCount}字`,
+    inputSummary: `生成开场白：${input.personType} / ${input.wordCount}字`,
     signal: input.signal,
   });
 

@@ -54,6 +54,8 @@ export interface GreetingVariant {
   title: string;
   content: string;
   selected: boolean;
+  adopted?: boolean;
+  sortOrder?: number;
   createdAt: string;
   updatedAt: string;
 }

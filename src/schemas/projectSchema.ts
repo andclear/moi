@@ -48,6 +48,8 @@ export const greetingVariantSchema = z.object({
   title: z.string(),
   content: z.string(),
   selected: z.boolean(),
+  adopted: z.boolean().optional(),
+  sortOrder: z.number().int().min(1).optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
