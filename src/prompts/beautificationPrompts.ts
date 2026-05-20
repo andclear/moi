@@ -61,7 +61,7 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         "",
         "## 预置 UI 风格",
         `用户选择的设计风格：${selectedStyle.label}`,
-        "生成 html、css、交互和视觉细节时必须遵守下列风格要求；如果用户选择“不使用任何设计风格”，则不强行套用固定风格。",
+        "生成 html、css、交互和视觉细节时必须遵守下列风格要求；如果用户选择“不使用预设风格”，则不强行套用固定风格。",
         selectedStyle.prompt,
         "",
         "## WorldInfo 字段硬规则",
