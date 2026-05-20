@@ -118,7 +118,7 @@ export function StepExport() {
   }
 
   async function handleCompleteCard() {
-    if (!project) {
+    if (!project || isCompleting) {
       return;
     }
 
@@ -155,7 +155,7 @@ export function StepExport() {
   }
 
   async function handleGenerateImagePrompt() {
-    if (!project) {
+    if (!project || isGeneratingImagePrompt) {
       return;
     }
 
@@ -308,9 +308,9 @@ export function StepExport() {
                     <Button
                       type="button"
                       loading={isCompleting}
-                      disabled={!project || isCompleting}
+                      disabled={!project}
                       onClick={() => void handleCompleteCard()}
-                      className={`w-full sm:w-fit ${isCompleting ? "animate-pulse" : ""}`}
+                      className={`w-full sm:w-fit ${isCompleting ? "animate-pulse border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)]" : ""}`}
                     >
                       {isCompleting ? null : <Sparkles aria-hidden="true" size={18} />}
                       {isCompleting ? "生成中" : cardCompletion ? "重新生成" : "开始生成"}
@@ -404,9 +404,9 @@ export function StepExport() {
                             type="button"
                             variant="secondary"
                             loading={isGeneratingImagePrompt}
-                            disabled={!project || isGeneratingImagePrompt}
+                            disabled={!project}
                             onClick={() => void handleGenerateImagePrompt()}
-                            className={isGeneratingImagePrompt ? "animate-pulse" : ""}
+                            className={isGeneratingImagePrompt ? "animate-pulse border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)]" : ""}
                           >
                             {isGeneratingImagePrompt ? null : <Sparkles aria-hidden="true" size={16} />}
                             {isGeneratingImagePrompt ? "生成中" : imagePrompt ? "重新生成" : "生成提示词"}

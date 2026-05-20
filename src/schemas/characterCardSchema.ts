@@ -74,15 +74,15 @@ export const regexScriptSchema = z
     scriptName: z.string().min(1),
     findRegex: z.string(),
     replaceString: z.string(),
-    disabled: z.boolean().default(false),
+    trimStrings: z.array(z.string()).default([]),
     placement: z.array(regexPlacementSchema).default([1, 2]),
+    disabled: z.boolean().default(false),
     markdownOnly: z.boolean().default(false),
     promptOnly: z.boolean().default(false),
     runOnEdit: z.boolean().default(true),
+    substituteRegex: worldRoleSchema.default(0),
     minDepth: nullableNumberSchema.default(null),
     maxDepth: nullableNumberSchema.default(null),
-    trimStrings: z.array(z.string()).default([]),
-    substituteRegex: worldRoleSchema.default(0),
   })
   .passthrough();
 

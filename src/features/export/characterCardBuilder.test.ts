@@ -177,6 +177,21 @@ describe("characterCardBuilder", () => {
       markdownOnly: true,
       trimStrings: [],
     });
+    expect(Object.keys(card.data.extensions.regex_scripts[0])).toEqual([
+      "id",
+      "scriptName",
+      "findRegex",
+      "replaceString",
+      "trimStrings",
+      "placement",
+      "disabled",
+      "markdownOnly",
+      "promptOnly",
+      "runOnEdit",
+      "substituteRegex",
+      "minDepth",
+      "maxDepth",
+    ]);
     expect(card.data.first_mes).toContain("{{user}}");
     expect(json).not.toContain("createdAt");
     expect(json).not.toContain("updatedAt");
