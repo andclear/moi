@@ -20,7 +20,7 @@ import { buildGreetingMessages } from "@/prompts/greetingPrompts";
 import { buildBeautificationMessages } from "@/prompts/beautificationPrompts";
 import { buildCompanionMessages } from "@/prompts/companionPrompts";
 import { buildTrialAnswerMessages, buildTrialQuestionnaireMessages } from "@/prompts/trialPrompts";
-import { buildWorldEntryMessages } from "@/prompts/worldPrompts";
+import { buildWorldDossierUpdateMessages, buildWorldEntryMessages } from "@/prompts/worldPrompts";
 import { buildIntakeQuestionnaireMessages } from "@/prompts/intakePrompts";
 import {
   buildCharacterProfileTextRewriteMessages,
@@ -470,6 +470,32 @@ export async function generateWorldEntries(input: {
   return {
     taskId: result.taskId,
     data,
+    response: result.response,
+  };
+}
+
+export async function generateWorldDossierUpdate(input: {
+  projectId: string;
+  currentCharacterProfile: string;
+  currentCharacterInfo: string;
+  confirmedWorldEntries: WorldEntry[];
+  signal?: AbortSignal;
+}) {
+  const result = await callLlm({
+    projectId: input.projectId,
+    type: "world",
+    messages: buildWorldDossierUpdateMessages({
+      currentCharacterProfile: input.currentCharacterProfile,
+      currentCharacterInfo: input.currentCharacterInfo,
+      confirmedWorldEntries: input.confirmedWorldEntries,
+    }),
+    inputSummary: `根据 ${input.confirmedWorldEntries.length} 条 WorldInfo 更新角色档案`,
+    signal: input.signal,
+  });
+
+  return {
+    taskId: result.taskId,
+    data: parseLlmJson(result.response.content, profileDossierUpdateResponseSchema),
     response: result.response,
   };
 }

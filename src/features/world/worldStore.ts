@@ -45,11 +45,9 @@ export function formatWorldInfoForDossier(entries: WorldEntry[]) {
   }
 
   return [
-    "WorldInfo:",
-    ...confirmedEntries.map((entry) => {
-      const keys = entry.keys.length ? `\n关键词：${entry.keys.join("、")}` : "";
-      return `- ${entry.title}${keys}\n${entry.content}`;
-    }),
+    `已确认 ${confirmedEntries.length} 条 WorldInfo。`,
+    "这些条目保存在世界书列表中，不在角色档案里逐条展开；完成本阶段时会由 AI 总结为角色档案中的补充信息。",
+    `条目标题：${confirmedEntries.map((entry) => entry.title).join("、")}`,
   ].join("\n\n");
 }
 

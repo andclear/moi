@@ -84,4 +84,28 @@ describe("characterProfileService", () => {
     expect(updatedProject?.characterProfile?.yaml).toContain('姓名: "陈露"');
     expect(updatedProject?.characterProfile?.yaml).not.toContain('姓名: "林雾"');
   });
+
+  it("重新生成角色信息时保留用户已保存的性别和年龄", async () => {
+    const project = await projectRepository.create({ title: "角色信息基础字段测试" });
+    await projectRepository.update(project.id, {
+      characterProfile: {
+        yaml: '姓名: "陈露"\n基本信息:\n  年龄: "22"\n  性别: "女"',
+        status: "succeeded",
+        retryCount: 0,
+        updatedAt: project.updatedAt,
+      },
+    });
+    mockedGenerateCharacterProfileYaml.mockResolvedValueOnce({
+      taskId: "generation_identity",
+      yaml: '姓名: "陈露"\n基本信息:\n  年龄: "31"\n  性别: "男"',
+      response: { content: '姓名: "陈露"\n基本信息:\n  年龄: "31"\n  性别: "男"' },
+    });
+
+    const updatedProject = await generateAndSaveCharacterProfile(project.id, "## 核心人格\n\n沉默");
+
+    expect(updatedProject?.characterProfile?.yaml).toContain('年龄: "22"');
+    expect(updatedProject?.characterProfile?.yaml).toContain('性别: "女"');
+    expect(updatedProject?.characterProfile?.yaml).not.toContain('年龄: "31"');
+    expect(updatedProject?.characterProfile?.yaml).not.toContain('性别: "男"');
+  });
 });

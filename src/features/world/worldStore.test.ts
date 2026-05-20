@@ -4,6 +4,7 @@ import { createProjectDraft } from "@/db/defaults";
 import {
   buildWorldAssociationRequest,
   buildWorldDeepenRequest,
+  buildWorldDossierUpdateMessages,
   buildWorldEntryMessages,
   extractCurrentWorldInfo,
   formatWorldEntriesJson,
@@ -31,8 +32,10 @@ describe("worldStore", () => {
 
     const confirmed = confirmWorldEntry(withCandidate, candidate.id);
     expect(confirmed.worldEntries[0].enabled).toBe(true);
-    expect(confirmed.dossier.markdown).toContain("WorldInfo:");
+    expect(confirmed.dossier.markdown).toContain("已确认 1 条 WorldInfo");
+    expect(confirmed.dossier.markdown).toContain("不在角色档案里逐条展开");
     expect(confirmed.dossier.markdown).toContain("旧码头钟楼");
+    expect(confirmed.dossier.markdown).not.toContain("铜钟边缘已经发绿");
   });
 
   it("保存世界书生成字段，并兼容字符串形式的模型输出", () => {
@@ -131,6 +134,29 @@ describe("worldStore", () => {
     expect(messages[1].content).toContain("character_info");
     expect(messages[1].content).toContain("姓名: 陈露");
     expect(messages[1].content).toContain("## 核心人格");
+  });
+
+  it("世界书完成提示词要求总结更新角色档案", () => {
+    const [entry] = createWorldEntryCandidates("project_world", [
+      {
+        comment: "雨港旧规",
+        content: "雨港每天入夜后会封桥。",
+        constant: true,
+      },
+    ]);
+    const messages = buildWorldDossierUpdateMessages({
+      currentCharacterProfile: "## 核心人格\n\n谨慎。",
+      currentCharacterInfo: "姓名: 陈露\n基本信息:\n  性别: 女\n  年龄: 22",
+      confirmedWorldEntries: [{ ...entry, enabled: true }],
+    });
+
+    expect(messages[0].content).toContain("当前角色信息 YAML 是结构化事实来源");
+    expect(messages[0].content).toContain("最多提炼三个维度");
+    expect(messages[0].content).toContain("不要把世界书条目原文复制");
+    expect(messages[1].content).toContain("current_character_profile");
+    expect(messages[1].content).toContain("current_character_info");
+    expect(messages[1].content).toContain("confirmed_world_entries_json");
+    expect(messages[1].content).toContain("雨港旧规");
   });
 
   it("深挖和联想提示词分别要求替换原条目与生成新条目", () => {

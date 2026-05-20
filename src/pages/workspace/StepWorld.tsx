@@ -5,10 +5,12 @@ import { useNavigate, useParams } from "react-router";
 import type { Project, WorldEntry } from "@/db/types";
 import { historyService } from "@/db/services/historyService";
 import { projectService } from "@/db/services/projectService";
+import { generateAndSaveCharacterProfile } from "@/features/characterProfile/characterProfileService";
+import { buildDossierBlockMeta } from "@/features/dossier/dossierSections";
 import { useDossierStore } from "@/features/dossier/dossierStore";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { useGenerationStore } from "@/features/generation/generationStore";
-import { generateWorldEntries } from "@/features/llm/llmClient";
+import { generateWorldDossierUpdate, generateWorldEntries } from "@/features/llm/llmClient";
 import { useSettingsStore } from "@/features/settings/settingsStore";
 import {
   confirmWorldEntry,
@@ -26,6 +28,7 @@ import {
 import { EmptyState } from "@/shared/components/EmptyState";
 import { GenerationButton } from "@/shared/components/GenerationButton";
 import { Button } from "@/shared/components/ui/button";
+import { nowIso } from "@/shared/lib/date";
 
 interface WorldEntryDraft {
   title: string;
@@ -64,7 +67,9 @@ export function StepWorld() {
   const { hydrateFromProject } = useDossierStore();
   const markStepCompleted = useFlowStore((state) => state.markStepCompleted);
   const generationKey = project ? `world:${project.id}:entries` : "world:pending";
+  const completionGenerationKey = project ? `world:${project.id}:dossier-update` : "world:dossier-update";
   const generationTask = useGenerationStore((state) => state.getTask(generationKey));
+  const completionGenerationTask = useGenerationStore((state) => state.getTask(completionGenerationKey));
   const generationTasks = useGenerationStore((state) => state.tasks);
   const setRunning = useGenerationStore((state) => state.setRunning);
   const setSucceeded = useGenerationStore((state) => state.setSucceeded);
@@ -115,6 +120,18 @@ export function StepWorld() {
     const savedEntryIds = new Set(savedEntries.map((entry) => entry.id));
     return [...pendingEntries.filter((entry) => !savedEntryIds.has(entry.id)), ...savedEntries];
   }, [pendingEntries, project?.worldEntries]);
+
+  const hasDirtyDrafts = useMemo(() => {
+    return visibleWorldEntries.some((entry) => {
+      const draft = entryDrafts[entry.id];
+      return Boolean(
+        draft &&
+          (draft.title !== entry.title ||
+            draft.content !== entry.content ||
+            draft.keysText !== entry.keys.join("、")),
+      );
+    });
+  }, [entryDrafts, visibleWorldEntries]);
 
   async function persistProject(nextProject: Project, snapshotTitle?: string, generationIds: string[] = []) {
     const { id, createdAt, ...patch } = nextProject;
@@ -361,7 +378,7 @@ export function StepWorld() {
       });
       const nextProject = syncWorldInfoToDossier({
         ...project,
-        worldEntries: [confirmedEntry, ...project.worldEntries],
+        worldEntries: [...project.worldEntries, confirmedEntry],
       });
       await persistProject(nextProject, `确认 WorldInfo：${entry.title}`);
       return;
@@ -394,14 +411,77 @@ export function StepWorld() {
       return;
     }
 
-    const nextProject = {
-      ...syncWorldInfoToDossier(project),
-      currentStep: "greeting" as const,
-    };
-    const updatedProject = await persistProject(nextProject, "完成世界书阶段");
-    if (updatedProject) {
-      markStepCompleted("world");
-      navigate(`/workspace/${updatedProject.id}/greeting`);
+    if (completionGenerationTask.status === "running" || completionGenerationTask.status === "pending") {
+      return;
+    }
+
+    if (hasDirtyDrafts) {
+      setErrorMessage("请先保存正在编辑的 WorldInfo 条目。");
+      return;
+    }
+
+    const availability = getAvailability();
+    if (!availability.available) {
+      setErrorMessage("尚未连接模型。请先在设置中配置自有 API，或激活预置调用模式。");
+      return;
+    }
+
+    const latestProject = await projectService.resolveProject(project.id);
+    const sourceProject = latestProject ?? project;
+    const confirmedWorldEntries = sourceProject.worldEntries.filter((entry) => entry.enabled);
+    if (confirmedWorldEntries.length === 0) {
+      setErrorMessage("请先确认至少一条 WorldInfo，再更新角色档案。");
+      return;
+    }
+
+    const controller = new AbortController();
+    setErrorMessage(null);
+    setRunning(completionGenerationKey, controller);
+
+    try {
+      const result = await generateWorldDossierUpdate({
+        projectId: sourceProject.id,
+        currentCharacterProfile: sourceProject.dossier.markdown,
+        currentCharacterInfo: sourceProject.characterProfile?.yaml ?? "尚未生成",
+        confirmedWorldEntries,
+        signal: controller.signal,
+      });
+      const now = nowIso();
+      const nextBlocks = buildDossierBlockMeta(
+        result.data.dossierMarkdown,
+        sourceProject.dossier.blocks,
+        "ai_inferred",
+        now,
+        result.taskId,
+      );
+      const nextProject = {
+        ...sourceProject,
+        title: result.data.title || sourceProject.title,
+        currentStep: "greeting" as const,
+        dossier: {
+          markdown: result.data.dossierMarkdown,
+          blocks: nextBlocks,
+          updatedAt: now,
+        },
+        updatedAt: now,
+      };
+      const updatedProject = await persistProject(nextProject, "完成世界书阶段并更新角色档案", [
+        result.taskId,
+      ]);
+      setSucceeded(completionGenerationKey, result.taskId);
+
+      if (updatedProject) {
+        markStepCompleted("world");
+        navigate(`/workspace/${updatedProject.id}/greeting`);
+        void generateAndSaveCharacterProfile(updatedProject.id, result.data.dossierMarkdown);
+      }
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+      const message = error instanceof Error ? error.message : "角色档案更新失败。";
+      setErrorMessage(message);
+      setFailed(completionGenerationKey, message);
     }
   }
 
@@ -590,11 +670,33 @@ export function StepWorld() {
               <Bug aria-hidden="true" size={16} />
               调试
             </Button>
-            <Button type="button" onClick={() => void handleNextStep()}>
-              <WandSparkles aria-hidden="true" size={16} />
-              进入开场白
+            <Button
+              type="button"
+              loading={
+                completionGenerationTask.status === "running" ||
+                completionGenerationTask.status === "pending"
+              }
+              disabled={
+                completionGenerationTask.status === "running" ||
+                completionGenerationTask.status === "pending"
+              }
+              onClick={() => void handleNextStep()}
+            >
+              {completionGenerationTask.status === "running" ||
+              completionGenerationTask.status === "pending" ? null : (
+                <WandSparkles aria-hidden="true" size={16} />
+              )}
+              {completionGenerationTask.status === "running" ||
+              completionGenerationTask.status === "pending"
+                ? "正在更新角色档案..."
+                : "完成并更新岛民档案"}
             </Button>
           </div>
+          {errorMessage ? (
+            <p className="font-mono text-xs leading-5 text-[var(--echo-stamp)]">
+              {errorMessage}
+            </p>
+          ) : null}
         </section>
       </div>
       {isDebugOpen ? (

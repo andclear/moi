@@ -15,6 +15,26 @@ function readTopLevelYamlValue(yaml: string, key: string) {
   return match[1].trim().replace(/^["']|["']$/g, "");
 }
 
+function readNestedYamlValue(yaml: string, parentKey: string, key: string) {
+  const lines = yaml.split(/\r?\n/);
+  const parentIndex = lines.findIndex((line) => line.trim() === `${parentKey}:`);
+  if (parentIndex < 0) {
+    return "";
+  }
+
+  for (const line of lines.slice(parentIndex + 1)) {
+    if (line.trim() && !line.startsWith(" ")) {
+      break;
+    }
+    const match = new RegExp(`^\\s{2}${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:\\s*(.*)$`).exec(line);
+    if (match) {
+      return match[1].trim().replace(/^["']|["']$/g, "");
+    }
+  }
+
+  return "";
+}
+
 function quoteYamlValue(value: string) {
   return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }
@@ -34,9 +54,51 @@ function replaceTopLevelYamlValue(yaml: string, key: string, value: string) {
   return `${nextLine}\n${yaml}`;
 }
 
+function replaceNestedYamlValue(yaml: string, parentKey: string, key: string, value: string) {
+  if (!value.trim()) {
+    return yaml;
+  }
+
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const nextLine = `  ${key}: ${quoteYamlValue(value.trim())}`;
+  const lines = yaml.split(/\r?\n/);
+  const parentIndex = lines.findIndex((line) => line.trim() === `${parentKey}:`);
+
+  if (parentIndex < 0) {
+    return `${parentKey}:\n${nextLine}\n${yaml}`;
+  }
+
+  let insertIndex = parentIndex + 1;
+  for (let index = parentIndex + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.trim() && !line.startsWith(" ")) {
+      break;
+    }
+
+    insertIndex = index + 1;
+    if (new RegExp(`^\\s{2}${escapedKey}:\\s*.*$`).test(line)) {
+      lines[index] = nextLine;
+      return lines.join("\n");
+    }
+  }
+
+  lines.splice(insertIndex, 0, nextLine);
+  return lines.join("\n");
+}
+
 function preserveSavedIdentity(nextYaml: string, previousYaml: string) {
   const savedName = readTopLevelYamlValue(previousYaml, "姓名");
-  return replaceTopLevelYamlValue(nextYaml, "姓名", savedName);
+  const savedGender =
+    readNestedYamlValue(previousYaml, "基本信息", "性别") || readTopLevelYamlValue(previousYaml, "性别");
+  const savedAge =
+    readNestedYamlValue(previousYaml, "基本信息", "年龄") || readTopLevelYamlValue(previousYaml, "年龄");
+
+  return replaceNestedYamlValue(
+    replaceNestedYamlValue(replaceTopLevelYamlValue(nextYaml, "姓名", savedName), "基本信息", "性别", savedGender),
+    "基本信息",
+    "年龄",
+    savedAge,
+  );
 }
 
 function createGeneratingState(retryCount: number, yaml = ""): CharacterProfileDocument {

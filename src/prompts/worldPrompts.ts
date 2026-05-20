@@ -10,6 +10,12 @@ export interface BuildWorldMessagesInput {
   entryCount: number;
 }
 
+export interface BuildWorldDossierUpdateMessagesInput {
+  currentCharacterProfile: string;
+  currentCharacterInfo: string;
+  confirmedWorldEntries: WorldEntry[];
+}
+
 function getAnswerLabel(project: Project, questionId: string) {
   const question = project.intake?.questionnaire?.questions.find((item) => item.id === questionId);
   const answer = project.intake?.answers?.find((item) => item.questionId === questionId);
@@ -93,6 +99,51 @@ export function buildWorldAssociationRequest(entry: WorldEntry) {
     "生成的条目必须具备comment、content、keys、constant、position、depth、insertion_order这7个字段，不允许生成额外的其他字段",
     "只生成 1 条新世界书条目。不要替换 current_entry_json，不要输出多个候选。",
   ].join("\n");
+}
+
+export function buildWorldDossierUpdateMessages(
+  input: BuildWorldDossierUpdateMessagesInput,
+): LlmMessage[] {
+  const confirmedWorldEntriesJson = formatWorldEntriesJson(input.confirmedWorldEntries);
+
+  return [
+    {
+      role: "system",
+      content: [
+        "你是虚拟角色档案整理助手。你的任务是根据已确认的世界书条目，更新一份完整、清晰、可继续用于角色创作的角色档案。",
+        "",
+        "## 工作目标",
+        "你要输出更新后的完整角色档案 Markdown。更新重点是把世界书中真正会影响角色的内容，总结为角色档案中的补充和修正。",
+        "",
+        "## 重要原则",
+        "1. 不要把世界书条目原文复制到角色档案里；必须总结、提炼、归纳。",
+        "2. 世界书可能很多，但写入角色档案时最多提炼三个维度。每个维度都必须服务于角色理解，例如：角色所处世界的长期规则、世界对角色行为的约束、世界带来的关系或心理影响。",
+        "3. 更新应以补充和修正为主，不要完全重构角色，不要覆盖已经明确成立的姓名、性别、年龄、核心性格和关键经历。",
+        "4. 当前角色信息 YAML 是结构化事实来源；如果其中存在姓名、性别、年龄，必须把它们视为最高优先级事实，不得改名、改性别、改年龄。",
+        "5. 文字要简单、具体、容易读懂。不要追求文学性，不要堆抽象术语。",
+        "6. 保留当前角色档案的主要二级标题结构；可以改写对应章节内容，也可以补充必要段落，但不要新增大量无关章节。",
+        "",
+        "## 输出格式",
+        "只输出标准 JSON 对象，不要 Markdown 代码块，不要解释，不要额外文本。",
+        'JSON 结构必须是：{"title":"18字以内的新档案标题","dossierMarkdown":"完整 Markdown 角色档案","summary":"这次更新了什么"}',
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: [
+        "current_character_profile:",
+        input.currentCharacterProfile,
+        "",
+        "current_character_info:",
+        input.currentCharacterInfo || "尚未生成",
+        "",
+        "confirmed_world_entries_json:",
+        confirmedWorldEntriesJson,
+        "",
+        "请基于 confirmed_world_entries_json 总结并更新 current_character_profile。最多只从世界书中提炼三个会影响角色的维度；不要把世界书条目直接搬进角色档案。",
+      ].join("\n"),
+    },
+  ];
 }
 
 export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMessage[] {
