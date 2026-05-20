@@ -3,6 +3,8 @@ import { html as htmlLanguage } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import {
   Check,
+  ChevronDown,
+  ChevronUp,
   Eye,
   Regex,
   Sparkles,
@@ -53,6 +55,15 @@ function buildPreviewHtml(asset: BeautificationAsset) {
   }
 }
 
+function formatStructuredText(value: string) {
+  return value
+    .trim()
+    .replace(/>\s*</g, ">\n<")
+    .replace(/(<statusblock[^>]*>)/gi, "$1\n")
+    .replace(/(<\/statusblock>)/gi, "\n$1")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
 const insertOptions: Array<{ key: BeautificationGreetingInsertMode; label: string }> = [
   {
     key: "none",
@@ -74,6 +85,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     useState<BeautificationGreetingInsertMode>("none");
   const [selectedId, setSelectedId] = useState(project.beautifications?.[0]?.id ?? "");
   const [error, setError] = useState("");
+  const [isCodeExpanded, setIsCodeExpanded] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<
     "idle" | "running" | "succeeded" | "failed"
   >("idle");
@@ -89,6 +101,10 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
   );
   const previewHtml = useMemo(
     () => (selectedAsset ? buildPreviewHtml(selectedAsset) : ""),
+    [selectedAsset],
+  );
+  const structuredText = useMemo(
+    () => (selectedAsset ? formatStructuredText(selectedAsset.formattedOriginalText) : ""),
     [selectedAsset],
   );
 
@@ -245,7 +261,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
-                    美化方案
+                    美化方案名称
                   </p>
                   <input
                     value={selectedAsset.title}
@@ -253,15 +269,21 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                     className="mt-2 h-12 w-full min-w-0 rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 font-display text-2xl font-black text-[var(--echo-paper)] outline-none focus:border-[var(--animal-focus-yellow)] sm:min-w-96"
                   />
                 </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  danger
-                  onClick={() => void deleteAsset(selectedAsset.id)}
-                >
-                  <Trash2 aria-hidden="true" size={16} />
-                  删除方案
-                </Button>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="inline-flex items-center gap-2 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] px-4 py-2 font-mono text-xs font-black text-[var(--animal-primary-active)]">
+                    <Check aria-hidden="true" size={14} />
+                    已自动保存
+                  </span>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    danger
+                    onClick={() => void deleteAsset(selectedAsset.id)}
+                  >
+                    <Trash2 aria-hidden="true" size={16} />
+                    删除方案
+                  </Button>
+                </div>
               </div>
             </section>
 
@@ -339,7 +361,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                 结构化内容
               </h3>
               <textarea
-                value={selectedAsset.formattedOriginalText}
+                value={structuredText}
                 onChange={(event) =>
                   void updateAsset({
                     formattedOriginalText: event.target.value,
@@ -351,12 +373,26 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
             </section>
 
             <section className="echo-text-card border-2 border-[var(--echo-line)]">
-              <h3 className="mb-3 font-display text-xl font-black text-[var(--echo-paper)]">
-                美化代码
-              </h3>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <h3 className="font-display text-xl font-black text-[var(--echo-paper)]">
+                  美化代码
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsCodeExpanded((value) => !value)}
+                  className="inline-flex items-center gap-2 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-4 py-2 font-mono text-xs font-black text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)]"
+                >
+                  {isCodeExpanded ? (
+                    <ChevronUp aria-hidden="true" size={14} />
+                  ) : (
+                    <ChevronDown aria-hidden="true" size={14} />
+                  )}
+                  {isCodeExpanded ? "收起代码" : "展开全部"}
+                </button>
+              </div>
               <CodeMirror
                 value={selectedAsset.html}
-                minHeight="360px"
+                height={isCodeExpanded ? "420px" : "8.8rem"}
                 theme="dark"
                 extensions={splitCodeForExtensions(selectedAsset.html)}
                 onChange={(value) => void updateAsset({ html: value })}
