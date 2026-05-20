@@ -7,6 +7,7 @@ import { generationRepository } from "@/db/repositories/generationRepository";
 import { projectRepository } from "@/db/repositories/projectRepository";
 import {
   buildDebugProjectSnapshot,
+  sanitizeDebugValue,
   type DebugPromptPreview,
   type DebugVariable,
 } from "@/features/debug/promptDebug";
@@ -20,7 +21,7 @@ function stringify(value: unknown) {
     return value;
   }
 
-  return JSON.stringify(value, null, 2);
+  return JSON.stringify(sanitizeDebugValue(value), null, 2);
 }
 
 function getPreviewText(value: unknown) {

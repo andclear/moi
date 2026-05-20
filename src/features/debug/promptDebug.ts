@@ -60,12 +60,28 @@ export interface DebugProjectSnapshot {
   }>;
 }
 
+export function sanitizeDebugValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeDebugValue(item));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key]) => key !== "createdAt" && key !== "updatedAt")
+        .map(([key, item]) => [key, sanitizeDebugValue(item)]),
+    );
+  }
+
+  return value;
+}
+
 function stringify(value: unknown) {
   if (typeof value === "string") {
     return value;
   }
 
-  return JSON.stringify(value, null, 2);
+  return JSON.stringify(sanitizeDebugValue(value), null, 2);
 }
 
 function getLatestHelloSession(project: Project) {
