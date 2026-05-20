@@ -124,3 +124,29 @@ export function mergeAiDossierMarkdown(currentMarkdown: string, aiMarkdown: stri
       .join("\n\n"),
   };
 }
+
+export function stripAutoWorldInfoFromDossier(markdown: string) {
+  const blocks = parseDossierSections(markdown);
+  let didStrip = false;
+  const nextMarkdown = blocks
+    .map((block) => {
+      const isAutoWorldInfo =
+        block.section === "世界观" &&
+        (/^WorldInfo[:：]/.test(block.content) ||
+          /^已确认\s+\d+\s+条\s+WorldInfo/.test(block.content) ||
+          block.content.includes("这些条目保存在世界书列表中"));
+
+      if (!isAutoWorldInfo) {
+        return `## ${block.section}\n\n${block.content || "尚未听见"}`;
+      }
+
+      didStrip = true;
+      return `## ${block.section}\n\n尚未听见`;
+    })
+    .join("\n\n");
+
+  return {
+    markdown: didStrip ? nextMarkdown : markdown,
+    didStrip,
+  };
+}

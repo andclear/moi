@@ -1,8 +1,5 @@
 import type { Project, WorldEntry } from "@/db/types";
-import {
-  buildDossierBlockMeta,
-  parseDossierSections,
-} from "@/features/dossier/dossierSections";
+import { buildDossierBlockMeta, parseDossierSections } from "@/features/dossier/dossierSections";
 import { nowIso } from "@/shared/lib/date";
 import { createId } from "@/shared/lib/ids";
 
@@ -122,14 +119,13 @@ export function syncWorldInfoToDossier(project: Project, generationId?: string) 
 }
 
 export function confirmWorldEntry(project: Project, entryId: string, generationId?: string) {
+  void generationId;
   const now = nowIso();
-  const nextProject = {
+  return {
     ...project,
     worldEntries: project.worldEntries.map((entry) =>
       entry.id === entryId ? { ...entry, enabled: true, updatedAt: now } : entry,
     ),
     updatedAt: now,
   } satisfies Project;
-
-  return syncWorldInfoToDossier(nextProject, generationId);
 }

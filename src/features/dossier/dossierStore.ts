@@ -7,6 +7,7 @@ import { nowIso } from "@/shared/lib/date";
 import {
   buildDossierBlockMeta,
   mergeAiDossierMarkdown,
+  stripAutoWorldInfoFromDossier,
 } from "@/features/dossier/dossierSections";
 
 export type DossierSaveStatus = "idle" | "loading" | "saving" | "saved" | "error";
@@ -44,14 +45,26 @@ export const useDossierStore = create<DossierState>((set, get) => ({
     }
 
     const now = nowIso();
+    const strippedDossier = stripAutoWorldInfoFromDossier(project.dossier.markdown);
+    const markdown = strippedDossier.markdown;
     const blocks =
-      project.dossier.blocks.length > 0
+      project.dossier.blocks.length > 0 && !strippedDossier.didStrip
         ? project.dossier.blocks
-        : buildDossierBlockMeta(project.dossier.markdown, [], "ai_inferred", now);
+        : buildDossierBlockMeta(markdown, project.dossier.blocks, "user_confirmed", now);
+
+    if (strippedDossier.didStrip) {
+      await projectService.updateProject(project.id, {
+        dossier: {
+          markdown,
+          blocks,
+          updatedAt: now,
+        },
+      });
+    }
 
     set({
       projectId: project.id,
-      markdown: project.dossier.markdown,
+      markdown,
       blocks,
       saveStatus: "saved",
       errorMessage: null,

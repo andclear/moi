@@ -15,9 +15,10 @@ import {
   createWorldEntryCandidates,
   formatWorldInfoForDossier,
 } from "@/features/world/worldStore";
+import { stripAutoWorldInfoFromDossier } from "@/features/dossier/dossierSections";
 
 describe("worldStore", () => {
-  it("只把已确认 WorldInfo 写入记录上下文", () => {
+  it("确认 WorldInfo 时保存条目，但不把条目正文写入角色档案", () => {
     const project = createProjectDraft({ id: "project_world" });
     const [candidate] = createWorldEntryCandidates("project_world", [
       {
@@ -32,10 +33,27 @@ describe("worldStore", () => {
 
     const confirmed = confirmWorldEntry(withCandidate, candidate.id);
     expect(confirmed.worldEntries[0].enabled).toBe(true);
-    expect(confirmed.dossier.markdown).toContain("已确认 1 条 WorldInfo");
-    expect(confirmed.dossier.markdown).toContain("不在角色档案里逐条展开");
-    expect(confirmed.dossier.markdown).toContain("旧码头钟楼");
+    expect(confirmed.worldEntries[0].content).toContain("铜钟边缘已经发绿");
+    expect(confirmed.dossier.markdown).not.toContain("旧码头钟楼");
     expect(confirmed.dossier.markdown).not.toContain("铜钟边缘已经发绿");
+  });
+
+  it("加载档案时可清理历史自动写入的 WorldInfo 摘要", () => {
+    const markdown = [
+      "## 核心人格",
+      "",
+      "谨慎。",
+      "",
+      "## 世界观",
+      "",
+      "WorldInfo:\n- 旧码头钟楼\n【感官入口】：铜钟边缘已经发绿。",
+    ].join("\n");
+
+    const stripped = stripAutoWorldInfoFromDossier(markdown);
+
+    expect(stripped.didStrip).toBe(true);
+    expect(stripped.markdown).toContain("## 世界观\n\n尚未听见");
+    expect(stripped.markdown).not.toContain("铜钟边缘已经发绿");
   });
 
   it("保存世界书生成字段，并兼容字符串形式的模型输出", () => {

@@ -16,7 +16,6 @@ import {
   confirmWorldEntry,
   createWorldEntryCandidates,
   removeWorldEntry,
-  syncWorldInfoToDossier,
   upsertWorldEntry,
 } from "@/features/world/worldStore";
 import {
@@ -250,8 +249,7 @@ export function StepWorld() {
       const nextProject =
         mode === "deepen"
           ? entry.enabled
-            ? syncWorldInfoToDossier(
-                upsertWorldEntry(generationProject, {
+            ? upsertWorldEntry(generationProject, {
                   ...entry,
                   title: candidate.title,
                   content: candidate.content,
@@ -260,9 +258,7 @@ export function StepWorld() {
                   position: candidate.position,
                   depth: candidate.depth,
                   insertionOrder: candidate.insertionOrder,
-                }),
-                result.taskId,
-              )
+                })
             : null
             : {
               ...generationProject,
@@ -351,9 +347,7 @@ export function StepWorld() {
       return;
     }
 
-    const updated = upsertWorldEntry(project, nextEntry);
-    const synced = syncWorldInfoToDossier(updated);
-    const updatedProject = await persistProject(synced);
+    const updatedProject = await persistProject(upsertWorldEntry(project, nextEntry));
     if (updatedProject) {
       setEntryDrafts((drafts) => {
         const { [entry.id]: _removed, ...rest } = drafts;
@@ -376,10 +370,10 @@ export function StepWorld() {
         void _removed;
         return rest;
       });
-      const nextProject = syncWorldInfoToDossier({
+      const nextProject = {
         ...project,
         worldEntries: [...project.worldEntries, confirmedEntry],
-      });
+      };
       await persistProject(nextProject, `确认 WorldInfo：${entry.title}`);
       return;
     }
@@ -402,8 +396,7 @@ export function StepWorld() {
       return;
     }
 
-    const nextProject = syncWorldInfoToDossier(removeWorldEntry(project, entry.id));
-    await persistProject(nextProject, `舍弃 WorldInfo：${entry.title}`);
+    await persistProject(removeWorldEntry(project, entry.id), `舍弃 WorldInfo：${entry.title}`);
   }
 
   async function handleNextStep() {

@@ -309,8 +309,8 @@ export function DossierEditor({
           </Button>
         </div>
 
-      <div className="min-h-0 flex-[1_1_auto] overflow-auto p-4">
-        <div className="relative min-h-[46rem]">
+      <div className="min-h-0 flex-[1_1_auto] overflow-hidden p-4">
+        <div className="relative h-full min-h-0">
           {mode === "edit" ? (
             <textarea
               value={markdown}
@@ -318,12 +318,14 @@ export function DossierEditor({
               onMouseUp={(event) => updateSelection(event)}
               onKeyUp={(event) => updateSelection(event)}
               onSelect={(event) => updateSelection(event)}
-              className="h-full min-h-[46rem] w-full resize-y border border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 font-mono text-sm leading-7 text-[var(--animal-text-body)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)]"
+              className="h-full min-h-0 w-full resize-none overflow-y-auto scroll-pb-10 border border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 pb-10 font-mono text-sm leading-7 text-[var(--animal-text-body)] outline-none placeholder:text-[var(--animal-text-disabled)] focus:border-[var(--animal-focus-yellow)]"
               spellCheck={false}
               aria-label="编辑 TA 的记录 Markdown"
             />
           ) : (
-            <MarkdownPreview markdown={markdown} />
+            <div className="h-full overflow-y-auto pr-2">
+              <MarkdownPreview markdown={markdown} />
+            </div>
           )}
         </div>
       </div>
