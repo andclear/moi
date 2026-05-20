@@ -8,7 +8,6 @@ import {
   readCharacterCardJsonFromPng,
   writeCharacterCardTextChunks,
 } from "@/features/export/pngTextWriter";
-import { createId } from "@/shared/lib/ids";
 
 type ExportStatus = "idle" | "building" | "ready" | "failed";
 
@@ -37,7 +36,7 @@ function previewJson(formattedJson: string) {
 
 function createDownloadName(project: Project, format: ExportFormat) {
   const safeTitle = project.title.replace(/[\\/:*?"<>|]/g, "_").trim() || "echo-character";
-  return `${safeTitle}-${createId("export")}.${format}`;
+  return `${safeTitle}.${format}`;
 }
 
 export function downloadBytes(bytes: Uint8Array, filename: string, type: string) {

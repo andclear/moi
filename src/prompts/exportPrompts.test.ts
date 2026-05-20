@@ -60,6 +60,9 @@ describe("exportPrompts", () => {
     expect(content).toContain("情感");
     expect(content).toContain("构图/镜头");
     expect(content).toContain("图像设定");
+    expect(content).toContain("2:3 竖图");
+    expect(content).toContain("动漫风格");
+    expect(content).toContain("画风指导");
   });
 
   it("导出响应 schema 能解析补全和文生图结果", () => {

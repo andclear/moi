@@ -310,10 +310,10 @@ export function StepExport() {
                       loading={isCompleting}
                       disabled={!project || isCompleting}
                       onClick={() => void handleCompleteCard()}
-                      className="w-full sm:w-fit"
+                      className={`w-full sm:w-fit ${isCompleting ? "animate-pulse" : ""}`}
                     >
                       {isCompleting ? null : <Sparkles aria-hidden="true" size={18} />}
-                      {cardCompletion ? "重新生成" : "开始生成"}
+                      {isCompleting ? "生成中" : cardCompletion ? "重新生成" : "开始生成"}
                     </Button>
                   </div>
 
@@ -406,9 +406,10 @@ export function StepExport() {
                             loading={isGeneratingImagePrompt}
                             disabled={!project || isGeneratingImagePrompt}
                             onClick={() => void handleGenerateImagePrompt()}
+                            className={isGeneratingImagePrompt ? "animate-pulse" : ""}
                           >
                             {isGeneratingImagePrompt ? null : <Sparkles aria-hidden="true" size={16} />}
-                            {imagePrompt ? "重新生成" : "生成提示词"}
+                            {isGeneratingImagePrompt ? "生成中" : imagePrompt ? "重新生成" : "生成提示词"}
                           </Button>
                         </div>
                         {imagePrompt && (
