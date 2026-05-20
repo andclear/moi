@@ -287,10 +287,10 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
               </div>
             </section>
 
-            <section className="grid gap-5 2xl:grid-cols-2">
+            <section className="space-y-5">
               <article className="echo-text-card border-2 border-[var(--echo-line)]">
                 <h3 className="mb-3 font-display text-xl font-black text-[var(--echo-paper)]">
-                  WorldInfo 条目
+                  世界书条目
                 </h3>
                 <label className="block font-mono text-xs font-bold text-[var(--echo-muted)]">
                   条目标题
@@ -342,7 +342,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                 </label>
                 <CodeMirror
                   value={selectedAsset.regex}
-                  minHeight="120px"
+                  height="120px"
                   theme="dark"
                   extensions={[javascript()]}
                   onChange={(value) => void updateAsset({ regex: value })}
