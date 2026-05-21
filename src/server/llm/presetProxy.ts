@@ -1,4 +1,3 @@
-import type { LlmMessage } from "../../features/llm/llmTypes";
 import { getModelChannelSettings } from "../admin/modelChannel";
 import {
   incrementActivationUsage,
@@ -6,6 +5,11 @@ import {
 } from "../activation/activationSessions";
 import { createPostgresClient } from "../db/postgres";
 import { getEnv } from "../runtime/env";
+
+type LlmMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+};
 
 function normalizeBaseUrl(url: string) {
   return url.replace(/\/+$/, "");

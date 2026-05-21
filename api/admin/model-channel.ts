@@ -31,7 +31,7 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
     await writeAdminAuditLog({
       actor: "admin",
       action: "model_channel.update",
-      metadata: settings,
+      metadata: { ...settings },
     }).catch(() => undefined);
     return sendJson(settings, undefined, response);
   }
