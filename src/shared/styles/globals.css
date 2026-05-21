@@ -343,10 +343,6 @@ input[type="radio"]:focus {
   line-height: 1.9;
 }
 
-.echo-mobile-sheet-backdrop {
-  display: none;
-}
-
 section.border,
 section.border-2,
 article.border,
@@ -537,32 +533,9 @@ code {
     width: 100%;
   }
 
-  .echo-mobile-sheet-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 39;
-    border: 0;
-    background: rgba(61, 52, 40, 0.32);
-    box-shadow: none !important;
-  }
-
   .echo-diary-blank-trigger {
     max-width: min(78vw, 18rem);
     white-space: normal;
     text-align: left;
-  }
-
-  .echo-diary-blank-popover {
-    position: fixed !important;
-    inset: auto 0 0 0 !important;
-    z-index: 40 !important;
-    width: 100vw !important;
-    max-height: min(72vh, 28rem);
-    overflow: auto;
-    margin: 0 !important;
-    border-radius: var(--animal-radius-lg) var(--animal-radius-lg) 0 0 !important;
-    padding: 1rem !important;
-    box-shadow: 0 -12px 28px rgba(61, 52, 40, 0.22) !important;
   }
 }

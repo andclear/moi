@@ -1,6 +1,7 @@
 import { BookOpenText, LockKeyhole, Scissors, UserRoundSearch } from "lucide-react";
 import { Select } from "animal-island-ui";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router";
 
 import type {
@@ -120,6 +121,10 @@ function DiaryDecodePanel({
 }: DiaryDecodePanelProps) {
   const [openedBlankKey, setOpenedBlankKey] = useState("");
   const parts = draft.diaryText.split(/(\[\[(?:blank_\d+|[^\]]+)\]\])/g);
+  const openedBlank = draft.blanks.find((item) => item.key === openedBlankKey);
+  const openedSelectedOption = openedBlank?.options.find(
+    (option) => option.key === selections[openedBlank.key],
+  );
 
   return (
     <article className="echo-text-card">
@@ -163,14 +168,6 @@ function DiaryDecodePanel({
                 key={blankKey}
                 className="relative mx-1 inline-flex items-center align-baseline"
               >
-                {blank && isOpen ? (
-                  <button
-                    type="button"
-                    aria-label="关闭破译选项"
-                    className="echo-mobile-sheet-backdrop"
-                    onClick={() => setOpenedBlankKey("")}
-                  />
-                ) : null}
                 <button
                   type="button"
                   disabled={disabled || !blank}
@@ -186,7 +183,7 @@ function DiaryDecodePanel({
                 </button>
 
                 {blank && isOpen ? (
-                  <span className="echo-diary-blank-popover absolute left-0 top-full z-30 mt-3 grid w-[min(78vw,22rem)] gap-3 rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_10px_22px_rgba(61,52,40,0.18)]">
+                  <span className="absolute left-0 top-full z-30 mt-3 hidden w-[min(78vw,22rem)] gap-3 rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_10px_22px_rgba(61,52,40,0.18)] sm:grid">
                     <span className="text-sm font-black leading-6 text-[var(--animal-text)]">
                       {blank.label}
                     </span>
@@ -215,6 +212,42 @@ function DiaryDecodePanel({
           })}
         </div>
       </div>
+      {openedBlank && typeof document !== "undefined"
+        ? createPortal(
+            <div className="fixed inset-0 z-50 sm:hidden">
+              <button
+                type="button"
+                aria-label="关闭破译选项"
+                className="absolute inset-0 bg-[rgba(61,52,40,0.34)]"
+                onClick={() => setOpenedBlankKey("")}
+              />
+              <section className="absolute inset-x-3 bottom-0 grid max-h-[72vh] gap-3 overflow-auto rounded-t-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_-12px_28px_rgba(61,52,40,0.22)]">
+                <p className="text-sm font-black leading-6 text-[var(--animal-text)]">
+                  {openedBlank.label}
+                </p>
+                <Select
+                  options={openedBlank.options.map((option) => ({
+                    key: option.key,
+                    label: option.label,
+                  }))}
+                  value={selections[openedBlank.key] ?? ""}
+                  onChange={(optionKey) => {
+                    onChange(openedBlank.key, optionKey);
+                    setOpenedBlankKey("");
+                  }}
+                  placeholder="请选择"
+                  disabled={disabled}
+                />
+                {openedSelectedOption ? (
+                  <p className="text-sm font-bold leading-6 text-[var(--animal-text-muted)]">
+                    {openedSelectedOption.meaning}
+                  </p>
+                ) : null}
+              </section>
+            </div>,
+            document.body,
+          )
+        : null}
     </article>
   );
 }
@@ -223,6 +256,7 @@ export function StepProfile() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
+  const [viewedStageId, setViewedStageId] = useState<ProfileStageId | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { load: loadSettings, getAvailability } = useSettingsStore();
@@ -277,7 +311,8 @@ export function StepProfile() {
   }, [hydrateFromProject, projectId]);
 
   const session = project?.profileSession ?? createEmptyProfileSession();
-  const currentStageId = session.currentStageId;
+  const flowStageId = session.currentStageId;
+  const currentStageId = viewedStageId ?? flowStageId;
   const currentStage = session.stages[currentStageId];
   const completedIndex = getStageCompletionIndex(session);
   const previousChoiceSummary = useMemo(() => buildPreviousChoiceSummary(session), [session]);
@@ -287,6 +322,14 @@ export function StepProfile() {
     currentStage.diaryDraft && areAllDiaryBlanksSelected(currentStage.diaryDraft, diarySelections)
       ? buildCompletedDiaryText(currentStage.diaryDraft, diarySelections)
       : "";
+
+  useEffect(() => {
+    if (!project) {
+      setViewedStageId(null);
+      return;
+    }
+    setViewedStageId((stageId) => stageId ?? project.profileSession?.currentStageId ?? "silhouette");
+  }, [project]);
 
   async function persistProject(patch: Partial<Omit<Project, "id" | "createdAt">>) {
     if (!project) {
@@ -311,6 +354,10 @@ export function StepProfile() {
 
   async function handleGenerateStage() {
     if (!project || !ensureModelAvailable()) {
+      return;
+    }
+    if (currentStageId !== flowStageId) {
+      setErrorMessage("当前正在查看旧阶段，请先切回当前阶段再生成。");
       return;
     }
 
@@ -405,6 +452,7 @@ export function StepProfile() {
       },
       profileSession: nextSession,
     });
+    setViewedStageId(nextStageId ?? currentStageId);
 
     await historyService.createSnapshot(
       project.id,
@@ -560,12 +608,17 @@ export function StepProfile() {
               {profileStageOrder.map((stageId, index) => {
                 const Icon = stageIcons[stageId];
                 const isCurrent = stageId === currentStageId;
+                const isFlowCurrent = stageId === flowStageId;
                 const isDone = index <= completedIndex;
+                const canView = isDone || isFlowCurrent;
                 return (
-                  <span
+                  <button
+                    type="button"
                     key={stageId}
+                    disabled={!canView}
+                    onClick={() => setViewedStageId(stageId)}
                     className={cn(
-                      "inline-flex items-center gap-2 border px-3 py-2 text-xs font-bold",
+                      "inline-flex items-center gap-2 border px-3 py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55",
                       isCurrent
                         ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
                         : isDone
@@ -574,8 +627,10 @@ export function StepProfile() {
                     )}
                   >
                     <Icon aria-hidden="true" size={15} />
-                    {profileStageLabels[stageId]}
-                  </span>
+                    {isFlowCurrent && !isCurrent
+                      ? `当前：${profileStageLabels[stageId]}`
+                      : profileStageLabels[stageId]}
+                  </button>
                 );
               })}
             </div>
