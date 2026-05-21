@@ -44,14 +44,18 @@ export function ApiStatusBadge() {
   const Icon = isAvailable ? CircleCheck : CircleAlert;
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-[var(--animal-radius-pill)] border border-[var(--animal-border)] bg-[var(--animal-primary-bg)] px-3 py-2 font-mono text-xs text-[var(--animal-text-muted)]">
+    <div
+      className="inline-flex size-10 shrink-0 items-center justify-center gap-2 rounded-[var(--animal-radius-pill)] border border-[var(--animal-border)] bg-[var(--animal-primary-bg)] font-mono text-xs text-[var(--animal-text-muted)] sm:size-auto sm:px-3 sm:py-2"
+      aria-label={`${label}${detail ? `，${detail}` : ""}`}
+      title={`${label}${detail ? `，${detail}` : ""}`}
+    >
       <Icon
         aria-hidden="true"
         size={15}
         className={isAvailable ? "text-[var(--animal-success)]" : "text-[var(--animal-error)]"}
       />
-      <span>{label}</span>
-      {detail && <span className="text-[var(--animal-text)]">{detail}</span>}
+      <span className="hidden sm:inline">{label}</span>
+      {detail && <span className="hidden text-[var(--animal-text)] sm:inline">{detail}</span>}
     </div>
   );
 }

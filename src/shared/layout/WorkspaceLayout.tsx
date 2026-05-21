@@ -14,7 +14,7 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
   return (
     <div className="relative min-h-[calc(100vh-9rem)] overflow-hidden rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(247,243,223,0.78)] shadow-[0_8px_24px_0_rgba(61,52,40,0.12)]">
       <div className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.46)] px-4 py-3">
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-nowrap items-center justify-end gap-2">
           <ApiStatusBadge />
           <Button
             type="button"
