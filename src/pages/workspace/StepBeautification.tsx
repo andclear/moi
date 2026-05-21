@@ -80,7 +80,7 @@ export function StepBeautification() {
             BEAUTIFICATION
           </p>
           <h1 className="mt-3 font-display text-4xl font-black text-[var(--echo-paper)]">
-            添加美化
+            添加美化（可跳过）
           </h1>
           <p className="mt-3 max-w-4xl font-mono text-sm leading-7 text-[var(--echo-muted)]">
             为 SillyTavern 生成美化样式。这个步骤可以跳过；保存启用的方案会写入最终角色卡。

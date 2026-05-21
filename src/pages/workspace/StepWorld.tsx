@@ -58,7 +58,7 @@ export function StepWorld() {
   const [entryDrafts, setEntryDrafts] = useState<Record<string, WorldEntryDraft>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [userRequest, setUserRequest] = useState("");
-  const [entryCount, setEntryCount] = useState(3);
+  const [entryCount, setEntryCount] = useState(2);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const isGeneratingRef = useRef(false);

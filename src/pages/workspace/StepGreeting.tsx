@@ -44,7 +44,7 @@ export function StepGreeting() {
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [wordCount, setWordCount] = useState(800);
+  const [wordCount, setWordCount] = useState<number | "">(800);
   const [personType, setPersonType] = useState<GreetingPersonType>("第三人称");
   const [userRequest, setUserRequest] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -132,7 +132,7 @@ export function StepGreeting() {
         dossierMarkdown: project.dossier.markdown,
         characterInfoYaml: project.characterProfile?.yaml,
         confirmedEntries: getConfirmedWorldEntries(project),
-        wordCount,
+        wordCount: wordCount === "" ? 800 : wordCount,
         personType,
         userRequest,
         signal: controller.signal,
@@ -268,7 +268,10 @@ export function StepGreeting() {
                 max={3000}
                 step={50}
                 value={wordCount}
-                onChange={(event) => setWordCount(Number(event.target.value))}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  setWordCount(nextValue === "" ? "" : Number(nextValue));
+                }}
                 className="mt-2 h-14 w-full rounded-[22px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-5 text-base text-[var(--echo-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none transition focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
               />
             </label>

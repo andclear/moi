@@ -1,4 +1,0 @@
-interface:
-  display_name: "Animal Island UI Style"
-  short_description: "创建动物森友会风格的圆润 React UI 界面指南"
-  default_prompt: "Use $animal-island-ui-style to build a warm, rounded React UI in the animal-island-ui style."
