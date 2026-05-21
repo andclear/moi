@@ -12,7 +12,7 @@ import {
   WandSparkles,
 } from "lucide-react";
 import { Select } from "animal-island-ui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type {
   BeautificationAsset,
@@ -36,6 +36,18 @@ import { beautificationStylePresets } from "@/prompts/beautificationStylePresets
 interface BeautificationLabProps {
   project: Project;
   onProjectChange: (project: Project) => void;
+}
+
+interface BeautificationEditDraft {
+  assetId: string;
+  title: string;
+  worldComment: string;
+  worldContent: string;
+  worldKeysText: string;
+  regexTitle: string;
+  regex: string;
+  formattedOriginalText: string;
+  html: string;
 }
 
 function splitCodeForExtensions(value: string) {
@@ -104,6 +116,42 @@ function formatStructuredText(value: string) {
     .replace(/\n{3,}/g, "\n\n");
 }
 
+function getAssetWorldInfo(asset: BeautificationAsset) {
+  return {
+    comment: asset.worldInfo?.comment ?? asset.title,
+    content: asset.worldInfo?.content ?? "",
+    constant: asset.worldInfo?.constant ?? asset.insertIntoGreeting !== "none",
+    keys: asset.worldInfo?.keys ?? [],
+    position: asset.worldInfo?.position ?? 4,
+    depth: asset.worldInfo?.depth ?? 4,
+    insertion_order:
+      asset.worldInfo?.insertion_order ?? (asset.insertIntoGreeting === "none" ? 180 : 999),
+  };
+}
+
+function buildEditDraft(asset: BeautificationAsset): BeautificationEditDraft {
+  const worldInfo = getAssetWorldInfo(asset);
+
+  return {
+    assetId: asset.id,
+    title: asset.title,
+    worldComment: worldInfo.comment,
+    worldContent: worldInfo.content,
+    worldKeysText: worldInfo.keys.join("，"),
+    regexTitle: asset.regexTitle ?? asset.title,
+    regex: asset.regex,
+    formattedOriginalText: formatStructuredText(asset.formattedOriginalText),
+    html: asset.html,
+  };
+}
+
+function parseKeywords(value: string) {
+  return value
+    .split(/[，,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 const insertOptions: Array<{ key: BeautificationGreetingInsertMode; label: string }> = [
   {
     key: "none",
@@ -135,6 +183,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
   const [generationStatus, setGenerationStatus] = useState<
     "idle" | "running" | "succeeded" | "failed"
   >("idle");
+  const [editDraft, setEditDraft] = useState<BeautificationEditDraft | null>(null);
 
   const assets = useMemo(() => project.beautifications ?? [], [project.beautifications]);
   const selectedAsset = assets.find((asset) => asset.id === selectedId) ?? assets[0];
@@ -150,9 +199,13 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     [selectedAsset],
   );
   const structuredText = useMemo(
-    () => (selectedAsset ? formatStructuredText(selectedAsset.formattedOriginalText) : ""),
-    [selectedAsset],
+    () => editDraft?.formattedOriginalText ?? "",
+    [editDraft?.formattedOriginalText],
   );
+
+  useEffect(() => {
+    setEditDraft(selectedAsset ? buildEditDraft(selectedAsset) : null);
+  }, [selectedAsset]);
 
   async function persist(nextProject: Project) {
     const { id, createdAt, ...patch } = nextProject;
@@ -203,22 +256,26 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
     await persist(syncBeautificationWorldEntries({ ...project, beautifications: nextAssets, updatedAt: nowIso() }));
   }
 
-  async function updateWorldInfo(patch: Partial<NonNullable<BeautificationAsset["worldInfo"]>>) {
-    if (!selectedAsset) {
+  async function commitEditDraft() {
+    if (!selectedAsset || !editDraft || editDraft.assetId !== selectedAsset.id) {
       return;
     }
 
-    const worldInfo = selectedAsset.worldInfo ?? {
-      comment: selectedAsset.title,
-      content: "",
-      constant: selectedAsset.insertIntoGreeting !== "none",
-      keys: [],
-      position: 4,
-      depth: 4,
-      insertion_order: selectedAsset.insertIntoGreeting === "none" ? 180 : 999,
-    };
-    const nextWorldInfo = { ...worldInfo, ...patch };
-    await updateAsset({ worldInfo: nextWorldInfo, title: nextWorldInfo.comment || selectedAsset.title });
+    const worldInfo = getAssetWorldInfo(selectedAsset);
+    await updateAsset({
+      title: editDraft.title,
+      worldInfo: {
+        ...worldInfo,
+        comment: editDraft.worldComment,
+        content: editDraft.worldContent,
+        keys: parseKeywords(editDraft.worldKeysText),
+      },
+      regexTitle: editDraft.regexTitle,
+      regex: editDraft.regex,
+      formattedOriginalText: editDraft.formattedOriginalText,
+      originalText: editDraft.formattedOriginalText,
+      html: editDraft.html,
+    });
   }
 
   async function deleteAsset(assetId: string) {
@@ -320,8 +377,13 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                     美化方案名称
                   </p>
                   <input
-                    value={selectedAsset.title}
-                    onChange={(event) => void updateAsset({ title: event.target.value })}
+                    value={editDraft?.title ?? selectedAsset.title}
+                    onChange={(event) =>
+                      setEditDraft((draft) =>
+                        draft ? { ...draft, title: event.target.value } : draft,
+                      )
+                    }
+                    onBlur={() => void commitEditDraft()}
                     className="mt-2 h-12 w-full min-w-0 rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 font-display text-xl font-black text-[var(--echo-paper)] outline-none focus:border-[var(--animal-focus-yellow)]"
                   />
                 </div>
@@ -353,16 +415,26 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                 <label className="block font-mono text-xs font-bold text-[var(--echo-muted)]">
                   条目标题
                   <input
-                    value={selectedAsset.worldInfo?.comment ?? selectedAsset.title}
-                    onChange={(event) => void updateWorldInfo({ comment: event.target.value })}
+                    value={editDraft?.worldComment ?? selectedAsset.worldInfo?.comment ?? selectedAsset.title}
+                    onChange={(event) =>
+                      setEditDraft((draft) =>
+                        draft ? { ...draft, worldComment: event.target.value } : draft,
+                      )
+                    }
+                    onBlur={() => void commitEditDraft()}
                     className="mt-2 h-12 w-full rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 text-base text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
                   />
                 </label>
                 <label className="mt-4 block font-mono text-xs font-bold text-[var(--echo-muted)]">
                   条目内容
                   <textarea
-                    value={selectedAsset.worldInfo?.content ?? ""}
-                    onChange={(event) => void updateWorldInfo({ content: event.target.value })}
+                    value={editDraft?.worldContent ?? selectedAsset.worldInfo?.content ?? ""}
+                    onChange={(event) =>
+                      setEditDraft((draft) =>
+                        draft ? { ...draft, worldContent: event.target.value } : draft,
+                      )
+                    }
+                    onBlur={() => void commitEditDraft()}
                     className="mt-2 min-h-64 w-full resize-y rounded-[24px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 py-3 text-sm leading-7 text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
                   />
                 </label>
@@ -370,15 +442,13 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                   <label className="mt-4 block font-mono text-xs font-bold text-[var(--echo-muted)]">
                     关键词
                     <input
-                      value={selectedAsset.worldInfo.keys.join("，")}
+                      value={editDraft?.worldKeysText ?? selectedAsset.worldInfo.keys.join("，")}
                       onChange={(event) =>
-                        void updateWorldInfo({
-                          keys: event.target.value
-                            .split(/[，,]/)
-                            .map((item) => item.trim())
-                            .filter(Boolean),
-                        })
+                        setEditDraft((draft) =>
+                          draft ? { ...draft, worldKeysText: event.target.value } : draft,
+                        )
                       }
+                      onBlur={() => void commitEditDraft()}
                       className="mt-2 h-12 w-full rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 text-base text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
                     />
                   </label>
@@ -393,17 +463,25 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                 <label className="mb-3 block font-mono text-xs font-bold text-[var(--echo-muted)]">
                   正则标题
                   <input
-                    value={selectedAsset.regexTitle ?? selectedAsset.title}
-                    onChange={(event) => void updateAsset({ regexTitle: event.target.value })}
+                    value={editDraft?.regexTitle ?? selectedAsset.regexTitle ?? selectedAsset.title}
+                    onChange={(event) =>
+                      setEditDraft((draft) =>
+                        draft ? { ...draft, regexTitle: event.target.value } : draft,
+                      )
+                    }
+                    onBlur={() => void commitEditDraft()}
                     className="mt-2 h-12 w-full rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 text-base text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
                   />
                 </label>
                 <CodeMirror
-                  value={selectedAsset.regex}
+                  value={editDraft?.regex ?? selectedAsset.regex}
                   height="120px"
                   theme="dark"
                   extensions={[javascript()]}
-                  onChange={(value) => void updateAsset({ regex: value })}
+                  onChange={(value) =>
+                    setEditDraft((draft) => (draft ? { ...draft, regex: value } : draft))
+                  }
+                  onBlur={() => void commitEditDraft()}
                 />
                 <p className="mt-3 flex items-center gap-2 font-mono text-xs text-[var(--echo-muted)]">
                   {regexResult?.ok ? <Check aria-hidden="true" size={14} /> : <Regex aria-hidden="true" size={14} />}
@@ -421,11 +499,11 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
               <textarea
                 value={structuredText}
                 onChange={(event) =>
-                  void updateAsset({
-                    formattedOriginalText: event.target.value,
-                    originalText: event.target.value,
-                  })
+                  setEditDraft((draft) =>
+                    draft ? { ...draft, formattedOriginalText: event.target.value } : draft,
+                  )
                 }
+                onBlur={() => void commitEditDraft()}
                 className="min-h-56 w-full resize-y rounded-[24px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 py-3 font-mono text-sm leading-7 text-[var(--echo-text)] outline-none focus:border-[var(--animal-focus-yellow)]"
               />
             </section>
@@ -449,11 +527,14 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                 </button>
               </div>
               <CodeMirror
-                value={selectedAsset.html}
+                value={editDraft?.html ?? selectedAsset.html}
                 height={isCodeExpanded ? "420px" : "8.8rem"}
                 theme="dark"
-                extensions={splitCodeForExtensions(selectedAsset.html)}
-                onChange={(value) => void updateAsset({ html: value })}
+                extensions={splitCodeForExtensions(editDraft?.html ?? selectedAsset.html)}
+                onChange={(value) =>
+                  setEditDraft((draft) => (draft ? { ...draft, html: value } : draft))
+                }
+                onBlur={() => void commitEditDraft()}
               />
             </section>
 
