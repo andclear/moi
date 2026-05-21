@@ -1,10 +1,10 @@
-import { isAdminRequest } from "../../src/server/admin/adminAuth";
+import { isAdminRequest } from "../../src/server/admin/adminAuth.js";
 import {
   createActivationCodeBatch,
   deleteActivationCode,
   listActivationCodes,
-} from "../../src/server/activation/activationCodes";
-import { writeAdminAuditLog } from "../../src/server/admin/adminAudit";
+} from "../../src/server/activation/activationCodes.js";
+import { writeAdminAuditLog } from "../../src/server/admin/adminAudit.js";
 import {
   getRequestMethod,
   getRequestUrl,
@@ -12,7 +12,7 @@ import {
   sendJson,
   type ApiRequest,
   type ApiResponse,
-} from "../../src/server/runtime/http";
+} from "../../src/server/runtime/http.js";
 
 function createPlainActivationCode() {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

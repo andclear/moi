@@ -1,6 +1,6 @@
-import type { ModelChannelSettings, PublicModelChannelStatus } from "./adminTypes";
-import { createPostgresClient } from "../db/postgres";
-import { getEnv } from "../runtime/env";
+import type { ModelChannelSettings, PublicModelChannelStatus } from "./adminTypes.js";
+import { createPostgresClient } from "../db/postgres.js";
+import { getEnv } from "../runtime/env.js";
 
 export async function getModelChannelSettings(
   sql = createPostgresClient(),

@@ -1,12 +1,12 @@
-import { createAdminSessionToken, verifyAdminPassword } from "../../src/server/admin/adminAuth";
-import { writeAdminAuditLog } from "../../src/server/admin/adminAudit";
+import { createAdminSessionToken, verifyAdminPassword } from "../../src/server/admin/adminAuth.js";
+import { writeAdminAuditLog } from "../../src/server/admin/adminAudit.js";
 import {
   getRequestMethod,
   readJsonBody,
   sendJson,
   type ApiRequest,
   type ApiResponse,
-} from "../../src/server/runtime/http";
+} from "../../src/server/runtime/http.js";
 
 export default async function handler(request: ApiRequest, response?: ApiResponse) {
   if (getRequestMethod(request) !== "POST") {

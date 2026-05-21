@@ -1,10 +1,10 @@
-import { getPublicModelChannelStatus } from "../../src/server/admin/modelChannel";
+import { getPublicModelChannelStatus } from "../../src/server/admin/modelChannel.js";
 import {
   getRequestMethod,
   sendJson,
   type ApiRequest,
   type ApiResponse,
-} from "../../src/server/runtime/http";
+} from "../../src/server/runtime/http.js";
 
 export const config = {
   maxDuration: 10,

@@ -1,6 +1,6 @@
-import { createId } from "../../shared/lib/ids";
-import { getRequestHeader, type ApiRequest } from "../runtime/http";
-import { getEnv } from "../runtime/env";
+import { createId } from "../../shared/lib/ids.js";
+import { getRequestHeader, type ApiRequest } from "../runtime/http.js";
+import { getEnv } from "../runtime/env.js";
 
 export async function hashAdminSecret(secret: string) {
   const bytes = new TextEncoder().encode(secret);

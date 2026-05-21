@@ -1,10 +1,10 @@
-import { getModelChannelSettings } from "../admin/modelChannel";
+import { getModelChannelSettings } from "../admin/modelChannel.js";
 import {
   incrementActivationUsage,
   verifyActivationSession,
-} from "../activation/activationSessions";
-import { createPostgresClient } from "../db/postgres";
-import { getEnv } from "../runtime/env";
+} from "../activation/activationSessions.js";
+import { createPostgresClient } from "../db/postgres.js";
+import { getEnv } from "../runtime/env.js";
 
 type LlmMessage = {
   role: "system" | "user" | "assistant";

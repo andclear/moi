@@ -1,11 +1,11 @@
-import { activateCode } from "../src/server/activation/activationSessions";
+import { activateCode } from "../src/server/activation/activationSessions.js";
 import {
   getRequestMethod,
   readJsonBody,
   sendJson,
   type ApiRequest,
   type ApiResponse,
-} from "../src/server/runtime/http";
+} from "../src/server/runtime/http.js";
 
 export const config = {
   maxDuration: 10,

@@ -1,4 +1,4 @@
-import { proxyPresetLlm, proxyPresetLlmStream } from "../src/server/llm/presetProxy";
+import { proxyPresetLlm, proxyPresetLlmStream } from "../src/server/llm/presetProxy.js";
 import {
   getRequestHeader,
   getRequestMethod,
@@ -6,7 +6,7 @@ import {
   sendJson,
   type ApiRequest,
   type ApiResponse,
-} from "../src/server/runtime/http";
+} from "../src/server/runtime/http.js";
 
 export const config = {
   maxDuration: 60,

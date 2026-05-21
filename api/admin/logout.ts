@@ -1,10 +1,10 @@
-import { writeAdminAuditLog } from "../../src/server/admin/adminAudit";
+import { writeAdminAuditLog } from "../../src/server/admin/adminAudit.js";
 import {
   getRequestMethod,
   sendJson,
   type ApiRequest,
   type ApiResponse,
-} from "../../src/server/runtime/http";
+} from "../../src/server/runtime/http.js";
 
 export default async function handler(request: ApiRequest, response?: ApiResponse) {
   if (getRequestMethod(request) !== "POST") {
