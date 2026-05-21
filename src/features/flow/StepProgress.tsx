@@ -80,6 +80,18 @@ export function StepProgress({
             );
           })}
         </ol>
+        <ConfirmDialog
+          open={Boolean(pendingTarget)}
+          title="回到旧节点"
+          description={`确定回到「${pendingTarget?.label ?? ""}」吗？当前记录会保留，但后续生成可能需要重新确认。`}
+          confirmLabel="回到这里"
+          onCancel={() => setPendingTarget(null)}
+          onConfirm={() => {
+            if (pendingTarget) {
+              window.location.href = `/workspace/current/${pendingTarget.id}`;
+            }
+          }}
+        />
       </>
     );
   }
