@@ -322,7 +322,7 @@ export function StepTrial() {
                 </p>
               </div>
             </div>
-            <div className="w-full max-w-sm lg:shrink-0">
+            <div className="w-full lg:max-w-sm lg:shrink-0">
               <GenerationButton
                 idleLabel={latestRun ? "重新测试" : "开始终审"}
                 runningLabel={runningLabel}
@@ -366,7 +366,7 @@ export function StepTrial() {
           )}
         </section>
 
-        <section className="echo-text-card flex flex-wrap items-center justify-between gap-4">
+        <section className="echo-text-card echo-mobile-action-row flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">终审确认</h2>
             <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
@@ -444,7 +444,7 @@ function TrialResultTabs({
         )}
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="终审测试结果">
+      <div className="mt-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap" role="tablist" aria-label="终审测试结果">
         {trialModes.map((mode) => (
           <button
             key={mode}
@@ -635,7 +635,7 @@ function RevisionDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(61,52,40,0.45)] p-4">
-      <section className="max-h-[88vh] w-full max-w-3xl overflow-auto border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-5 shadow-[0_8px_24px_rgba(61,52,40,0.22)]">
+      <section className="max-h-[88vh] w-full max-w-3xl overflow-auto border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-4 shadow-[0_8px_24px_rgba(61,52,40,0.22)] sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
@@ -740,7 +740,7 @@ function RevisionDialog({
           </section>
         )}
 
-        <div className="mt-5 flex flex-wrap justify-end gap-3">
+        <div className="echo-mobile-action-row mt-5 flex flex-wrap justify-end gap-3">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>
             取消
           </Button>

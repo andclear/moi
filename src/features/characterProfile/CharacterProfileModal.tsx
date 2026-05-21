@@ -259,7 +259,7 @@ export function CharacterProfileModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-[rgba(61,52,40,0.42)] px-4 py-6"
+      className="fixed inset-0 z-50 grid place-items-center bg-[rgba(61,52,40,0.42)] px-2 py-3 sm:px-4 sm:py-6"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
@@ -273,7 +273,7 @@ export function CharacterProfileModal({
         aria-labelledby="character-profile-title"
         className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg)] text-[var(--animal-text-body)] shadow-[0_18px_50px_rgba(61,52,40,0.28)]"
       >
-        <header className="flex items-start justify-between gap-4 border-b-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-6 py-5">
+        <header className="flex items-start justify-between gap-3 border-b-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
           <div className="min-w-0">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--animal-primary)]">
               Character Profile
@@ -295,7 +295,7 @@ export function CharacterProfileModal({
           </Button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
           {errorMessage ? (
             <p className="mb-4 rounded-[var(--animal-radius)] border-2 border-[var(--animal-error)] bg-[rgba(224,90,90,0.1)] p-3 text-sm font-bold leading-6 text-[var(--animal-error-active)]">
               {errorMessage}
@@ -316,7 +316,7 @@ export function CharacterProfileModal({
           </div>
         </div>
 
-        <footer className="flex flex-wrap justify-end gap-3 border-t-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-6 py-4">
+        <footer className="echo-mobile-action-row flex flex-wrap justify-end gap-3 border-t-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-4 py-4 sm:px-6">
           <Button type="button" variant="ghost" onClick={onClose}>
             取消
           </Button>
@@ -325,7 +325,7 @@ export function CharacterProfileModal({
             type="primary"
             loading={isRefreshing}
             disabled={isRefreshing}
-            className="min-w-44 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)]"
+            className="w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] sm:min-w-44 sm:w-auto"
             onClick={() => void onRefresh()}
           >
             {isRefreshing ? "更新中..." : "根据岛民档案更新"}
@@ -334,7 +334,7 @@ export function CharacterProfileModal({
             type="button"
             loading={isSaving}
             disabled={isSaving}
-            className="min-w-44 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)]"
+            className="w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] sm:min-w-44 sm:w-auto"
             onClick={() => void handleSave()}
           >
             <Save aria-hidden="true" size={17} />

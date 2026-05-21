@@ -137,7 +137,7 @@ export function LibraryPage() {
   }
 
   return (
-    <section className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-6">
+    <section className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-4 sm:p-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--echo-muted)]">
@@ -178,7 +178,7 @@ export function LibraryPage() {
                     导出状态：{exports[0] ? `${exports[0].format.toUpperCase()} · ${new Date(exports[0].createdAt).toLocaleString()}` : "尚未导出"}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="echo-mobile-action-row flex flex-wrap gap-2">
                   <Button asChild size="sm">
                     <Link to={`/workspace/${project.id}/${project.currentStep}`}>
                       <PencilLine aria-hidden="true" size={15} />

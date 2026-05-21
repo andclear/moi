@@ -218,7 +218,7 @@ export function AdminLoginPage() {
 
   if (!token) {
     return (
-      <section className="mx-auto max-w-lg border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-8 text-[var(--echo-ink)] shadow-[0_4px_10px_rgba(107,92,67,0.28)]">
+      <section className="mx-auto max-w-lg border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-5 text-[var(--echo-ink)] shadow-[0_4px_10px_rgba(107,92,67,0.28)] sm:p-8">
         <LockKeyhole aria-hidden="true" size={28} />
         <h1 className="mt-5 font-display text-3xl font-black">后台登录</h1>
         <p className="mt-4 font-mono text-sm leading-6">
@@ -261,8 +261,8 @@ export function AdminLoginPage() {
   }
 
   return (
-    <section className="grid gap-6 lg:grid-cols-2">
-      <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-6">
+    <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+      <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-4 sm:p-6">
         <Server aria-hidden="true" size={24} className="text-[var(--echo-paper)]" />
         <h1 className="mt-4 font-display text-3xl font-black text-[var(--echo-paper)]">
           预置模型渠道
@@ -294,7 +294,7 @@ export function AdminLoginPage() {
         </div>
       </article>
 
-      <article className="border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-6 text-[var(--echo-ink)]">
+      <article className="border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-4 text-[var(--echo-ink)] sm:p-6">
         <KeyRound aria-hidden="true" size={24} />
         <h2 className="mt-4 font-display text-2xl font-black">激活码</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
@@ -344,7 +344,7 @@ export function AdminLoginPage() {
             placeholder="例如：123&#10;LPB-abc"
           />
         </label>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="echo-mobile-action-row mt-5 flex flex-wrap gap-3">
           <Button type="button" onClick={createCode}>
             <KeyRound aria-hidden="true" size={18} />
             生成激活码
@@ -365,7 +365,7 @@ export function AdminLoginPage() {
           </div>
         )}
         {error && <p className="mt-4 font-mono text-sm text-[var(--echo-stamp)]">{error}</p>}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y-2 border-[var(--echo-ink)] py-3">
+        <div className="mt-5 flex flex-col items-start gap-3 border-y-2 border-[var(--echo-ink)] py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
             <ListFilter aria-hidden="true" size={16} />
             {(
@@ -419,7 +419,7 @@ export function AdminLoginPage() {
             </div>
           ))}
         </div>
-        <div className="mt-5 flex items-center justify-end gap-2">
+        <div className="echo-mobile-action-row mt-5 flex items-center justify-end gap-2">
           <button
             type="button"
             disabled={page <= 1}

@@ -19,7 +19,7 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
   }
 
   return (
-    <section className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
+    <section className="border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.28fr)]">
         <div className="min-w-0">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
@@ -34,8 +34,8 @@ export function ProfileReportPanel({ project }: ProfileReportPanelProps) {
         </div>
 
         <div className="min-w-0">
-          <div className="flex flex-wrap items-end gap-3 rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.36)] p-4">
-            <label className="grid min-w-48 flex-1 gap-2 text-sm font-bold text-[var(--echo-paper)]">
+          <div className="grid gap-3 rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.36)] p-4 sm:flex sm:flex-wrap sm:items-end">
+            <label className="grid min-w-0 flex-1 gap-2 text-sm font-bold text-[var(--echo-paper)] sm:min-w-48">
               报告版本
               <input
                 value={versionLabel}

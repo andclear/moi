@@ -260,7 +260,7 @@ export function StepExport() {
             </div>
 
             <div className="grid min-w-0 gap-5">
-              <div className="grid items-start gap-4 rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.36)] p-5 md:grid-cols-[minmax(0,1fr)_minmax(8rem,11rem)_minmax(10rem,14rem)]">
+              <div className="grid items-start gap-4 rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.36)] p-4 md:grid-cols-[minmax(0,1fr)_minmax(8rem,11rem)_minmax(10rem,14rem)] sm:p-5">
                 <label className="grid self-start gap-3 text-sm font-bold text-[var(--echo-paper)]">
                   角色卡名称
                   <input
@@ -288,7 +288,7 @@ export function StepExport() {
               </div>
 
               <div className="grid gap-4">
-                <section className={`rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5 ${isCompleting ? "animate-pulse" : ""}`}>
+                <section className={`rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 sm:p-5 ${isCompleting ? "animate-pulse" : ""}`}>
                   <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
                     <div className="flex min-w-0 items-start gap-3">
                       {cardCompletion ? (
@@ -335,7 +335,7 @@ export function StepExport() {
                   )}
                 </section>
 
-                <section className="rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
+                <section className="rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 sm:p-5">
                   <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
                     <div className="flex min-w-0 items-start gap-3">
                       <FileJson aria-hidden="true" size={22} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
@@ -361,7 +361,7 @@ export function StepExport() {
                   </div>
                 </section>
 
-                <section className="rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5">
+                <section className="rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 sm:p-5">
                   <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
                     <div className="min-w-0">
                       <div className="flex items-start gap-3">
@@ -375,8 +375,8 @@ export function StepExport() {
                           </p>
                         </div>
                       </div>
-                      <div className="mt-5 flex flex-wrap items-center gap-3">
-                        <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-5 text-sm font-black text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--animal-border-hover)] hover:shadow-[0_5px_0_0_var(--animal-shadow-input)]">
+                      <div className="mt-5 grid gap-3 sm:flex sm:flex-wrap sm:items-center">
+                        <label className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-[var(--animal-radius-pill)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-5 text-sm font-black text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--animal-border-hover)] hover:shadow-[0_5px_0_0_var(--animal-shadow-input)] sm:w-fit">
                           <Upload aria-hidden="true" size={17} />
                           选择图片
                           <input
@@ -391,7 +391,7 @@ export function StepExport() {
                         </span>
                       </div>
                       <div className="mt-5 rounded-[var(--animal-radius-sm)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.34)] p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="echo-mobile-action-row flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <h3 className="font-display text-xl font-black text-[var(--echo-paper)]">
                               文生图提示词

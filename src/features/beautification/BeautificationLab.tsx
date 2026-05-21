@@ -325,7 +325,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
                     className="mt-2 h-12 w-full min-w-0 rounded-[20px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-4 font-display text-xl font-black text-[var(--echo-paper)] outline-none focus:border-[var(--animal-focus-yellow)]"
                   />
                 </div>
-                <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
+                <div className="echo-mobile-action-row flex flex-wrap items-center justify-start gap-2 lg:justify-end">
                   <span className="inline-flex h-8 items-center gap-1.5 rounded-[var(--animal-radius-pill)] border border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] px-3 font-mono text-[11px] font-black text-[var(--animal-primary-active)]">
                     <Check aria-hidden="true" size={14} />
                     已自动保存
@@ -431,7 +431,7 @@ export function BeautificationLab({ project, onProjectChange }: BeautificationLa
             </section>
 
             <section className="echo-text-card border-2 border-[var(--echo-line)]">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="echo-mobile-action-row mb-3 flex flex-wrap items-center justify-between gap-3">
                 <h3 className="font-display text-xl font-black text-[var(--echo-paper)]">
                   美化代码
                 </h3>

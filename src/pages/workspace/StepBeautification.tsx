@@ -89,7 +89,7 @@ export function StepBeautification() {
 
         <BeautificationLab project={project} onProjectChange={setProject} />
 
-        <section className="echo-section-card flex flex-wrap items-center justify-between gap-4">
+        <section className="echo-section-card echo-mobile-action-row flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <Sparkles aria-hidden="true" size={22} className="mt-1 text-[var(--animal-primary)]" />
             <div>

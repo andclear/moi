@@ -143,7 +143,7 @@ function DiaryDecodePanel({
         </p>
       )}
 
-      <div className="mt-6 overflow-visible rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-5 shadow-[0_3px_0_0_var(--animal-shadow-input)]">
+      <div className="mt-6 overflow-visible rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.42)] p-3 shadow-[0_3px_0_0_var(--animal-shadow-input)] sm:p-5">
         <div className="echo-long-text max-w-none overflow-visible text-[var(--animal-text-body)]">
           {parts.map((part, index) => {
             const match = /^\[\[(.+)\]\]$/.exec(part);
@@ -163,12 +163,20 @@ function DiaryDecodePanel({
                 key={blankKey}
                 className="relative mx-1 inline-flex items-center align-baseline"
               >
+                {blank && isOpen ? (
+                  <button
+                    type="button"
+                    aria-label="关闭破译选项"
+                    className="echo-mobile-sheet-backdrop"
+                    onClick={() => setOpenedBlankKey("")}
+                  />
+                ) : null}
                 <button
                   type="button"
                   disabled={disabled || !blank}
                   onClick={() => setOpenedBlankKey(isOpen ? "" : blankKey)}
                   className={cn(
-                    "inline-flex min-h-9 items-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-1 align-baseline text-sm font-black transition-all",
+                    "echo-diary-blank-trigger inline-flex min-h-9 items-center rounded-[var(--animal-radius-pill)] border-2 px-4 py-1 align-baseline text-sm font-black transition-all",
                     selectedOption
                       ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
                       : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-muted)] shadow-[0_3px_0_0_var(--animal-shadow-input)] hover:-translate-y-0.5 hover:border-[var(--animal-primary)]",
@@ -178,7 +186,7 @@ function DiaryDecodePanel({
                 </button>
 
                 {blank && isOpen ? (
-                  <span className="absolute left-0 top-full z-30 mt-3 grid w-[min(78vw,22rem)] gap-3 rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_10px_22px_rgba(61,52,40,0.18)]">
+                  <span className="echo-diary-blank-popover absolute left-0 top-full z-30 mt-3 grid w-[min(78vw,22rem)] gap-3 rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_10px_22px_rgba(61,52,40,0.18)]">
                     <span className="text-sm font-black leading-6 text-[var(--animal-text)]">
                       {blank.label}
                     </span>
@@ -682,7 +690,7 @@ export function StepProfile() {
                 disabled={updateGenerationTask.status === "running"}
                 onChange={(blankKey, optionKey) => void handleSelectDiaryBlank(blankKey, optionKey)}
               />
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="echo-mobile-action-row flex flex-wrap items-center gap-4">
                 <GenerationButton
                   idleLabel="重新生成日记"
                   runningLabel="正在重新生成日记"
@@ -704,7 +712,7 @@ export function StepProfile() {
                   onGenerate={handleUpdateDossier}
                   onCancel={() => cancel(updateGenerationKey)}
                   disabled={!completedDiaryText || generationTask.status === "running"}
-                  className="min-w-[13rem]"
+                  className="w-full sm:min-w-[13rem] sm:w-auto"
                   useAnimalLoadingButton
                 />
                 <p className="max-w-xl text-sm font-bold leading-7 text-[var(--animal-text-muted)]">

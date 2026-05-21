@@ -19,17 +19,17 @@ export function LandingPage() {
       <div className="mist-layer mist-layer-a" />
       <div className="mist-layer mist-layer-b" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(248,248,240,0.18),rgba(240,232,216,0.92))]" />
-      <section className="relative mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 py-16 text-center">
-        <div className="fade-line rounded-[136px] bg-[var(--animal-bg-content)] p-8 shadow-[0_8px_24px_rgba(61,52,40,0.16)]">
-          <AnimalIcon name="icon-miles" size={116} />
+      <section className="relative mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4 py-12 text-center sm:px-6 sm:py-16">
+        <div className="fade-line rounded-[136px] bg-[var(--animal-bg-content)] p-6 shadow-[0_8px_24px_rgba(61,52,40,0.16)] sm:p-8">
+          <AnimalIcon name="icon-miles" size={96} />
         </div>
         <p className="fade-line mt-8 text-sm font-black uppercase tracking-[0.3em] text-[var(--animal-text-muted)]">
           MOI
         </p>
-        <h1 className="mt-4 font-display text-5xl font-black text-[var(--animal-text)] drop-shadow-[0_3px_0_rgba(255,255,255,0.72)]">
+        <h1 className="mt-4 font-display text-4xl font-black text-[var(--animal-text)] drop-shadow-[0_3px_0_rgba(255,255,255,0.72)] sm:text-5xl">
           来岛上
         </h1>
-        <div className="mt-10 space-y-5 font-mono text-xl leading-10 text-[var(--animal-text-body)] md:text-2xl md:leading-[3.25rem]">
+        <div className="mt-8 space-y-4 font-mono text-lg leading-9 text-[var(--animal-text-body)] sm:mt-10 sm:space-y-5 md:text-2xl md:leading-[3.25rem]">
           <p className="fade-line [animation-delay:400ms]">
             TA 并非诞生于键盘敲击之中
           </p>

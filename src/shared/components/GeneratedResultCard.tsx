@@ -10,7 +10,7 @@ interface GeneratedResultCardProps {
 
 export function GeneratedResultCard({ title, eyebrow, content, footer }: GeneratedResultCardProps) {
   return (
-    <article className="rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 text-[var(--animal-text-body)] shadow-[0_4px_10px_rgba(107,92,67,0.3)]">
+    <article className="rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-[var(--animal-text-body)] shadow-[0_4px_10px_rgba(107,92,67,0.3)] sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           {eyebrow && (

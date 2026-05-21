@@ -523,7 +523,7 @@ export function StepWorld() {
                   className="mt-3 min-h-40 w-full resize-y border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-4 font-mono text-base leading-8 text-[var(--echo-text)] outline-none placeholder:text-[var(--echo-muted)] focus:border-[var(--echo-paper)]"
                 />
               </label>
-              <div className="mt-4 flex flex-wrap items-center gap-3">
+              <div className="echo-mobile-action-row mt-4 flex flex-wrap items-center gap-3">
                 <label className="font-mono text-xs text-[var(--echo-muted)]">
                   本次条数
                   <select
@@ -574,11 +574,11 @@ export function StepWorld() {
                       : "echo-text-card"
                   }
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
                     <input
                       value={draft.title}
                       onChange={(event) => handleDraftChange(entry, { title: event.target.value })}
-                      className="min-h-12 min-w-0 flex-1 rounded-[18px] border-2 border-transparent bg-[rgba(255,255,255,0.28)] px-4 py-2 font-display text-2xl font-black leading-8 text-[var(--echo-paper)] outline-none focus:border-[var(--animal-primary)]"
+                      className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border-2 border-transparent bg-[rgba(255,255,255,0.28)] px-4 py-2 font-display text-xl font-black leading-8 text-[var(--echo-paper)] outline-none focus:border-[var(--animal-primary)] sm:text-2xl"
                     />
                     <span
                       className={
@@ -603,7 +603,7 @@ export function StepWorld() {
                       className="mt-3 w-full border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 py-2 font-mono text-xs text-[var(--echo-text)] outline-none focus:border-[var(--echo-paper)]"
                     />
                   ) : null}
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="echo-mobile-action-row mt-4 flex flex-wrap gap-2">
                     <Button
                       type="button"
                       size="sm"
@@ -658,7 +658,7 @@ export function StepWorld() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="echo-mobile-action-row flex flex-wrap items-center justify-between gap-3">
             <Button type="button" variant="secondary" onClick={() => setIsDebugOpen(true)}>
               <Bug aria-hidden="true" size={16} />
               调试

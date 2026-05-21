@@ -63,8 +63,8 @@ export function SettingsPage() {
   }
 
   return (
-    <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-      <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-6">
+    <section className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <article className="border-2 border-[var(--echo-line)] bg-[var(--echo-panel)] p-4 sm:p-6">
         <Server aria-hidden="true" size={24} className="text-[var(--echo-paper)]" />
         <h1 className="mt-4 font-display text-3xl font-black text-[var(--echo-paper)]">
           API 与模型设置
@@ -167,7 +167,7 @@ export function SettingsPage() {
           {errorMessage && (
             <p className="font-mono text-sm text-[var(--echo-stamp)]">{errorMessage}</p>
           )}
-          <div className="flex items-center gap-3">
+          <div className="echo-mobile-action-row flex items-center gap-3">
             <Button type="submit" loading={status === "saving"} disabled={status === "saving"}>
               {status === "saving" ? null : <Save aria-hidden="true" size={18} />}
               {status === "saving" ? "正在保存" : "保存设置"}
@@ -180,7 +180,7 @@ export function SettingsPage() {
       </article>
 
       {channel.presetEnabled && (
-        <article className="border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-6 text-[var(--echo-ink)]">
+        <article className="border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-4 text-[var(--echo-ink)] sm:p-6">
           <KeyRound aria-hidden="true" size={24} />
           <h2 className="mt-4 font-display text-2xl font-black">预置调用激活</h2>
           <p className="mt-4 font-mono text-sm leading-6">

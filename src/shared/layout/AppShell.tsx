@@ -30,10 +30,10 @@ export function AppShell() {
     <div className="min-h-screen bg-[var(--echo-bg)] text-[var(--echo-text)]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(130,213,187,0.24),transparent_30%),radial-gradient(circle_at_86%_8%,rgba(247,205,103,0.22),transparent_24%)]" />
       <header className="sticky top-0 z-40 border-b-2 border-[var(--animal-border)] bg-[rgba(255,252,244,0.9)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-3 sm:px-6 sm:py-4">
           <NavLink to="/workspace" className="group flex items-center gap-3">
             <AnimalIcon name="icon-miles" size={34} />
-            <span className="font-display text-2xl font-black tracking-normal text-[var(--animal-text)]">
+            <span className="font-display text-xl font-black tracking-normal text-[var(--animal-text)] sm:text-2xl">
               来岛上
             </span>
           </NavLink>
@@ -47,7 +47,7 @@ export function AppShell() {
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      "flex h-10 cursor-pointer items-center gap-2 rounded-[var(--animal-radius-sm)] border-2 px-3 text-sm font-bold transition-all duration-150",
+                      "flex h-10 cursor-pointer items-center gap-2 rounded-[var(--animal-radius-sm)] border-2 px-2 text-sm font-bold transition-all duration-150 sm:px-3",
                       isActive
                         ? "border-[var(--animal-sidebar-active)] bg-[var(--animal-sidebar-active)] text-white shadow-[0_3px_0_0_var(--animal-shadow-input)]"
                         : "border-transparent bg-transparent text-[var(--animal-text-muted)] hover:bg-[var(--animal-sidebar-hover)] hover:text-[var(--animal-text)]",
@@ -66,7 +66,7 @@ export function AppShell() {
           </nav>
         </div>
       </header>
-      <main className="relative mx-auto max-w-7xl px-6 py-8">
+      <main className="relative mx-auto max-w-7xl px-2 py-4 sm:px-6 sm:py-8">
         <PageTransition>
           <Outlet />
         </PageTransition>

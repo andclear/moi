@@ -308,7 +308,7 @@ export function StepQuestionnaire() {
 
   return (
     <main className="min-h-screen bg-[var(--animal-bg)] text-[var(--animal-text)]">
-      <article className="mx-auto my-8 w-[calc(100%-2rem)] max-w-4xl overflow-hidden rounded-[34px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5 shadow-[0_10px_0_0_var(--animal-shadow-input)] sm:my-12 sm:p-9">
+      <article className="mx-auto my-4 w-[calc(100%-1rem)] max-w-4xl overflow-hidden rounded-[28px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 shadow-[0_10px_0_0_var(--animal-shadow-input)] sm:my-12 sm:w-[calc(100%-2rem)] sm:rounded-[34px] sm:p-9">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
           登岛小问卷
         </p>
@@ -361,7 +361,7 @@ export function StepQuestionnaire() {
                         {question.description}
                       </p>
                     )}
-                    <div className="mt-4 flex flex-wrap gap-3">
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap">
                       {question.options.map((option) => {
                         const isSelected = answers[question.id]?.optionId === option.id;
                         return (

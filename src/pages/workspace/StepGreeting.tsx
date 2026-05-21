@@ -333,7 +333,7 @@ export function StepGreeting() {
                     )}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-[220px] flex-1 space-y-2">
+                      <div className="min-w-0 flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold">
                           {isPrimary ? (
                             <span className="rounded-full border-2 border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] px-3 py-1 text-[var(--animal-primary-active)]">
@@ -377,7 +377,7 @@ export function StepGreeting() {
                       className="mt-4 min-h-[32rem] w-full resize-y rounded-[28px] border-2 border-[var(--animal-border-light)] bg-[var(--animal-bg-input)] px-5 py-4 font-mono text-base leading-8 text-[var(--echo-text)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none transition focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_3px_0_0_var(--animal-focus-yellow-dark)]"
                     />
 
-                    <div className="mt-4 flex flex-wrap gap-3">
+                    <div className="echo-mobile-action-row mt-4 flex flex-wrap gap-3">
                       {adopted ? null : (
                         <Button type="button" onClick={() => void handleAdoptVariant(variant)}>
                           <CheckCircle2 aria-hidden="true" size={16} />

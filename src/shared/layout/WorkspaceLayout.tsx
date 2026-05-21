@@ -12,8 +12,8 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
   const { activePanel, isSidebarOpen, closePanel, openPanel } = useUiStore();
 
   return (
-    <div className="relative min-h-[calc(100vh-9rem)] overflow-hidden rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(247,243,223,0.78)] shadow-[0_8px_24px_0_rgba(61,52,40,0.12)]">
-      <div className="border-b-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.46)] px-4 py-3">
+    <div className="relative min-h-[calc(100vh-9rem)] overflow-hidden rounded-[var(--animal-radius)] border border-[var(--animal-border)] bg-[rgba(247,243,223,0.78)] shadow-[0_8px_24px_0_rgba(61,52,40,0.12)] sm:rounded-[var(--animal-radius-lg)] sm:border-2">
+      <div className="border-b border-[var(--animal-border)] bg-[rgba(255,255,255,0.46)] px-2 py-2 sm:border-b-2 sm:px-4 sm:py-3">
         <div className="flex flex-nowrap items-center justify-end gap-2">
           <ApiStatusBadge />
           <Button
@@ -57,7 +57,7 @@ export function WorkspaceLayout({ children }: PropsWithChildren) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 32 }}
                 transition={{ duration: 0.22 }}
-                className="fixed inset-y-0 right-0 z-40 w-[min(96vw,50vw)] min-w-[min(96vw,380px)] border-l-2 border-[var(--animal-border)] shadow-[-12px_0_24px_rgba(61,52,40,0.14)]"
+                className="fixed inset-y-0 right-0 z-40 w-screen border-l-2 border-[var(--animal-border)] shadow-[-12px_0_24px_rgba(61,52,40,0.14)] sm:w-[min(96vw,50vw)] sm:min-w-[min(96vw,380px)]"
               >
                 <div className="flex h-full flex-col bg-[var(--animal-bg-content)]">
                   <div className="flex justify-end border-b-2 border-[var(--animal-border)] p-3">

@@ -475,7 +475,7 @@ export function StepHello() {
             </div>
             <Button
               type="button"
-              className="border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)]"
+              className="w-full border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)] sm:w-fit"
               onClick={() => void handleTakeAway()}
             >
               <Archive aria-hidden="true" size={16} />
@@ -485,7 +485,7 @@ export function StepHello() {
         </section>
 
         <section className="echo-text-card">
-          <div className="flex flex-wrap gap-2" role="tablist" aria-label="对话模式">
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap" role="tablist" aria-label="对话模式">
             {(["greeting", "casual"] as const).map((item) => (
               <button
                 key={item}
@@ -507,8 +507,8 @@ export function StepHello() {
 
         </section>
 
-        <section className="echo-text-card grid h-[calc(100vh-24rem)] min-h-[460px] max-h-[720px] grid-rows-[1fr_auto] overflow-hidden p-0">
-          <div ref={scrollRef} className="space-y-4 overflow-auto p-4 md:p-5">
+        <section className="echo-text-card grid h-[calc(100vh-18rem)] min-h-[420px] max-h-[720px] grid-rows-[1fr_auto] overflow-hidden p-0 sm:h-[calc(100vh-24rem)] sm:min-h-[460px]">
+          <div ref={scrollRef} className="space-y-4 overflow-auto p-3 md:p-5">
             {currentSession.messages.length === 0 ? (
               <EmptyState
                 icon={MessageCircle}
@@ -578,7 +578,7 @@ export function StepHello() {
                 />
                 <Button
                   type="button"
-                  className="self-end border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)]"
+                  className="w-full border-[var(--animal-primary)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] active:shadow-[0_1px_0_0_var(--animal-primary-active)] md:w-auto md:self-end"
                   loading={isSending}
                   disabled={!inputText.trim() || isSending}
                   onClick={() => void handleSend()}
@@ -636,15 +636,15 @@ const ChatBubble = memo(function ChatBubble({
     (renderedContent.didReplace || hasHtmlLikeContent(renderedContent.content));
 
   return (
-    <article className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
+    <article className={cn("flex gap-2 sm:gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser && <Avatar label="TA" />}
       <div
         className={cn(
           isUser && isEditing
-            ? "order-first w-[min(920px,84%)] max-w-[calc(100%-4rem)]"
+            ? "order-first w-[min(920px,92%)] max-w-[calc(100%-2.75rem)] sm:w-[min(920px,84%)] sm:max-w-[calc(100%-4rem)]"
             : isUser
-              ? "order-first max-w-[min(780px,84%)]"
-              : "w-[min(980px,92%)] max-w-[calc(100%-4rem)]",
+              ? "order-first max-w-[min(780px,92%)] sm:max-w-[min(780px,84%)]"
+              : "w-[min(980px,94%)] max-w-[calc(100%-2.75rem)] sm:w-[min(980px,92%)] sm:max-w-[calc(100%-4rem)]",
         )}
       >
         <div
@@ -662,7 +662,7 @@ const ChatBubble = memo(function ChatBubble({
                 onChange={(event) => onEditingTextChange(event.target.value)}
                 className="min-h-24 w-full border-2 border-[var(--echo-line)] bg-[rgba(255,255,255,0.76)] p-3 font-mono text-sm leading-6 text-[var(--echo-text)] outline-none focus:border-[var(--animal-primary)]"
               />
-              <div className="flex justify-end gap-2">
+              <div className="echo-mobile-action-row flex justify-end gap-2">
                 <Button type="button" variant="ghost" size="sm" onClick={onCancelEdit}>
                   <X aria-hidden="true" size={14} />
                   取消
@@ -820,7 +820,7 @@ function RevisionDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(61,52,40,0.45)] p-4">
-      <section className="max-h-[88vh] w-full max-w-3xl overflow-auto border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-5 shadow-[0_8px_24px_rgba(61,52,40,0.22)]">
+      <section className="max-h-[88vh] w-full max-w-3xl overflow-auto border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-4 shadow-[0_8px_24px_rgba(61,52,40,0.22)] sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
@@ -908,7 +908,7 @@ function RevisionDialog({
           </section>
         )}
 
-        <div className="mt-5 flex flex-wrap justify-end gap-3">
+        <div className="echo-mobile-action-row mt-5 flex flex-wrap justify-end gap-3">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>
             取消
           </Button>

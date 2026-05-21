@@ -338,8 +338,13 @@ input[type="radio"]:focus {
 .echo-long-text {
   max-width: 76ch;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font-size: 0.98rem;
   line-height: 1.9;
+}
+
+.echo-mobile-sheet-backdrop {
+  display: none;
 }
 
 section.border,
@@ -459,5 +464,105 @@ code {
   .animal-button-loading svg {
     animation-duration: 1s !important;
     animation-iteration-count: infinite !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .echo-workspace-page {
+    padding: 0.75rem;
+  }
+
+  .echo-section-card {
+    padding: 1rem;
+  }
+
+  .echo-side-panel,
+  .echo-text-card {
+    padding: 0.875rem;
+  }
+
+  .echo-workspace-page h1,
+  .echo-section-card h1 {
+    font-size: 2rem !important;
+    line-height: 1.16 !important;
+  }
+
+  .echo-workspace-page h2,
+  .echo-section-card h2,
+  .echo-text-card h2 {
+    font-size: 1.45rem !important;
+    line-height: 1.22 !important;
+  }
+
+  .echo-workspace-page h3,
+  .echo-text-card h3 {
+    font-size: 1.18rem !important;
+    line-height: 1.28 !important;
+  }
+
+  .echo-workspace-page button,
+  .echo-workspace-page input,
+  .echo-workspace-page textarea,
+  .echo-workspace-page select,
+  .echo-section-card button,
+  .echo-section-card input,
+  .echo-section-card textarea,
+  .echo-section-card select {
+    max-width: 100%;
+  }
+
+  .echo-workspace-page textarea,
+  .echo-section-card textarea,
+  .echo-text-card textarea {
+    min-height: 8rem;
+    font-size: 0.95rem !important;
+    line-height: 1.65 !important;
+  }
+
+  .echo-long-text {
+    max-width: 100%;
+    font-size: 0.93rem;
+    line-height: 1.75;
+  }
+
+  .echo-mobile-action-row {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    align-items: stretch !important;
+  }
+
+  .echo-mobile-action-row > *,
+  .echo-mobile-action-row button,
+  .echo-mobile-action-row a {
+    width: 100%;
+  }
+
+  .echo-mobile-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    border: 0;
+    background: rgba(61, 52, 40, 0.32);
+    box-shadow: none !important;
+  }
+
+  .echo-diary-blank-trigger {
+    max-width: min(78vw, 18rem);
+    white-space: normal;
+    text-align: left;
+  }
+
+  .echo-diary-blank-popover {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    z-index: 40 !important;
+    width: 100vw !important;
+    max-height: min(72vh, 28rem);
+    overflow: auto;
+    margin: 0 !important;
+    border-radius: var(--animal-radius-lg) var(--animal-radius-lg) 0 0 !important;
+    padding: 1rem !important;
+    box-shadow: 0 -12px 28px rgba(61, 52, 40, 0.22) !important;
   }
 }

@@ -88,7 +88,7 @@ export function StepPost() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-4 py-20">
+    <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-2 py-8 sm:px-4 sm:py-20">
       <article className="w-full max-w-3xl border-2 border-[var(--echo-line)] bg-[var(--animal-bg-content)] p-5 text-[var(--echo-ink)] shadow-[0_4px_10px_rgba(107,92,67,0.28)] sm:p-8">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-stamp)]">
           写下岛民便笺
@@ -110,11 +110,11 @@ export function StepPost() {
               setBrief(event.target.value);
               setHint(null);
             }}
-            className="min-h-64 w-full resize-y rounded-[30px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-6 py-5 font-mono text-lg leading-9 text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] hover:border-[var(--animal-border-hover)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_4px_0_0_var(--animal-focus-yellow-dark)]"
+            className="min-h-52 w-full resize-y rounded-[30px] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-input)] px-4 py-4 font-mono text-base leading-8 text-[var(--animal-text-body)] shadow-[0_4px_0_0_var(--animal-shadow-input)] outline-none placeholder:text-[var(--animal-text-disabled)] hover:border-[var(--animal-border-hover)] focus:border-[var(--animal-focus-yellow)] focus:shadow-[0_4px_0_0_var(--animal-focus-yellow-dark)] sm:min-h-64 sm:px-6 sm:py-5 sm:text-lg sm:leading-9"
             placeholder="比如：TA 总在雨夜出现，话很少，像在等一封永远不会抵达的信。"
           />
 
-          <div className="grid gap-5 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.38)] p-4 sm:grid-cols-[minmax(0,1.15fr)_minmax(14rem,0.85fr)]">
+          <div className="grid gap-5 rounded-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[rgba(255,255,255,0.38)] p-3 sm:grid-cols-[minmax(0,1.15fr)_minmax(14rem,0.85fr)] sm:p-4">
           <fieldset>
             <legend className="mb-3 text-sm font-black text-[var(--animal-text)]">
               TA 的性别 <span className="text-[var(--animal-error)]">*</span>
@@ -194,7 +194,7 @@ export function StepPost() {
             loading={isSubmitting}
             disabled={isSubmitting}
             onClick={() => void handleStartQuestionnaire()}
-            className="h-14 min-w-52 border-[var(--animal-primary-active)] bg-[var(--animal-primary)] px-8 text-base text-white shadow-[0_6px_0_0_var(--animal-primary-active)] hover:shadow-[0_7px_0_0_var(--animal-primary-active)] active:shadow-[0_2px_0_0_var(--animal-primary-active)]"
+            className="h-14 w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] px-8 text-base text-white shadow-[0_6px_0_0_var(--animal-primary-active)] hover:shadow-[0_7px_0_0_var(--animal-primary-active)] active:shadow-[0_2px_0_0_var(--animal-primary-active)] sm:w-auto sm:min-w-52"
           >
             <MapPinned aria-hidden="true" size={18} />
             {isSubmitting ? "正在准备问卷" : "领取登岛问卷"}
