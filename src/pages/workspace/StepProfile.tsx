@@ -225,22 +225,32 @@ function DiaryDecodePanel({
                 <p className="text-sm font-black leading-6 text-[var(--animal-text)]">
                   {openedBlank.label}
                 </p>
-                <select
-                  value={selections[openedBlank.key] ?? ""}
-                  onChange={(event) => {
-                    onChange(openedBlank.key, event.target.value);
-                    setOpenedBlankKey("");
-                  }}
-                  disabled={disabled}
-                  className="h-auto min-h-14 w-full rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] px-4 py-3 text-base font-black leading-6 text-[var(--animal-text-body)] shadow-[0_3px_0_0_var(--animal-shadow-input)] outline-none"
-                >
-                  <option value="">请选择</option>
-                  {openedBlank.options.map((option) => (
-                    <option key={option.key} value={option.key}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid gap-2" role="listbox" aria-label={openedBlank.label}>
+                  {openedBlank.options.map((option) => {
+                    const isSelected = selections[openedBlank.key] === option.key;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        disabled={disabled}
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => {
+                          onChange(openedBlank.key, option.key);
+                          setOpenedBlankKey("");
+                        }}
+                        className={cn(
+                          "w-full rounded-[var(--animal-radius)] border-2 px-4 py-3 text-left text-sm font-black leading-6 shadow-[0_3px_0_0_var(--animal-shadow-input)] transition-colors",
+                          isSelected
+                            ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
+                            : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-body)]",
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 {openedSelectedOption ? (
                   <p className="text-sm font-bold leading-6 text-[var(--animal-text-muted)]">
                     {openedSelectedOption.meaning}
