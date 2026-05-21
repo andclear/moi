@@ -45,13 +45,25 @@ export const profileDraftResponseSchema = z.object({
   dossierMarkdown: z.string().min(1),
 });
 
+const optionalStringFromNullSchema = z.preprocess((value) => {
+  if (value === null) {
+    return undefined;
+  }
+
+  if (typeof value === "string" && !value.trim()) {
+    return undefined;
+  }
+
+  return value;
+}, z.string().min(1).optional());
+
 export const intakeQuestionnaireResponseSchema = z.object({
   title: z.string().min(1),
   questions: z
     .array(
       z.object({
         title: z.string().min(1),
-        description: z.string().optional(),
+        description: optionalStringFromNullSchema,
         options: z
           .array(
             z.object({
@@ -65,13 +77,28 @@ export const intakeQuestionnaireResponseSchema = z.object({
     .min(5),
 });
 
+
+
+const cleanObjectArray = (value: unknown) =>
+  Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : value;
+
+const cleanStringArray = (value: unknown) => {
+  if (!Array.isArray(value)) {
+    return value;
+  }
+
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+};
+
 export const profileChoiceResponseSchema = z.object({
   choices: z
     .array(
       z.object({
         title: z.string().min(1),
         content: z.string().min(1),
-        detail: z.string().optional(),
+        detail: optionalStringFromNullSchema,
         dossierAddition: z.string().min(1),
       }),
     )
@@ -81,23 +108,27 @@ export const profileChoiceResponseSchema = z.object({
 export const profileDiaryResponseSchema = z.object({
   title: z.string().min(1),
   diaryText: z.string().min(1),
-  note: z.string().optional(),
-  blanks: z
-    .array(
+  note: optionalStringFromNullSchema,
+  blanks: z.preprocess(
+    cleanObjectArray,
+    z.array(
       z.object({
-        key: z.string().min(1).optional(),
+        key: optionalStringFromNullSchema,
         label: z.string().min(1),
-        options: z
-          .array(
+        options: z.preprocess(
+          cleanObjectArray,
+          z.array(
             z.object({
               label: z.string().min(1),
               meaning: z.string().min(1),
             }),
           )
           .min(3),
+        ),
       }),
     )
     .min(3),
+  ),
 });
 
 export const profileDossierUpdateResponseSchema = z.object({
@@ -228,8 +259,8 @@ export const trialQuestionnaireSetResponseSchema = z.object({
           z.object({
             id: z.string().min(1),
             question: z.string().min(1),
-            interviewer: z.string().optional(),
-            intent: z.string().optional(),
+            interviewer: optionalStringFromNullSchema,
+            intent: optionalStringFromNullSchema,
           }),
         )
         .min(1),
@@ -241,7 +272,7 @@ export const trialAnswerResponseSchema = z.object({
   resultMarkdown: z.string().min(1),
   formalReplies: z.array(z.string().min(1)).min(1),
   innerMonologues: z.array(z.string().min(1)).min(1),
-  riskNotes: z.array(z.string().min(1)).default([]),
+  riskNotes: z.preprocess(cleanStringArray, z.array(z.string().min(1)).default([])),
 });
 
 export const trialAnswerSetResponseSchema = z.object({
@@ -255,22 +286,56 @@ export const trialAnswerSetResponseSchema = z.object({
             questionId: z.string().min(1),
             formalReply: z.string().min(1),
             innerMonologue: z.string().min(1),
-            riskSentences: z.array(z.string()).default([]),
+            riskSentences: z.preprocess(cleanStringArray, z.array(z.string()).default([])),
           }),
         )
         .min(1),
-      riskNotes: z.array(z.string()).default([]),
+      riskNotes: z.preprocess(cleanStringArray, z.array(z.string()).default([])),
     }),
   ),
 });
 
 export const trialRevisionResponseSchema = z.object({
   summary: z.string().min(1),
-  changes: z
-    .array(
+  changes: z.preprocess(
+    (value) => {
+      if (!Array.isArray(value)) {
+        return value;
+      }
+
+      return value
+        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+        .map<Record<string, unknown>>((item) => ({
+          ...item,
+          targetId: item.targetId === null ? undefined : item.targetId,
+        }))
+        .filter((item) => {
+          const source = item.source;
+          const hasRequiredText =
+            typeof item.title === "string" &&
+            item.title.trim() &&
+            typeof item.before === "string" &&
+            item.before.trim() &&
+            typeof item.after === "string" &&
+            item.after.trim() &&
+            typeof item.reason === "string" &&
+            item.reason.trim();
+
+          if (!hasRequiredText) {
+            return false;
+          }
+
+          if (source === "worldinfo" || source === "greeting") {
+            return typeof item.targetId === "string" && Boolean(item.targetId.trim());
+          }
+
+          return source === "dossier" || source === "character_info";
+        });
+    },
+    z.array(
       z.object({
         source: z.enum(["dossier", "character_info", "worldinfo", "greeting"]),
-        targetId: z.string().optional(),
+        targetId: optionalStringFromNullSchema,
         title: z.string().min(1),
         before: z.string().min(1),
         after: z.string().min(1),
@@ -278,6 +343,7 @@ export const trialRevisionResponseSchema = z.object({
       }),
     )
     .min(1),
+  ),
 });
 
 export const beautificationResponseSchema = z.object({
@@ -286,7 +352,7 @@ export const beautificationResponseSchema = z.object({
       comment: z.string().min(1),
       content: z.string().min(1),
       constant: booleanLikeSchema,
-      keys: z.array(z.string()).default([]),
+      keys: z.preprocess(cleanStringArray, z.array(z.string()).default([])),
       position: positionLikeSchema,
       depth: z.union([nonNegativeNumberLikeSchema, z.literal("")]).optional(),
       insertion_order: numberLikeSchema,
@@ -300,12 +366,13 @@ export const beautificationResponseSchema = z.object({
 });
 
 export const beautificationKeywordResponseSchema = z.object({
-  keys: z.array(z.string().min(1)).min(2).max(5),
+  keys: z.preprocess(cleanStringArray, z.array(z.string().min(1)).min(2).max(5)),
 });
 
 export const companionResponseSchema = z.object({
-  silhouettes: z
-    .array(
+  silhouettes: z.preprocess(
+    cleanObjectArray,
+    z.array(
       z.object({
         name: z.string().min(1),
         role: z.string().min(1),
@@ -315,21 +382,24 @@ export const companionResponseSchema = z.object({
       }),
     )
     .length(3),
-  exclusions: z
-    .array(
+  ),
+  exclusions: z.preprocess(
+    cleanObjectArray,
+    z.array(
       z.object({
         title: z.string().min(1),
         reason: z.string().min(1),
       }),
     )
     .length(2),
+  ),
   fragment: z.string().min(1),
 });
 
 export const exportCardCompletionResponseSchema = z.object({
   description: z.string().min(1),
   personality: z.string().min(1),
-  tags: z.array(z.string().min(1)).min(1).max(8),
+  tags: z.preprocess(cleanStringArray, z.array(z.string().min(1)).min(1).max(8)),
 });
 
 export const exportImagePromptResponseSchema = z.object({

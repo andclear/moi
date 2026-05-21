@@ -4,6 +4,7 @@ import { z } from "zod";
 import { extractJsonValue, parseLlmJson } from "@/features/llm/jsonResponse";
 import {
   intakeQuestionnaireResponseSchema,
+  profileDiaryResponseSchema,
   trialAnswerSetResponseSchema,
   trialQuestionnaireSetResponseSchema,
   trialRevisionResponseSchema,
@@ -122,5 +123,85 @@ describe("jsonResponse", () => {
     expect(parseLlmJson(revisionContent, trialRevisionResponseSchema).changes[0].before).toBe(
       "原文",
     );
+  });
+
+  it("不满意修改建议会过滤 targetId 无效的修改项", () => {
+    const content = JSON.stringify({
+      summary: "保留可应用的修改",
+      changes: [
+        {
+          source: "worldinfo",
+          targetId: null,
+          title: "缺少目标",
+          before: "原文",
+          after: "新文本",
+          reason: "没有目标 ID，不能应用",
+        },
+        {
+          source: "greeting",
+          targetId: "greeting_1",
+          title: "开场白",
+          before: "旧开场",
+          after: "新开场",
+          reason: "更符合反馈",
+        },
+        {
+          source: "dossier",
+          targetId: null,
+          title: "核心人格",
+          before: "旧人格",
+          after: "新人格",
+          reason: "档案不需要 targetId",
+        },
+      ],
+    });
+
+    const parsed = parseLlmJson(content, trialRevisionResponseSchema);
+
+    expect(parsed.changes).toHaveLength(2);
+    expect(parsed.changes[0].source).toBe("greeting");
+    expect(parsed.changes[1].targetId).toBeUndefined();
+  });
+
+  it("日记响应可以容忍可选字段为 null 并清理坏选项", () => {
+    const content = JSON.stringify({
+      title: "旧日记",
+      diaryText: "[[blank_1]]，[[blank_2]]，[[blank_3]]。",
+      note: null,
+      blanks: [
+        {
+          key: "blank_1",
+          label: "第一处",
+          options: [
+            { label: "选项 1", meaning: "含义 1" },
+            { label: "选项 2", meaning: "含义 2" },
+            { label: "选项 3", meaning: "含义 3" },
+          ],
+        },
+        {
+          key: null,
+          label: "第二处",
+          options: [
+            { label: "选项 1", meaning: "含义 1" },
+            { label: "选项 2", meaning: "含义 2" },
+            { label: "选项 3", meaning: "含义 3" },
+          ],
+        },
+        {
+          key: "blank_3",
+          label: "第三处",
+          options: [
+            { label: "选项 1", meaning: "含义 1" },
+            { label: "选项 2", meaning: "含义 2" },
+            { label: "选项 3", meaning: "含义 3" },
+          ],
+        },
+      ],
+    });
+
+    const parsed = parseLlmJson(content, profileDiaryResponseSchema);
+
+    expect(parsed.note).toBeUndefined();
+    expect(parsed.blanks[1].key).toBeUndefined();
   });
 });

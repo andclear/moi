@@ -68,6 +68,7 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         "",
         "## WorldInfo 字段硬规则",
         "worldinfo 必须是对象，不能为 null。",
+        "所有 JSON 字段都必须使用正确类型：字符串字段必须是字符串，布尔字段必须是 true/false，数组字段必须是数组，数字字段必须是数字。除明确允许的 depth 空字符串外，禁止输出 null。",
         "worldinfo 只能包含 comment、content、constant、keys、position、depth、insertion_order 这七个字段。",
         "comment 是条目名称；content 是写给角色扮演 AI 的格式与更新规则；constant 是布尔值；keys 是 string[]；position 是 0-4 的数字；depth 在 position=4 时为数字，其他情况可为空字符串；insertion_order 是数字。",
         worldInfoRule,
@@ -107,7 +108,7 @@ export function buildBeautificationKeywordMessages(input: {
     {
       role: "system",
       content:
-        '你只负责为 SillyTavern WorldInfo 生成关键词。输出严格 JSON：{"keys":["关键词1","关键词2"]}。keys 必须是 2 到 5 个简体中文短词，不要解释，不要 Markdown。',
+        '你只负责为 SillyTavern WorldInfo 生成关键词。输出严格 JSON：{"keys":["关键词1","关键词2"]}。keys 必须是 2 到 5 个简体中文短词，不能包含 null、空字符串或非字符串，不要解释，不要 Markdown。',
     },
     {
       role: "user",

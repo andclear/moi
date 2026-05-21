@@ -28,6 +28,7 @@ export function buildCompanionMessages(input: BuildCompanionMessagesInput): LlmM
         "每个配角都必须有独立欲望、与主角双向关系、可写入 WorldInfo 的生活痕迹。",
         "不要生成工具人、无条件迷恋者或只围绕主角旋转的人。",
         "严格输出 JSON object，字段为 silhouettes、exclusions、fragment。",
+        "所有 JSON 字段都必须使用正确类型：字符串字段必须是非空字符串，数组字段必须是数组。禁止输出 null；写不出的候选必须重新生成，不要用空值占位。",
         "语言必须是简体中文。",
       ].join("\n"),
     },

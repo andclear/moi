@@ -245,7 +245,7 @@ export function StepExport() {
     <section className="echo-workspace-page">
       <div className="echo-workspace-inner space-y-6">
         <article className="echo-section-card min-w-0">
-          <div className="grid gap-8 xl:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.28fr)]">
+          <div className="space-y-8">
             <div className="min-w-0 self-start">
               <Archive aria-hidden="true" size={26} className="text-[var(--echo-paper)]" />
               <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[var(--echo-muted)]">
