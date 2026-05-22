@@ -4,6 +4,9 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 
 const apiRoutes: Record<string, string> = {
   "/api/activate": "/api/activate.ts",
+  "/api/activate/status": "/api/activate/status.ts",
+  "/api/custom-llm": "/api/custom-llm.ts",
+  "/api/custom-llm/models": "/api/custom-llm/models.ts",
   "/api/llm": "/api/llm.ts",
   "/api/model-channel/status": "/api/model-channel/status.ts",
   "/api/admin/activation-codes": "/api/admin/activation-codes.ts",

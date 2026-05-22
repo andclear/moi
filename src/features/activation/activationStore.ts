@@ -52,10 +52,14 @@ export const useActivationStore = create<ActivationState>((set) => ({
         headers: { Authorization: `Bearer ${activation.sessionToken}` },
       });
       if (!response.ok) {
-        throw new Error("激活状态校验失败。");
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error ?? "激活状态校验失败。");
       }
 
-      const payload = (await response.json()) as ActivateResponse;
+      const payload = (await response.json().catch(() => null)) as ActivateResponse | null;
+      if (!payload?.status) {
+        throw new Error("激活状态校验失败。");
+      }
       const synced = await activationRepository.save({
         ...activation,
         status: payload.status ?? activation.status,
