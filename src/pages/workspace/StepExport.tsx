@@ -296,20 +296,41 @@ export function StepExport() {
     }
   }
 
+  async function loadLatestProjectForExport() {
+    if (!project) {
+      return undefined;
+    }
+
+    const latestProject = await projectService.resolveProject(project.id);
+    if (!latestProject) {
+      setPageError("导出前读取最新项目失败，请重新进入导出页后再试。");
+      return undefined;
+    }
+
+    setProject(latestProject);
+    if (!hasUsableCharacterProfile(latestProject.characterProfile)) {
+      setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息。");
+      return undefined;
+    }
+    if (!latestProject.exportDraft?.cardCompletion) {
+      setPageError("请先使用 AI 补全角色卡信息。");
+      return undefined;
+    }
+
+    return latestProject;
+  }
+
   async function handleJsonExport() {
     if (!project) {
       return;
     }
-    if (!hasValidCharacterProfile) {
-      setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息。");
-      return;
-    }
-    if (!cardCompletion) {
-      setPageError("请先使用 AI 补全角色卡信息。");
+    const exportProject = await loadLatestProjectForExport();
+    if (!exportProject) {
       return;
     }
 
-    await buildJson({ project, versionLabel, creator });
+    setPageError("");
+    await buildJson({ project: exportProject, versionLabel, creator });
     markStepCompleted("export");
   }
 
@@ -318,17 +339,13 @@ export function StepExport() {
       setPageError("请先上传一张 JPG、PNG 或 WebP 图片作为载体。");
       return;
     }
-    if (!hasValidCharacterProfile) {
-      setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息。");
-      return;
-    }
-    if (!cardCompletion) {
-      setPageError("请先使用 AI 补全角色卡信息。");
+    const exportProject = await loadLatestProjectForExport();
+    if (!exportProject) {
       return;
     }
 
     setPageError("");
-    await buildPng({ project, versionLabel, creator, imageFile });
+    await buildPng({ project: exportProject, versionLabel, creator, imageFile });
     markStepCompleted("export");
   }
 

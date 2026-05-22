@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { echoDb } from "@/db/db";
 import { projectRepository } from "@/db/repositories/projectRepository";
 import { generateCharacterProfileYaml } from "@/features/llm/llmClient";
-import { generateAndSaveCharacterProfile } from "@/features/characterProfile/characterProfileService";
+import {
+  generateAndSaveCharacterProfile,
+  saveCharacterProfileYaml,
+} from "@/features/characterProfile/characterProfileService";
 
 vi.mock("@/features/llm/llmClient", () => ({
   generateCharacterProfileYaml: vi.fn(),
@@ -164,5 +167,25 @@ describe("characterProfileService", () => {
     expect(updatedProject?.characterProfile?.yaml).toContain('性别: "女"');
     expect(updatedProject?.characterProfile?.yaml).not.toContain('年龄: "31"');
     expect(updatedProject?.characterProfile?.yaml).not.toContain('性别: "男"');
+  });
+
+  it("手动保存角色信息时写入用户修改后的字段", async () => {
+    const project = await projectRepository.create({ title: "角色信息手动保存测试" });
+    await projectRepository.update(project.id, {
+      characterProfile: {
+        yaml: '姓名: "陈露"\n个性心理:\n  核心驱动力: "旧内容"',
+        status: "succeeded",
+        retryCount: 1,
+        updatedAt: project.updatedAt,
+      },
+    });
+
+    const updatedProject = await saveCharacterProfileYaml(
+      project.id,
+      '姓名: "陈露"\n个性心理:\n  核心驱动力: "用户手动修改后的内容"',
+    );
+
+    expect(updatedProject?.characterProfile?.yaml).toContain('核心驱动力: "用户手动修改后的内容"');
+    expect(updatedProject?.characterProfile?.yaml).not.toContain("旧内容");
   });
 });
