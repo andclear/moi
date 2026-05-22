@@ -10,8 +10,9 @@ describe("characterProfileGuards", () => {
     expect(hasUsableCharacterProfile({ yaml: '"暂未明确"', status: "succeeded", retryCount: 0 })).toBe(false);
   });
 
-  it("只有成功状态且内容有效时才允许导出", () => {
-    expect(hasUsableCharacterProfile({ yaml: '姓名: "林雾"', status: "failed", retryCount: 3 })).toBe(false);
+  it("有有效内容时即使状态卡住也允许恢复使用", () => {
+    expect(hasUsableCharacterProfile({ yaml: '姓名: "林雾"', status: "generating", retryCount: 1 })).toBe(true);
+    expect(hasUsableCharacterProfile({ yaml: '姓名: "林雾"', status: "failed", retryCount: 3 })).toBe(true);
     expect(hasUsableCharacterProfile({ yaml: '姓名: "林雾"', status: "succeeded", retryCount: 1 })).toBe(true);
   });
 });

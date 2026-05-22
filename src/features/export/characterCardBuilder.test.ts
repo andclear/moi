@@ -141,6 +141,12 @@ describe("characterCardBuilder", () => {
       creator: "林屿",
       cardCompletion,
     };
+    project.characterProfile = {
+      yaml: '姓名: "林知晚"\n基本信息:\n  年龄: "24"\n  性别: "女"',
+      status: "succeeded",
+      retryCount: 1,
+      updatedAt: project.updatedAt,
+    };
 
     const card = buildCharacterCard({ project, versionLabel: "1.0", creator: "林屿" });
     const json = formatCharacterCardJson(card);
@@ -153,8 +159,10 @@ describe("characterCardBuilder", () => {
     expect(card.data.description).toBe(cardCompletion.description);
     expect(card.data.personality).toBe(cardCompletion.personality);
     expect(card.data.tags).toEqual(["雨夜", "旧图书馆", "边界感"]);
-    expect(card.creatorcomment).toBe(project.dossier.markdown);
-    expect(card.data.creator_notes).toBe(project.dossier.markdown);
+    expect(card.creatorcomment).toContain(project.dossier.markdown);
+    expect(card.creatorcomment).toContain("## 角色信息 YAML");
+    expect(card.creatorcomment).toContain('姓名: "林知晚"');
+    expect(card.data.creator_notes).toBe(card.creatorcomment);
     expect(card.data.creator).toBe("林屿");
     expect(card.data.character_version).toBe("1.0");
     expect(card.data.extensions.world).toBe("雨夜来客");

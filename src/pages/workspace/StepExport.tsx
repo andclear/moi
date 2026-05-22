@@ -113,11 +113,12 @@ export function StepExport() {
   const isBuilding = status === "building";
   const isCompleting = completionStatus === "running";
   const isGeneratingImagePrompt = imagePromptStatus === "running";
-  const isGeneratingCharacterProfile =
-    characterProfileStatus === "running" || project?.characterProfile?.status === "generating";
   const cardCompletion = project?.exportDraft?.cardCompletion;
   const imagePrompt = project?.exportDraft?.imagePrompt?.prompt;
   const hasValidCharacterProfile = hasUsableCharacterProfile(project?.characterProfile);
+  const isGeneratingCharacterProfile =
+    characterProfileStatus === "running" ||
+    (project?.characterProfile?.status === "generating" && !hasValidCharacterProfile);
   const canExport = Boolean(
     project &&
       cardName.trim() &&

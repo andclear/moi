@@ -31,6 +31,15 @@ function normalizeText(value: string, fallback = "") {
   return next && next !== "尚未听见" ? next : fallback;
 }
 
+function buildCreatorNotes(markdown: string, characterInfoYaml?: string) {
+  const yaml = characterInfoYaml?.trim();
+  if (!yaml) {
+    return markdown;
+  }
+
+  return [markdown, "## 角色信息 YAML", yaml].join("\n\n");
+}
+
 function isAdoptedGreeting(greeting: GreetingVariant) {
   return greeting.adopted === true;
 }
@@ -163,7 +172,7 @@ export function buildCharacterCard({
   const personality = normalizeText(completion?.personality ?? "", fallbackPersonality);
   const tags = completion?.tags?.length ? completion.tags : ["来岛上", "MOI"];
   const creatorName = normalizeText(creator ?? project.exportDraft?.creator ?? "", "MOI");
-  const creatorNotes = markdown;
+  const creatorNotes = buildCreatorNotes(markdown, project.characterProfile?.yaml);
   const alternateGreetings = adoptedGreetings(project.greetingVariants)
     .filter((item) => item.id !== greeting?.id)
     .map((item) => item.content.trim());

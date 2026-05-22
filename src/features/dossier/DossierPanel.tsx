@@ -6,6 +6,7 @@ import { useParams } from "react-router";
 import type { Project } from "@/db/types";
 import { projectService } from "@/db/services/projectService";
 import { CharacterProfileModal } from "@/features/characterProfile/CharacterProfileModal";
+import { hasUsableCharacterProfile } from "@/features/characterProfile/characterProfileGuards";
 import {
   generateAndSaveCharacterProfile,
   saveCharacterProfileYaml,
@@ -66,22 +67,23 @@ export function DossierPanel() {
   const StatusIcon =
     saveStatus === "saving" ? Clock3 : saveStatus === "error" ? TriangleAlert : CheckCircle2;
   const characterProfile = project?.characterProfile;
-  const isCharacterProfileGenerating = characterProfile?.status === "generating";
+  const hasValidCharacterProfile = hasUsableCharacterProfile(characterProfile);
+  const isCharacterProfileGenerating = characterProfile?.status === "generating" && !hasValidCharacterProfile;
   const shouldShowCharacterProfileButton = Boolean(projectId && characterProfile);
   const characterButtonText = isCharacterProfileGenerating
     ? "正在创建角色信息"
-    : characterProfile?.status === "failed"
-      ? "角色信息生成失败"
-      : characterProfile?.yaml
+    : hasValidCharacterProfile
         ? "角色信息"
-        : "生成角色信息";
+        : characterProfile?.status === "failed"
+          ? "角色信息生成失败"
+          : "生成角色信息";
 
   async function handleCharacterProfileClick() {
     if (!projectId || !project) {
       return;
     }
 
-    if (isCharacterProfileGenerating || (characterProfile?.status === "succeeded" && characterProfile.yaml)) {
+    if (isCharacterProfileGenerating || hasValidCharacterProfile) {
       setIsCharacterModalOpen(true);
       return;
     }

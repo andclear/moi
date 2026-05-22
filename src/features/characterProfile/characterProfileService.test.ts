@@ -85,6 +85,23 @@ describe("characterProfileService", () => {
     expect(updatedProject?.characterProfile?.yaml).not.toContain('姓名: "林雾"');
   });
 
+  it("角色档案有姓名时同步到角色信息 YAML 并覆盖模型占位符", async () => {
+    const project = await projectRepository.create({ title: "角色信息同步姓名测试" });
+    mockedGenerateCharacterProfileYaml.mockResolvedValueOnce({
+      taskId: "generation_dossier_name",
+      yaml: '姓名: "{{char}}"\n基本信息:\n  年龄: "22"',
+      response: { content: '姓名: "{{char}}"\n基本信息:\n  年龄: "22"' },
+    });
+
+    const updatedProject = await generateAndSaveCharacterProfile(
+      project.id,
+      "## 最初的印象\n\n姓名：陈露\n性别：女\n年龄：22\n\n## 核心人格\n\n沉默",
+    );
+
+    expect(updatedProject?.characterProfile?.yaml).toContain('姓名: "陈露"');
+    expect(updatedProject?.characterProfile?.yaml).not.toContain("{{char}}");
+  });
+
   it("生成角色信息时携带已确认世界书信息", async () => {
     const project = await projectRepository.create({ title: "角色信息世界书测试" });
     await projectRepository.update(project.id, {

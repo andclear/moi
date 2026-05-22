@@ -36,6 +36,40 @@ function readNestedYamlValue(yaml: string, parentKey: string, key: string) {
   return "";
 }
 
+function normalizeIdentityValue(value: string) {
+  return value
+    .trim()
+    .replace(/^["'“”‘’]|["'“”‘’]$/g, "")
+    .replace(/[，。；;].*$/, "")
+    .trim();
+}
+
+function isUsableName(value: string) {
+  const normalized = normalizeIdentityValue(value);
+  return Boolean(
+    normalized &&
+      !normalized.includes("{{char}}") &&
+      !["TA", "ta", "未填写", "未明确", "尚未明确", "暂未明确", "不确定"].includes(normalized),
+  );
+}
+
+function readDossierIdentityValue(markdown: string, key: string) {
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const patterns = [
+    new RegExp(`^\\s*[-*]?\\s*${escapedKey}\\s*[:：]\\s*(.+?)\\s*$`, "im"),
+    new RegExp(`^\\s*[-*]?\\s*TA\\s*的\\s*${escapedKey}\\s*[:：]\\s*(.+?)\\s*$`, "im"),
+  ];
+
+  for (const pattern of patterns) {
+    const value = normalizeIdentityValue(pattern.exec(markdown)?.[1] ?? "");
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
 function quoteYamlValue(value: string) {
   return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }
@@ -87,15 +121,31 @@ function replaceNestedYamlValue(yaml: string, parentKey: string, key: string, va
   return lines.join("\n");
 }
 
-function preserveSavedIdentity(nextYaml: string, previousYaml: string) {
+function syncDossierName(nextYaml: string, previousYaml: string, dossierMarkdown: string) {
+  const dossierName = readDossierIdentityValue(dossierMarkdown, "姓名");
   const savedName = readTopLevelYamlValue(previousYaml, "姓名");
+  const nextName = readTopLevelYamlValue(nextYaml, "姓名");
+  const lockedName = isUsableName(dossierName) ? dossierName : savedName;
+
+  if (isUsableName(lockedName)) {
+    return replaceTopLevelYamlValue(nextYaml, "姓名", lockedName);
+  }
+
+  if (!isUsableName(nextName) && isUsableName(savedName)) {
+    return replaceTopLevelYamlValue(nextYaml, "姓名", savedName);
+  }
+
+  return nextYaml;
+}
+
+function preserveSavedIdentity(nextYaml: string, previousYaml: string, dossierMarkdown: string) {
   const savedGender =
     readNestedYamlValue(previousYaml, "基本信息", "性别") || readTopLevelYamlValue(previousYaml, "性别");
   const savedAge =
     readNestedYamlValue(previousYaml, "基本信息", "年龄") || readTopLevelYamlValue(previousYaml, "年龄");
 
   return replaceNestedYamlValue(
-    replaceNestedYamlValue(replaceTopLevelYamlValue(nextYaml, "姓名", savedName), "基本信息", "性别", savedGender),
+    replaceNestedYamlValue(syncDossierName(nextYaml, previousYaml, dossierMarkdown), "基本信息", "性别", savedGender),
     "基本信息",
     "年龄",
     savedAge,
@@ -138,7 +188,7 @@ export async function generateAndSaveCharacterProfile(
         confirmedWorldEntries,
       });
       return updateCharacterProfile(projectId, {
-        yaml: preserveSavedIdentity(result.yaml, previousYaml),
+        yaml: preserveSavedIdentity(result.yaml, previousYaml, dossierMarkdown),
         status: "succeeded",
         retryCount: attempt,
         generationId: result.taskId,
@@ -163,9 +213,10 @@ export async function generateAndSaveCharacterProfile(
 export async function saveCharacterProfileYaml(projectId: string, yaml: string) {
   const project = await projectRepository.getById(projectId);
   const previous = project?.characterProfile;
+  const nextYaml = syncDossierName(yaml, previous?.yaml ?? "", project?.dossier.markdown ?? "");
 
   return updateCharacterProfile(projectId, {
-    yaml,
+    yaml: nextYaml,
     status: "succeeded",
     retryCount: previous?.retryCount ?? 0,
     generationId: previous?.generationId,
