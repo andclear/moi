@@ -131,7 +131,6 @@ describe("characterCardBuilder", () => {
       },
     ];
     const cardCompletion = {
-      description: "雨夜来客曾在旧图书馆整理无人认领的信，外表温顺但边界明确。",
       personality: "谨慎、克制，想靠近他人却害怕真实身份被认出。",
       tags: ["雨夜", "旧图书馆", "边界感"],
       generationId: "generation_export_1",
@@ -150,13 +149,14 @@ describe("characterCardBuilder", () => {
 
     const card = buildCharacterCard({ project, versionLabel: "1.0", creator: "林屿" });
     const json = formatCharacterCardJson(card);
+    const characterInfoYaml = project.characterProfile.yaml;
 
     expect(card.spec).toBe("chara_card_v3");
     expect(card.spec_version).toBe("3.0");
-    expect(card.description).toBe(cardCompletion.description);
+    expect(card.description).toBe(characterInfoYaml);
     expect(card.personality).toBe(cardCompletion.personality);
     expect(card.tags).toEqual(["雨夜", "旧图书馆", "边界感"]);
-    expect(card.data.description).toBe(cardCompletion.description);
+    expect(card.data.description).toBe(characterInfoYaml);
     expect(card.data.personality).toBe(cardCompletion.personality);
     expect(card.data.tags).toEqual(["雨夜", "旧图书馆", "边界感"]);
     expect(card.creatorcomment).toContain(project.dossier.markdown);
@@ -230,7 +230,6 @@ describe("characterCardBuilder", () => {
     project.exportDraft = {
       creator: "测试作者",
       cardCompletion: {
-        description: "角色简介",
         personality: "性格简述",
         tags: ["标签1", "标签2"],
         updatedAt: project.updatedAt,

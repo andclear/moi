@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import { createProjectDraft } from "@/db/defaults";
 import {
   adoptGreetingVariant,
+  applyCharacterNameToGreetingText,
   createGreetingCandidates,
   parseGreetingResponseText,
   pruneUnadoptedGreetingVariants,
+  readCharacterNameFromYaml,
   removeCotBlocksFromGreeting,
   setGreetingSortOrder,
 } from "@/features/greeting/greetingStore";
@@ -75,5 +77,14 @@ describe("greetingStore", () => {
     );
 
     expect(parsed).toEqual([{ content: "第一条正文。" }, { content: "第二条正文。" }]);
+  });
+
+  it("从角色信息 YAML 读取姓名并替换开场白中的角色占位符", () => {
+    const yaml = '姓名: "林知晚"\n基本信息:\n  年龄: "24"';
+
+    expect(readCharacterNameFromYaml(yaml)).toBe("林知晚");
+    expect(applyCharacterNameToGreetingText("{{char}} 看见 {{user}}。", yaml)).toBe(
+      "林知晚 看见 {{user}}。",
+    );
   });
 });

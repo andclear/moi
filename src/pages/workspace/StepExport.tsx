@@ -442,7 +442,7 @@ export function StepExport() {
                           AI 补全角色卡信息
                         </h2>
                         <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-muted)]">
-                          生成 description、personality 和 tags。完成后才能导出 JSON 或 PNG。
+                          生成 personality 和 tags。description 会直接写入角色信息 YAML，完成后才能导出 JSON 或 PNG。
                         </p>
                       </div>
                     </div>
@@ -461,11 +461,7 @@ export function StepExport() {
                   {cardCompletion && (
                     <div className="mt-5 grid gap-3 rounded-[var(--animal-radius-sm)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.36)] p-4 font-mono text-sm leading-6 text-[var(--echo-muted)]">
                       <p>
-                        <span className="font-black text-[var(--echo-paper)]">简介：</span>
-                        {cardCompletion.description}
-                      </p>
-                      <p>
-                        <span className="font-black text-[var(--echo-paper)]">性格：</span>
+                        <span className="font-black text-[var(--echo-paper)]">性格设定：</span>
                         {cardCompletion.personality}
                       </p>
                       <p>

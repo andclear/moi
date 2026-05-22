@@ -186,7 +186,7 @@ export const exportDraftSchema = z.object({
   creator: z.string().optional(),
   cardCompletion: z
     .object({
-      description: z.string().min(1),
+      description: z.string().min(1).optional(),
       personality: z.string().min(1),
       tags: z.array(z.string().min(1)).default([]),
       generationId: z.string().optional(),

@@ -16,6 +16,22 @@ function stripCotBlocks(text: string) {
   return text.replace(/<cot>[\s\S]*?<\/cot>/gi, "").trim();
 }
 
+export function readCharacterNameFromYaml(characterInfoYaml?: string) {
+  const yaml = characterInfoYaml?.trim();
+  if (!yaml) {
+    return "";
+  }
+
+  const match = /^姓名:\s*(.+)$/m.exec(yaml);
+  const name = match?.[1]?.trim().replace(/^["'“”‘’]|["'“”‘’]$/g, "") ?? "";
+  return name && !name.includes("{{char}}") ? name : "";
+}
+
+export function applyCharacterNameToGreetingText(text: string, characterInfoYaml?: string) {
+  const characterName = readCharacterNameFromYaml(characterInfoYaml);
+  return characterName ? text.replace(/\{\{char\}\}/g, characterName) : text;
+}
+
 export function parseGreetingResponseText(text: string): GeneratedGreetingInput[] {
   const cleaned = stripCotBlocks(text);
   const separatorPattern = new RegExp(`^\\s*${greetingTextSeparator}\\s*$`, "gim");

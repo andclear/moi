@@ -40,6 +40,20 @@ function buildCreatorNotes(markdown: string, characterInfoYaml?: string) {
   return [markdown, "## 角色信息 YAML", yaml].join("\n\n");
 }
 
+function buildDescription(markdown: string, characterInfoYaml?: string) {
+  const yaml = characterInfoYaml?.trim();
+  if (yaml) {
+    return yaml;
+  }
+
+  const core = normalizeText(getSection(markdown, "核心人格"));
+  const appearance = normalizeText(getSection(markdown, "外貌特征"));
+  const background = normalizeText(getSection(markdown, "背景故事"));
+  const conflict = normalizeText(getSection(markdown, "核心矛盾"));
+  const speech = normalizeText(getSection(markdown, "说话风格"));
+  return [core, appearance, background, conflict, speech].filter(Boolean).join("\n\n");
+}
+
 function isAdoptedGreeting(greeting: GreetingVariant) {
   return greeting.adopted === true;
 }
@@ -158,17 +172,14 @@ export function buildCharacterCard({
   const markdown = project.dossier.markdown;
   const title = normalizeText(project.title, "未命名的小岛");
   const core = normalizeText(getSection(markdown, "核心人格"));
-  const appearance = normalizeText(getSection(markdown, "外貌特征"));
-  const background = normalizeText(getSection(markdown, "背景故事"));
   const conflict = normalizeText(getSection(markdown, "核心矛盾"));
   const speech = normalizeText(getSection(markdown, "说话风格"));
   const world = normalizeText(getSection(markdown, "世界观"));
   const greeting = primaryGreeting(project.greetingVariants);
   const firstMes = normalizeText(greeting?.content ?? getSection(markdown, "开场白"), "{{char}}终于看见了{{user}}。");
-  const fallbackDescription = [core, appearance, background, conflict, speech].filter(Boolean).join("\n\n");
   const fallbackPersonality = [core, conflict, speech].filter(Boolean).join("\n\n");
   const completion = project.exportDraft?.cardCompletion;
-  const description = normalizeText(completion?.description ?? "", fallbackDescription);
+  const description = buildDescription(markdown, project.characterProfile?.yaml);
   const personality = normalizeText(completion?.personality ?? "", fallbackPersonality);
   const tags = completion?.tags?.length ? completion.tags : ["来岛上", "MOI"];
   const creatorName = normalizeText(creator ?? project.exportDraft?.creator ?? "", "MOI");

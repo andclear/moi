@@ -268,7 +268,7 @@ export interface CharacterProfileDocument {
 export interface ExportDraft {
   creator?: string;
   cardCompletion?: {
-    description: string;
+    description?: string;
     personality: string;
     tags: string[];
     generationId?: string;

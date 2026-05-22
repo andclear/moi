@@ -397,8 +397,7 @@ export const companionResponseSchema = z.object({
 });
 
 export const exportCardCompletionResponseSchema = z.object({
-  description: z.string().min(1),
-  personality: z.string().min(1),
+  personality: z.string().min(400),
   tags: z.preprocess(cleanStringArray, z.array(z.string().min(1)).min(1).max(8)),
 });
 

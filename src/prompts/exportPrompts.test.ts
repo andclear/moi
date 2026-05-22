@@ -40,8 +40,9 @@ describe("exportPrompts", () => {
     expect(content).toContain("姓名: 林知晚");
     expect(content).toContain("world_info");
     expect(content).toContain("旧图书馆");
-    expect(content).toContain("description");
+    expect(content).toContain("不要生成 description");
     expect(content).toContain("personality");
+    expect(content).toContain("至少 400 个中文字符");
     expect(content).toContain("tags");
   });
 
@@ -66,15 +67,15 @@ describe("exportPrompts", () => {
   });
 
   it("导出响应 schema 能解析补全和文生图结果", () => {
+    const personality = "这是足够长的角色性格设定。".repeat(60);
+
     expect(
       exportCardCompletionResponseSchema.parse({
-        description: "角色简介",
-        personality: "性格简述",
+        personality,
         tags: ["标签1", "标签2"],
       }),
     ).toEqual({
-      description: "角色简介",
-      personality: "性格简述",
+      personality,
       tags: ["标签1", "标签2"],
     });
 

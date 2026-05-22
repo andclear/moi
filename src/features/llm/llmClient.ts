@@ -13,6 +13,7 @@ import type {
   WorldEntry,
 } from "@/db/types";
 import {
+  applyCharacterNameToGreetingText,
   parseGreetingResponseText,
   type GreetingPersonType,
 } from "@/features/greeting/greetingStore";
@@ -761,7 +762,9 @@ export async function generateGreetingVariants(input: {
 
   return {
     taskId: result.taskId,
-    data: parseGreetingResponseText(result.response.content),
+    data: parseGreetingResponseText(result.response.content).map((variant) => ({
+      content: applyCharacterNameToGreetingText(variant.content, input.characterInfoYaml),
+    })),
     response: result.response,
   };
 }
