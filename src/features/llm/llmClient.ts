@@ -1,3 +1,5 @@
+import type { z } from "zod";
+
 import { activationRepository } from "@/db/repositories/activationRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
 import type {
@@ -87,6 +89,7 @@ async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
       type: request.type,
       inputSummary: request.inputSummary,
       stream: Boolean(request.onDelta),
+      responseFormat: request.responseFormat,
     }),
     signal: request.signal,
   });
@@ -137,12 +140,13 @@ export async function generateBeautificationAsset(input: {
     type: "beautification",
     messages: buildBeautificationMessages(input),
     inputSummary: `生成美化与正则：${input.userRequest.slice(0, 80) || "自动生成美化方案"}`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, beautificationResponseSchema),
+    data: await parseGeneratedJson(result, beautificationResponseSchema),
     response: result.response,
   };
 }
@@ -158,12 +162,13 @@ export async function generateBeautificationKeywords(input: {
     type: "beautification",
     messages: buildBeautificationKeywordMessages(input),
     inputSummary: `补全美化关键词：${input.userRequest.slice(0, 80)}`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, beautificationKeywordResponseSchema),
+    data: await parseGeneratedJson(result, beautificationKeywordResponseSchema),
     response: result.response,
   };
 }
@@ -181,12 +186,13 @@ export async function generateCompanionCandidates(input: {
     type: "companion",
     messages: buildCompanionMessages(input),
     inputSummary: `寻找配角：${input.userRequest.slice(0, 100)}`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, companionResponseSchema),
+    data: await parseGeneratedJson(result, companionResponseSchema),
     response: result.response,
   };
 }
@@ -203,12 +209,13 @@ export async function generateExportCardCompletion(input: {
     type: "export",
     messages: buildExportCardCompletionMessages(input),
     inputSummary: "补全角色卡导出字段",
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, exportCardCompletionResponseSchema),
+    data: await parseGeneratedJson(result, exportCardCompletionResponseSchema),
     response: result.response,
   };
 }
@@ -224,12 +231,13 @@ export async function generateExportImagePrompt(input: {
     type: "export",
     messages: buildExportImagePromptMessages(input),
     inputSummary: "生成角色文生图提示词",
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, exportImagePromptResponseSchema),
+    data: await parseGeneratedJson(result, exportImagePromptResponseSchema),
     response: result.response,
   };
 }
@@ -260,6 +268,7 @@ export async function callLlm(request: LlmRequest) {
             normalizedRequest.messages,
             normalizedRequest.signal,
             normalizedRequest.onDelta,
+            normalizedRequest.responseFormat,
           );
 
     await markGenerationSucceeded(
@@ -267,9 +276,21 @@ export async function callLlm(request: LlmRequest) {
       { content: response.content, raw: response.raw, requestMessages: normalizedRequest.messages },
       response.usage,
     );
-    return { taskId: task.id, response };
+    return { taskId: task.id, task, response };
   } catch (error) {
     await markGenerationFailed(task, error);
+    throw error;
+  }
+}
+
+async function parseGeneratedJson<TSchema extends z.ZodType>(
+  result: Awaited<ReturnType<typeof callLlm>>,
+  schema: TSchema,
+): Promise<z.infer<TSchema>> {
+  try {
+    return parseLlmJson(result.response.content, schema);
+  } catch (error) {
+    await markGenerationFailed(result.task, error);
     throw error;
   }
 }
@@ -354,17 +375,16 @@ export async function generateIntakeQuestionnaire(input: {
   gender: string;
   age?: string;
   signal?: AbortSignal;
-  onDelta?: (delta: string, content: string) => void;
 }) {
   const result = await callLlm({
     projectId: input.projectId,
     type: "intake_questionnaire",
     messages: buildIntakeQuestionnaireMessages(input),
     inputSummary: `生成登岛问卷：${input.brief.slice(0, 100)}`,
+    responseFormat: "json_object",
     signal: input.signal,
-    onDelta: input.onDelta,
   });
-  const data = parseLlmJson(result.response.content, intakeQuestionnaireResponseSchema);
+  const data = await parseGeneratedJson(result, intakeQuestionnaireResponseSchema);
   const questions = data.questions.slice(0, 7);
   const designNote =
     extractDesignNote(result.response.content) || buildQuestionnaireDesignFallback(data);
@@ -422,12 +442,13 @@ export async function generateProfileDraft(input: {
     type: "profile",
     messages: buildProfileDraftMessages(input.brief),
     inputSummary: input.brief.slice(0, 160),
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, profileDraftResponseSchema),
+    data: await parseGeneratedJson(result, profileDraftResponseSchema),
     response: result.response,
   };
 }
@@ -448,11 +469,12 @@ export async function generateProfileStage(input: {
       previousChoices: input.previousChoices,
     }),
     inputSummary: `认识岛民子步骤：${input.stageId}`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   if (input.stageId === "diary") {
-    const data = parseLlmJson(result.response.content, profileDiaryResponseSchema);
+    const data = await parseGeneratedJson(result, profileDiaryResponseSchema);
     return {
       taskId: result.taskId,
       data: {
@@ -472,7 +494,7 @@ export async function generateProfileStage(input: {
     taskId: result.taskId,
     data: {
       kind: "choices" as const,
-      ...parseLlmJson(result.response.content, profileChoiceResponseSchema),
+      ...(await parseGeneratedJson(result, profileChoiceResponseSchema)),
     },
     response: result.response,
   };
@@ -494,12 +516,13 @@ export async function generateProfileDossierUpdate(input: {
       completedDiaryText: input.completedDiaryText,
     }),
     inputSummary: "更新岛民档案",
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, profileDossierUpdateResponseSchema),
+    data: await parseGeneratedJson(result, profileDossierUpdateResponseSchema),
     response: result.response,
   };
 }
@@ -584,10 +607,11 @@ export async function generateWorldEntries(input: {
       entryCount: input.entryCount,
     }),
     inputSummary: `生成 ${input.entryCount} 条 WorldInfo：${input.userRequest.slice(0, 80)}`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
-  const data = parseLlmJson(result.response.content, worldEntryResponseSchema);
+  const data = await parseGeneratedJson(result, worldEntryResponseSchema);
   if (data.length !== input.entryCount) {
     throw new Error(
       `模型返回了 ${data.length} 条 WorldInfo，但本次要求必须是 ${input.entryCount} 条。请重新生成。`,
@@ -617,12 +641,13 @@ export async function generateWorldDossierUpdate(input: {
       confirmedWorldEntries: input.confirmedWorldEntries,
     }),
     inputSummary: `根据 ${input.confirmedWorldEntries.length} 条 WorldInfo 更新角色档案`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, profileDossierUpdateResponseSchema),
+    data: await parseGeneratedJson(result, profileDossierUpdateResponseSchema),
     response: result.response,
   };
 }
@@ -666,12 +691,13 @@ export async function generateTrialQuestionnaireSet(input: {
       type: "trial_questionnaire",
       messages: buildTrialQuestionnaireMessages(input),
       inputSummary: "终审测试三份问卷",
+      responseFormat: "json_object",
       signal: input.signal,
     });
 
     return {
       taskId: result.taskId,
-      data: parseLlmJson(result.response.content, trialQuestionnaireSetResponseSchema),
+      data: await parseGeneratedJson(result, trialQuestionnaireSetResponseSchema),
       response: result.response,
     };
   });
@@ -692,12 +718,13 @@ export async function generateTrialAnswerSet(input: {
       type: "trial_answer",
       messages: buildTrialAnswerMessages(input),
       inputSummary: "终审测试三份回答",
+      responseFormat: "json_object",
       signal: input.signal,
     });
 
     return {
       taskId: result.taskId,
-      data: parseLlmJson(result.response.content, trialAnswerSetResponseSchema),
+      data: await parseGeneratedJson(result, trialAnswerSetResponseSchema),
       response: result.response,
     };
   });
@@ -721,12 +748,13 @@ export async function generateTrialRevision(input: {
     type: "trial_revision",
     messages: buildTrialRevisionMessages(input),
     inputSummary: `终审不满意修改：${input.question.slice(0, 60)}`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, trialRevisionResponseSchema),
+    data: await parseGeneratedJson(result, trialRevisionResponseSchema),
     response: result.response,
   };
 }
@@ -776,12 +804,13 @@ export async function generateHelloRevision(input: {
     type: "hello_revision",
     messages: buildHelloRevisionMessages(input),
     inputSummary: `对话不满意修改：${input.targetReply.slice(0, 60)}`,
+    responseFormat: "json_object",
     signal: input.signal,
   });
 
   return {
     taskId: result.taskId,
-    data: parseLlmJson(result.response.content, trialRevisionResponseSchema),
+    data: await parseGeneratedJson(result, trialRevisionResponseSchema),
     response: result.response,
   };
 }

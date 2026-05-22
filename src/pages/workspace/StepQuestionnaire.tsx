@@ -146,7 +146,6 @@ export function StepQuestionnaire() {
         gender: project.intake.gender,
         age: project.intake.age,
         signal: controller.signal,
-        onDelta: (_delta, content) => setStreamedContent(content),
       });
       const updatedProject = await persistProject({
         currentStep: "questionnaire",

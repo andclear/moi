@@ -37,7 +37,12 @@ async function resolvePresetConfig(sessionToken: string) {
   return { sql, session, apiBaseUrl, apiKey, model };
 }
 
-function buildPresetRequestBody(input: { model: string; messages: LlmMessage[]; stream?: boolean }) {
+function buildPresetRequestBody(input: {
+  model: string;
+  messages: LlmMessage[];
+  stream?: boolean;
+  responseFormat?: "json_object";
+}) {
   const body: Record<string, unknown> = {
     model: input.model,
     messages: input.messages,
@@ -48,6 +53,10 @@ function buildPresetRequestBody(input: { model: string; messages: LlmMessage[]; 
     body.stream = true;
   }
 
+  if (input.responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
+
   if (`${input.model}`.toLowerCase().includes("deepseek")) {
     body.reasoning_effort = "high";
     body.thinking = { type: "enabled" };
@@ -56,7 +65,11 @@ function buildPresetRequestBody(input: { model: string; messages: LlmMessage[]; 
   return body;
 }
 
-export async function proxyPresetLlm(input: { sessionToken: string; messages: LlmMessage[] }) {
+export async function proxyPresetLlm(input: {
+  sessionToken: string;
+  messages: LlmMessage[];
+  responseFormat?: "json_object";
+}) {
   const { sql, session, apiBaseUrl, apiKey, model } = await resolvePresetConfig(input.sessionToken);
 
   const startedAt = Date.now();
@@ -66,7 +79,13 @@ export async function proxyPresetLlm(input: { sessionToken: string; messages: Ll
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify(buildPresetRequestBody({ model, messages: input.messages })),
+    body: JSON.stringify(
+      buildPresetRequestBody({
+        model,
+        messages: input.messages,
+        responseFormat: input.responseFormat,
+      }),
+    ),
   });
 
   if (!response.ok) {
@@ -96,7 +115,11 @@ export async function proxyPresetLlm(input: { sessionToken: string; messages: Ll
   };
 }
 
-export async function proxyPresetLlmStream(input: { sessionToken: string; messages: LlmMessage[] }) {
+export async function proxyPresetLlmStream(input: {
+  sessionToken: string;
+  messages: LlmMessage[];
+  responseFormat?: "json_object";
+}) {
   const { sql, session, apiBaseUrl, apiKey, model } = await resolvePresetConfig(input.sessionToken);
   const response = await fetch(`${normalizeBaseUrl(apiBaseUrl)}/chat/completions`, {
     method: "POST",
@@ -104,7 +127,14 @@ export async function proxyPresetLlmStream(input: { sessionToken: string; messag
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify(buildPresetRequestBody({ model, messages: input.messages, stream: true })),
+    body: JSON.stringify(
+      buildPresetRequestBody({
+        model,
+        messages: input.messages,
+        stream: true,
+        responseFormat: input.responseFormat,
+      }),
+    ),
   });
 
   if (!response.ok) {

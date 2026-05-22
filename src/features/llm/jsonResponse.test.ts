@@ -32,6 +32,25 @@ describe("jsonResponse", () => {
     expect(extractJsonValue('```json\n{"title":"来岛上"}\n```')).toEqual({ title: "来岛上" });
   });
 
+  it("可以从多个代码块中选择 JSON，并修正常见尾逗号", () => {
+    expect(
+      extractJsonValue(
+        [
+          "说明如下：",
+          "```text",
+          "不是结构化结果",
+          "```",
+          "```json",
+          '{"title":"来岛上","questions":[{"title":"方向","options":["A",],},],}',
+          "```",
+        ].join("\n"),
+      ),
+    ).toEqual({
+      title: "来岛上",
+      questions: [{ title: "方向", options: ["A"] }],
+    });
+  });
+
   it("登岛问卷解析不会因为模型多给选项直接失败", () => {
     const content = JSON.stringify({
       title: "设定补充",

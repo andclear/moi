@@ -12,22 +12,34 @@ interface ChatCompletionResponse {
   };
 }
 
-function normalizeBaseUrl(url: string) {
+export function normalizeOpenAiBaseUrl(url: string) {
   return url.replace(/\/+$/, "");
 }
 
-function shouldEnableDeepSeekThinking(settings: ApiSettings) {
+function shouldEnableDeepSeekThinking(settings: Pick<ApiSettings, "apiBaseUrl" | "model">) {
   const signature = `${settings.apiBaseUrl} ${settings.model}`.toLowerCase();
   return signature.includes("deepseek");
 }
 
-function buildRequestBody(settings: ApiSettings, messages: LlmMessage[]) {
+export function buildOpenAiRequestBody(
+  settings: Pick<ApiSettings, "apiBaseUrl" | "model" | "temperature" | "supportsSystemPrompt">,
+  messages: LlmMessage[],
+  stream: boolean,
+  responseFormat?: "json_object",
+) {
   const body: Record<string, unknown> = {
     model: settings.model,
     temperature: settings.temperature,
     messages: adaptMessagesForSystemSupport(messages, settings.supportsSystemPrompt),
-    stream: true,
   };
+
+  if (stream) {
+    body.stream = true;
+  }
+
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
 
   if (shouldEnableDeepSeekThinking(settings)) {
     body.reasoning_effort = "high";
@@ -42,25 +54,35 @@ export async function callOpenAiCompatible(
   messages: LlmMessage[],
   signal?: AbortSignal,
   onDelta?: (delta: string, content: string) => void,
+  responseFormat?: "json_object",
 ): Promise<LlmResponse> {
   if (!settings.apiBaseUrl || !settings.apiKey || !settings.model) {
     throw new LlmError("自配 API 信息不完整。", "custom_api_incomplete");
   }
 
   const startedAt = performance.now();
-  const response = await fetch(`${normalizeBaseUrl(settings.apiBaseUrl)}/chat/completions`, {
+  const response = await fetch("/api/custom-llm", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${settings.apiKey}`,
     },
-    body: JSON.stringify(buildRequestBody(settings, messages)),
+    body: JSON.stringify({
+      apiBaseUrl: settings.apiBaseUrl,
+      apiKey: settings.apiKey,
+      model: settings.model,
+      temperature: settings.temperature,
+      supportsSystemPrompt: settings.supportsSystemPrompt,
+      messages,
+      stream: Boolean(onDelta),
+      responseFormat,
+    }),
     signal,
   });
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    throw new LlmError(errorText || "模型请求失败。", "custom_api_failed");
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    const errorText = payload?.error ?? (await response.text().catch(() => ""));
+    throw new LlmError(errorText || "自配模型请求失败。", "custom_api_failed");
   }
 
   const contentType = response.headers.get("content-type") ?? "";

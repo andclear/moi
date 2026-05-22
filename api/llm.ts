@@ -24,7 +24,11 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
       return sendJson({ error: "缺少激活会话。" }, { status: 401 }, response);
     }
 
-    const payload = await readJsonBody<{ messages?: unknown; stream?: unknown }>(request, {});
+    const payload = await readJsonBody<{
+      messages?: unknown;
+      stream?: unknown;
+      responseFormat?: unknown;
+    }>(request, {});
     if (!Array.isArray(payload.messages)) {
       return sendJson({ error: "缺少模型消息。" }, { status: 400 }, response);
     }
@@ -33,6 +37,7 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
       return proxyPresetLlmStream({
         sessionToken,
         messages: payload.messages as Parameters<typeof proxyPresetLlm>[0]["messages"],
+        responseFormat: payload.responseFormat === "json_object" ? "json_object" : undefined,
       });
     }
 
@@ -40,6 +45,7 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
       await proxyPresetLlm({
         sessionToken,
         messages: payload.messages as Parameters<typeof proxyPresetLlm>[0]["messages"],
+        responseFormat: payload.responseFormat === "json_object" ? "json_object" : undefined,
       }),
       undefined,
       response,

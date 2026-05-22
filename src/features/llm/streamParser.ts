@@ -61,12 +61,16 @@ function appendStreamEvent(
 
     try {
       const payload = JSON.parse(data) as {
+        error?: { message?: string };
         choices?: Array<{
           delta?: { content?: string | Array<{ text?: string }>; reasoning_content?: string };
           message?: { content?: string };
           text?: string;
         }>;
       };
+      if (payload.error?.message) {
+        throw new Error(payload.error.message);
+      }
       const deltaContent = payload.choices?.[0]?.delta?.content;
       const delta =
         normalizeDeltaContent(deltaContent) ??
@@ -77,7 +81,11 @@ function appendStreamEvent(
       if (delta) {
         onDelta?.(delta, result);
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && data.trim().startsWith("{")) {
+        throw error;
+      }
+
       result += data;
       onDelta?.(data, result);
     }

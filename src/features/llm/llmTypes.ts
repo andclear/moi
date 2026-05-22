@@ -13,6 +13,7 @@ export interface LlmRequest {
   type: GenerationType;
   messages: LlmMessage[];
   inputSummary: string;
+  responseFormat?: "json_object";
   signal?: AbortSignal;
   onDelta?: (delta: string, content: string) => void;
 }

@@ -3,8 +3,14 @@ import type { z } from "zod";
 import { LlmError } from "@/features/llm/llmTypes";
 
 function stripJsonFence(text: string) {
-  const fencedMatch = /```(?:json)?\s*([\s\S]*?)```/.exec(text);
-  return (fencedMatch?.[1] ?? text).trim();
+  const fencedBlocks = [...text.matchAll(/```([a-zA-Z]*)\s*([\s\S]*?)```/g)];
+  const jsonFence = fencedBlocks.find((match) => {
+    const language = match[1]?.trim().toLowerCase();
+    const content = match[2]?.trim() ?? "";
+    return (!language || language === "json") && /^[{[]/.test(content);
+  });
+
+  return (jsonFence?.[2] ?? text).trim();
 }
 
 function findJsonBounds(source: string) {
@@ -54,11 +60,37 @@ function findJsonBounds(source: string) {
   return null;
 }
 
+function normalizeJsonLikeText(text: string) {
+  return text
+    .replace(/^\uFEFF/, "")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/\bNone\b/g, "null")
+    .replace(/\bTrue\b/g, "true")
+    .replace(/\bFalse\b/g, "false")
+    .replace(/,\s*([}\]])/g, "$1");
+}
+
+function parseJsonWithRepair(source: string) {
+  const candidates = [source, normalizeJsonLikeText(source)];
+  let lastError: unknown;
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate) as unknown;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
+
 export function extractJsonValue(text: string) {
   const source = stripJsonFence(text);
 
   try {
-    return JSON.parse(source) as unknown;
+    return parseJsonWithRepair(source);
   } catch (error) {
     const bounds = findJsonBounds(source);
     if (!bounds) {
@@ -66,7 +98,7 @@ export function extractJsonValue(text: string) {
     }
 
     try {
-      return JSON.parse(source.slice(bounds.start, bounds.end)) as unknown;
+      return parseJsonWithRepair(source.slice(bounds.start, bounds.end));
     } catch (parseError) {
       throw new LlmError("模型响应 JSON 解析失败。", "json_parse_failed", parseError);
     }
@@ -77,5 +109,10 @@ export function parseLlmJson<TSchema extends z.ZodType>(
   text: string,
   schema: TSchema,
 ): z.infer<TSchema> {
-  return schema.parse(extractJsonValue(text));
+  const result = schema.safeParse(extractJsonValue(text));
+  if (!result.success) {
+    throw new LlmError("模型响应 JSON 结构不符合预期。", "json_schema_invalid", result.error);
+  }
+
+  return result.data;
 }
