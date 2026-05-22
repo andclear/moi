@@ -1,4 +1,4 @@
-import { KeyRound, Save, Server, ToggleLeft, ToggleRight } from "lucide-react";
+import { KeyRound, ListChecks, RefreshCw, Save, Server, ToggleLeft, ToggleRight } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 import { useActivationStore } from "@/features/activation/activationStore";
@@ -18,6 +18,9 @@ export function SettingsPage() {
   const { channel, load: loadModelChannel } = useModelChannelStore();
   const [form, setForm] = useState(defaultApiSettings);
   const [activationCode, setActivationCode] = useState("");
+  const [modelOptions, setModelOptions] = useState<Array<{ id: string; label: string }>>([]);
+  const [modelListStatus, setModelListStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [modelListMessage, setModelListMessage] = useState<string | null>(null);
 
   useEffect(() => {
     void load();
@@ -49,15 +52,45 @@ export function SettingsPage() {
     await saveApiSettings(form);
   }
 
+  async function handleFetchModels() {
+    setModelListStatus("loading");
+    setModelListMessage(null);
+    try {
+      const response = await fetch("/api/custom-llm/models", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiBaseUrl: form.apiBaseUrl,
+          apiKey: form.apiKey,
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { models?: Array<{ id: string; label: string }>; error?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "模型列表获取失败。");
+      }
+
+      const models = payload?.models ?? [];
+      setModelOptions(models);
+      setModelListStatus("idle");
+      setModelListMessage(
+        models.length ? `已获取 ${models.length} 个模型。` : "接口返回了空模型列表，可继续手动填写。",
+      );
+    } catch (error) {
+      setModelOptions([]);
+      setModelListStatus("error");
+      setModelListMessage(error instanceof Error ? error.message : "模型列表获取失败。");
+    }
+  }
+
   async function handleActivate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const record = await activate(activationCode);
+    await activate(activationCode);
     await saveApiSettings({
       ...form,
       mode: "preset",
-      model: record.availableModel ?? form.model,
-      apiBaseUrl: "",
-      apiKey: "",
     });
     setActivationCode("");
   }
@@ -75,7 +108,7 @@ export function SettingsPage() {
 
         <form className="mt-6 grid gap-5" onSubmit={handleSave}>
           <label className="grid gap-2 font-mono text-sm text-[var(--echo-muted)]">
-            调用模式
+            当前使用渠道
             <select
               value={form.mode}
               onChange={(event) =>
@@ -87,10 +120,16 @@ export function SettingsPage() {
               className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none focus:border-[var(--echo-paper)]"
             >
               <option value="none">暂不连接</option>
-              <option value="custom">自配 OpenAI 兼容接口</option>
-              {channel.presetEnabled && <option value="preset">预置调用模式</option>}
+              <option value="custom">使用自配 OpenAI 兼容接口</option>
+              {channel.presetEnabled && <option value="preset">使用预置调用模式</option>}
             </select>
           </label>
+
+          <div className="grid gap-4 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.24)] p-4">
+            <div className="flex items-center gap-2 text-[var(--echo-paper)]">
+              <ListChecks aria-hidden="true" size={18} />
+              <h2 className="font-display text-xl font-black">自配 OpenAI 兼容接口</h2>
+            </div>
 
           <label className="grid gap-2 font-mono text-sm text-[var(--echo-muted)]">
             API Base URL
@@ -146,6 +185,50 @@ export function SettingsPage() {
             </label>
           </div>
 
+          <div className="grid gap-3">
+            <div className="echo-mobile-action-row flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                loading={modelListStatus === "loading"}
+                disabled={modelListStatus === "loading" || !form.apiBaseUrl.trim() || !form.apiKey?.trim()}
+                onClick={() => void handleFetchModels()}
+              >
+                {modelListStatus === "loading" ? null : <RefreshCw aria-hidden="true" size={18} />}
+                {modelListStatus === "loading" ? "正在获取" : "获取模型列表"}
+              </Button>
+              {modelListMessage && (
+                <span
+                  className={[
+                    "font-mono text-xs",
+                    modelListStatus === "error" ? "text-[var(--echo-stamp)]" : "text-[var(--echo-muted)]",
+                  ].join(" ")}
+                >
+                  {modelListMessage}
+                </span>
+              )}
+            </div>
+            {modelOptions.length > 0 && (
+              <label className="grid gap-2 font-mono text-sm text-[var(--echo-muted)]">
+                从模型列表选择
+                <select
+                  value={modelOptions.some((option) => option.id === form.model) ? form.model : ""}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, model: event.target.value }))
+                  }
+                  className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none focus:border-[var(--echo-paper)]"
+                >
+                  <option value="">选择一个模型</option>
+                  {modelOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={() =>
@@ -163,6 +246,7 @@ export function SettingsPage() {
               <ToggleLeft aria-hidden="true" size={24} />
             )}
           </button>
+          </div>
 
           {errorMessage && (
             <p className="font-mono text-sm text-[var(--echo-stamp)]">{errorMessage}</p>

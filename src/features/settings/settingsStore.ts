@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { ApiSettings } from "@/db/types";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
+import { useActivationStore } from "@/features/activation/activationStore";
 import { useModelChannelStore } from "@/features/activation/modelChannelStore";
 
 export type ApiAvailability =
@@ -76,14 +77,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
 
     const channel = useModelChannelStore.getState().channel;
+    const activationState = useActivationStore.getState();
     if (!channel.presetEnabled) {
       return { available: false, reason: "尚未连接模型", mode: "none" };
+    }
+    if (activationState.status !== "active" || activationState.activation?.status !== "active") {
+      return { available: false, reason: "预置调用尚未激活", mode: "preset" };
     }
 
     return {
       available: true,
       label: "预置调用已就绪",
-      model: settings.model || "预置模型",
+      model: activationState.activation.availableModel || settings.model || "预置模型",
       mode: "preset",
     };
   },

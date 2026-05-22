@@ -25,7 +25,7 @@ export function ApiStatusPanel() {
       : rawAvailability;
   const hasActivePreset =
     channel.presetEnabled && activationStatus === "active" && activation?.status === "active";
-  const isAvailable = availability.available || hasActivePreset;
+  const isAvailable = availability.available;
 
   return (
     <aside className="h-full border-l-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-5">
@@ -55,12 +55,18 @@ export function ApiStatusPanel() {
         <p className="mt-2">
           {availability.available
             ? `${availability.label}：${availability.model}`
-            : hasActivePreset
+            : rawAvailability.mode === "preset" && hasActivePreset
               ? `预置调用：${activation?.availableModel ?? "预置模型"}`
               : availability.reason}
         </p>
         {activation?.expiresAt && (
           <p className="mt-1">激活到期：{new Date(activation.expiresAt).toLocaleString()}</p>
+        )}
+        {hasActivePreset && activation?.usageLimit !== undefined && (
+          <p className="mt-1">
+            调用：{activation.usageCount}/
+            {activation.usageLimit === 0 ? "无限" : activation.usageLimit}
+          </p>
         )}
       </div>
       <div className="mt-6 space-y-3">

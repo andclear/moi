@@ -5,8 +5,9 @@ import { activationRepository } from "@/db/repositories/activationRepository";
 
 interface ActivateResponse {
   sessionToken: string;
+  status?: ActivationRecord["status"];
   expiresAt?: string;
-  availableModel: string;
+  availableModel?: string;
   usageLimit?: number;
   usageCount?: number;
 }
@@ -41,7 +42,36 @@ export const useActivationStore = create<ActivationState>((set) => ({
   async load() {
     set({ status: "loading", errorMessage: null });
     const activation = await activationRepository.getCurrent();
-    set({ activation: activation ?? null, status: resolveStatus(activation ?? null) });
+    if (!activation?.sessionToken || activation.status !== "active") {
+      set({ activation: activation ?? null, status: resolveStatus(activation ?? null) });
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/activate/status", {
+        headers: { Authorization: `Bearer ${activation.sessionToken}` },
+      });
+      if (!response.ok) {
+        throw new Error("激活状态校验失败。");
+      }
+
+      const payload = (await response.json()) as ActivateResponse;
+      const synced = await activationRepository.save({
+        ...activation,
+        status: payload.status ?? activation.status,
+        expiresAt: payload.expiresAt,
+        availableModel: payload.availableModel ?? activation.availableModel,
+        usageLimit: payload.usageLimit,
+        usageCount: payload.usageCount ?? activation.usageCount,
+      });
+      set({ activation: synced, status: resolveStatus(synced), errorMessage: null });
+    } catch (error) {
+      set({
+        activation,
+        status: resolveStatus(activation),
+        errorMessage: error instanceof Error ? error.message : "激活状态校验失败。",
+      });
+    }
   },
 
   async activate(code) {

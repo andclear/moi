@@ -24,17 +24,14 @@ export function ApiStatusBadge() {
   const hasActivePreset =
     channel.presetEnabled &&
     activationStatus === "active" &&
-    activation?.status === "active" &&
-    activation.expiresAt;
-  const isAvailable = availability.available || Boolean(hasActivePreset);
+    activation?.status === "active";
+  const isAvailable = availability.available;
   const label = isAvailable
-    ? availability.available
-      ? availability.label
-      : "预置调用已激活"
+    ? availability.label
     : availability.reason;
   const detail = availability.available
     ? availability.model
-    : hasActivePreset
+    : apiSettings?.mode === "preset" && hasActivePreset
       ? activation?.availableModel
       : apiSettings?.mode === "custom"
         ? "请补全设置"

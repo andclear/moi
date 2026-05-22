@@ -88,6 +88,54 @@ export async function verifyActivationSession(sessionToken: string, sql = create
     | undefined;
 }
 
+export async function getActivationSessionStatus(
+  sessionToken: string,
+  sql = createPostgresClient(),
+) {
+  const sessionHash = await hashSessionSecret(sessionToken);
+  const rows = await sql`
+    select id, expires_at, usage_limit, usage_count, disabled_at
+    from activation_sessions
+    where session_hash = ${sessionHash}
+    limit 1
+  `;
+  const row = rows[0] as
+    | {
+        id: string;
+        expires_at: Date | string | null;
+        usage_limit: number;
+        usage_count: number;
+        disabled_at: Date | string | null;
+      }
+    | undefined;
+
+  if (!row) {
+    return {
+      status: "expired" as const,
+      usageCount: 0,
+    };
+  }
+
+  const expiresAt = row.expires_at ? new Date(row.expires_at).toISOString() : undefined;
+  const isExpired = Boolean(row.expires_at && new Date(row.expires_at).getTime() <= Date.now());
+  const isUsageExhausted = row.usage_limit > 0 && row.usage_count >= row.usage_limit;
+  const status = row.disabled_at
+    ? "disabled"
+    : isExpired || isUsageExhausted
+      ? "expired"
+      : "active";
+  const channel = await getModelChannelSettings(sql);
+  const availableModel = channel.model || getEnv("PRESET_MODEL") || "preset-model";
+
+  return {
+    status: status as "active" | "expired" | "disabled",
+    expiresAt,
+    availableModel,
+    usageLimit: row.usage_limit,
+    usageCount: row.usage_count,
+  };
+}
+
 export async function incrementActivationUsage(sessionId: string, sql = createPostgresClient()) {
   await sql`
     update activation_sessions

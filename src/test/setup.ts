@@ -1,8 +1,10 @@
 import "@testing-library/jest-dom/vitest";
 import "fake-indexeddb/auto";
-import { createElement } from "react";
+import React, { createElement } from "react";
 import type { ReactNode } from "react";
 import { vi } from "vitest";
+
+(globalThis as typeof globalThis & { React: typeof React }).React = React;
 
 vi.mock("animal-island-ui", () => ({
   Button: ({
