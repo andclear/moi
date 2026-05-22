@@ -276,7 +276,7 @@ export function StepTrial() {
 
   const latestRun = project?.trialRuns[0];
   const runningLabel =
-    generationStage === "answer" ? "{{char}}正在埋头作答..." : "正在向{{char}}发放问卷...";
+    generationStage === "answer" ? "角色正在埋头作答..." : "正在向角色发放问卷...";
 
   if (isLoading) {
     return (

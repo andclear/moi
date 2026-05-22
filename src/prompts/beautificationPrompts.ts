@@ -48,7 +48,7 @@ export function buildBeautificationMessages(input: BuildBeautificationMessagesIn
         "3. 只要生成状态栏、HUD、背包、关系数值、任务列表或任何需要持续更新的数据面板，formatted_original_text 与 WorldInfo 格式模板都必须被 <details><summary>...</summary><statusblock>...</statusblock></details> 包裹；summary 写清面板名称，statusblock 内只放稳定字段。",
         "4. 状态栏类正则只匹配 <statusblock>...</statusblock> 内的内容，不吞掉外层 details，这样 SillyTavern 原生折叠仍可保留。",
         "5. 如果是论坛贴、短信、公告、票据、聊天气泡等随剧情触发的美化，可以使用更合适的自定义标签，但标签名必须稳定、易匹配。",
-        "6. formatted_original_text 中的字段名、换行、{{user}}、{{char}} 必须和 regex 捕获顺序严格一致。",
+        "6. formatted_original_text 中的字段名、换行、{{user}}、角色真实姓名必须和 regex 捕获顺序严格一致。",
         "",
         "## 前端代码要求",
         "1. html 必须是完整可执行片段，包含唯一父级 class、<style>，必要时包含 <script>。",

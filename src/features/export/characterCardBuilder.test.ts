@@ -34,7 +34,7 @@ describe("characterCardBuilder", () => {
         "",
         "## 开场白",
         "",
-        "{{char}}把一封潮湿的信推到{{user}}面前。",
+        "林知晚把一封潮湿的信推到{{user}}面前。",
       ].join("\n"),
     });
 
@@ -59,7 +59,7 @@ describe("characterCardBuilder", () => {
         id: "greeting_1",
         projectId: project.id,
         userRole: "陌生人",
-        content: "{{char}}把一封潮湿的信推到{{user}}面前。",
+        content: "林知晚把一封潮湿的信推到{{user}}面前。",
         selected: false,
         adopted: true,
         sortOrder: 1,
@@ -168,6 +168,8 @@ describe("characterCardBuilder", () => {
     expect(card.data.extensions.world).toBe("雨夜来客");
     expect(card.data.character_book?.name).toBe("雨夜来客");
     expect(card.data.character_book?.entries).toHaveLength(2);
+    expect(card.data.first_mes).toContain("林知晚");
+    expect(card.data.first_mes).not.toContain("{{char}}");
     expect(card.data.character_book?.entries[0]).toMatchObject({
       keys: ["旧馆", "雨水"],
       constant: true,

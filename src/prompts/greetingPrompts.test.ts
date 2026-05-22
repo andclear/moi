@@ -17,7 +17,7 @@ describe("greetingPrompts", () => {
 
     expect(content).toContain("林知晚");
     expect(content).toContain("必须保留字面占位符 {{user}}");
-    expect(content).toContain("不得使用 {{char}}");
-    expect(content).toContain("最终输出中禁止出现 {{char}}");
+    expect(content).toContain("角色必须使用角色信息 YAML 中的真实姓名");
+    expect(content).toContain("所有角色位置必须写 林知晚");
   });
 });

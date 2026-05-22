@@ -7,6 +7,7 @@ import type {
 import type { CharacterCard } from "@/schemas/characterCardSchema";
 import { characterCardSchema } from "@/schemas/characterCardSchema";
 import { parseDossierSections } from "@/features/dossier/dossierSections";
+import { applyCharacterNameToGreetingText, readCharacterNameFromYaml } from "@/features/greeting/greetingStore";
 import { getBeautificationWorldEntryId } from "@/features/world/worldPromptContext";
 import { stripRuntimeTimestamps } from "@/shared/lib/jsonSanitizer";
 
@@ -176,7 +177,9 @@ export function buildCharacterCard({
   const speech = normalizeText(getSection(markdown, "说话风格"));
   const world = normalizeText(getSection(markdown, "世界观"));
   const greeting = primaryGreeting(project.greetingVariants);
-  const firstMes = normalizeText(greeting?.content ?? getSection(markdown, "开场白"), "{{char}}终于看见了{{user}}。");
+  const characterName = readCharacterNameFromYaml(project.characterProfile?.yaml) || "角色";
+  const rawFirstMes = normalizeText(greeting?.content ?? getSection(markdown, "开场白"), `${characterName}终于看见了{{user}}。`);
+  const firstMes = applyCharacterNameToGreetingText(rawFirstMes, project.characterProfile?.yaml);
   const fallbackPersonality = [core, conflict, speech].filter(Boolean).join("\n\n");
   const completion = project.exportDraft?.cardCompletion;
   const description = buildDescription(markdown, project.characterProfile?.yaml);
@@ -186,7 +189,7 @@ export function buildCharacterCard({
   const creatorNotes = buildCreatorNotes(markdown, project.characterProfile?.yaml);
   const alternateGreetings = adoptedGreetings(project.greetingVariants)
     .filter((item) => item.id !== greeting?.id)
-    .map((item) => item.content.trim());
+    .map((item) => applyCharacterNameToGreetingText(item.content.trim(), project.characterProfile?.yaml));
   const worldEntries = project.worldEntries.filter((entry) => entry.enabled);
   const beautifications = project.beautifications ?? [];
   const worldEntryIds = new Set(worldEntries.map((entry) => entry.id));

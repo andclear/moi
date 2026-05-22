@@ -1,4 +1,5 @@
 import type { GreetingVariant, HelloChatMessage, HelloChatMode, WorldEntry } from "@/db/types";
+import { readCharacterNameFromYaml } from "@/features/greeting/greetingStore";
 import type { LlmMessage } from "@/features/llm/llmTypes";
 
 export interface BuildHelloChatMessagesInput {
@@ -61,14 +62,14 @@ function formatReference(input: {
   ].join("\n\n");
 }
 
-function formatChatHistory(messages: HelloChatMessage[]) {
+function formatChatHistory(messages: HelloChatMessage[], characterName: string) {
   if (messages.length === 0) {
     return "暂无聊天记录。";
   }
 
   return messages
     .map((message, index) => {
-      const role = message.role === "user" ? "{{user}}" : "{{char}}";
+      const role = message.role === "user" ? "{{user}}" : characterName;
       const opening = message.isOpening ? "（第 0 轮开场白）" : "";
       return `${index + 1}. ${role}${opening}：\n${message.content}`;
     })
@@ -91,6 +92,7 @@ export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmM
   const hasHistory = input.historyMessages.length > 0;
   const greetingCharacterCount = countVisibleCharacters(input.selectedGreeting?.content);
   const worldInfoText = formatWorldInfo(input.confirmedEntries);
+  const characterName = readCharacterNameFromYaml(input.characterInfoYaml) || "角色真实姓名";
   const modeRule =
     input.mode === "greeting"
       ? [
@@ -106,14 +108,14 @@ export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmM
     {
       role: "system",
       content: [
-        "你从现在开始进行角色扮演对话，只扮演 {{char}}，不要替 {{user}} 说话。",
+        `你从现在开始进行角色扮演对话，只扮演 ${characterName}，不要替 {{user}} 说话。`,
         "必须严格参考 WorldInfo、角色档案和角色信息 YAML，保持人物设定、事实、关系和语气稳定。",
         "下面的 WorldInfo 是高优先级硬约束，不是普通背景。凡是常驻 WorldInfo，必须在每一轮回复中持续遵守；凡是要求输出固定结构、状态栏、statusblock、HUD 或数值面板的条目，必须按条目要求输出对应文本。",
         `高优先级 WorldInfo：\n${worldInfoText}`,
         modeRule,
         "回复必须使用简体中文，简单、直白、清晰易懂，不追求文学性，不增加用户阅读成本。",
-        "保留 {{char}} 与 {{user}} 字面占位符，不要替换成具体姓名。",
-        "只输出 {{char}} 本轮回复正文，不要输出解释、标题或 Markdown 代码块。",
+        `角色使用真实姓名 ${characterName}，用户必须使用 {{user}}。`,
+        `只输出 ${characterName} 本轮回复正文，不要输出解释、标题或 Markdown 代码块。`,
       ].join("\n"),
     },
     {
@@ -122,7 +124,7 @@ export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmM
         ? [
             "请根据以下资料、完整聊天记录和用户最新输入，继续对话。",
             formatReference(input),
-            `聊天记录：\n${formatChatHistory(input.historyMessages)}`,
+            `聊天记录：\n${formatChatHistory(input.historyMessages, characterName)}`,
             `用户输入内容：\n${input.userInput}`,
           ].join("\n\n")
         : [
@@ -135,6 +137,8 @@ export function buildHelloChatMessages(input: BuildHelloChatMessagesInput): LlmM
 }
 
 export function buildHelloRevisionMessages(input: BuildHelloRevisionMessagesInput): LlmMessage[] {
+  const characterName = readCharacterNameFromYaml(input.characterInfoYaml) || "角色真实姓名";
+
   return [
     {
       role: "system",
@@ -160,7 +164,7 @@ export function buildHelloRevisionMessages(input: BuildHelloRevisionMessagesInpu
         "用户不满意一条聊天回复，请给出可确认的资料修改建议。",
         `对话模式：${input.mode === "greeting" ? "从开场白开始" : "简单聊聊"}`,
         formatReference(input),
-        `完整聊天记录：\n${formatChatHistory(input.historyMessages)}`,
+        `完整聊天记录：\n${formatChatHistory(input.historyMessages, characterName)}`,
         `用户不满意的 AI 回复：\n${input.targetReply}`,
         `用户的不满意原因或修改意见：\n${input.revisionNotes}`,
       ].join("\n\n"),

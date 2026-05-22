@@ -13,7 +13,7 @@ describe("profilePrompts", () => {
 
     expect(content).toContain("必须为 TA 生成一个具体姓名");
     expect(content).toContain("姓名：具体姓名");
-    expect(content).toContain("不得使用 {{char}}");
+    expect(content).toContain("角色必须使用真实姓名");
     expect(content).toContain("后续只有用户手动编辑时才能更改");
   });
 

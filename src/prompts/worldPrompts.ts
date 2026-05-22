@@ -164,7 +164,7 @@ export function buildWorldEntryMessages(input: BuildWorldMessagesInput): LlmMess
         `* 已生成的所有世界书条目 JSON：${existingWorldEntriesJson}`,
         "",
         "## 角色与数量硬规则",
-        "1. 用户信息 character_info 是 YAML 角色信息，优先级高于你的自由命名习惯；如果其中存在“姓名”字段，必须把它视为 {{char}} 的真实姓名。生成任何角色相关世界书条目时，不得擅自改名、另起主角名或使用与该姓名冲突的人名。",
+        "1. 用户信息 character_info 是 YAML 角色信息，优先级高于你的自由命名习惯；如果其中存在“姓名”字段，必须把它视为角色真实姓名。生成任何角色相关世界书条目时，不得擅自改名、另起主角名或使用与该姓名冲突的人名。",
         "2. 角色档案 character_profile 是已经确认的角色资料；如果它与用户信息存在细节差异，以用户信息里的姓名、年龄、性别等结构化字段为准，以角色档案里的性格、经历和关系为补充。",
         "3. 输出 JSON 数组长度必须严格等于 entry_count。entry_count=3 时必须输出 3 个条目，不能输出 1、2、4 或 5 个条目；entry_count=1 时必须只输出 1 个条目。",
         "",

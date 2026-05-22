@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import { projectService } from "@/db/services/projectService";
+import { historyRepository } from "@/db/repositories/historyRepository";
 import type { Project } from "@/db/types";
 import { CharacterProfileModal } from "@/features/characterProfile/CharacterProfileModal";
 import { hasUsableCharacterProfile } from "@/features/characterProfile/characterProfileGuards";
@@ -23,6 +24,7 @@ import {
   saveCharacterProfileYaml,
 } from "@/features/characterProfile/characterProfileService";
 import { useExportStore } from "@/features/export/exportStore";
+import { normalizeExportCharacterNames } from "@/features/export/characterNameConsistency";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { generateExportCardCompletion, generateExportImagePrompt } from "@/features/llm/llmClient";
 import { ProfileReportPanel } from "@/features/report/ProfileReportPanel";
@@ -307,17 +309,20 @@ export function StepExport() {
       return undefined;
     }
 
-    setProject(latestProject);
-    if (!hasUsableCharacterProfile(latestProject.characterProfile)) {
+    const histories = await historyRepository.listByProject(latestProject.id);
+    const { project: normalizedProject } = normalizeExportCharacterNames(latestProject, histories);
+
+    setProject(normalizedProject);
+    if (!hasUsableCharacterProfile(normalizedProject.characterProfile)) {
       setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息。");
       return undefined;
     }
-    if (!latestProject.exportDraft?.cardCompletion) {
+    if (!normalizedProject.exportDraft?.cardCompletion) {
       setPageError("请先使用 AI 补全角色卡信息。");
       return undefined;
     }
 
-    return latestProject;
+    return normalizedProject;
   }
 
   async function handleJsonExport() {

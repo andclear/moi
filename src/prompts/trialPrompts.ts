@@ -1,4 +1,5 @@
 import type { GreetingVariant, WorldEntry } from "@/db/types";
+import { readCharacterNameFromYaml } from "@/features/greeting/greetingStore";
 import type { LlmMessage } from "@/features/llm/llmTypes";
 import type { TrialMode } from "@/features/trial/trialStore";
 
@@ -82,13 +83,15 @@ export function buildTrialQuestionnaireMessages(
 }
 
 export function buildTrialAnswerMessages(input: BuildTrialAnswerMessagesInput): LlmMessage[] {
+  const characterName = readCharacterNameFromYaml(input.characterInfoYaml) || "角色真实姓名";
+
   return [
     {
       role: "system",
       content: [
-        "你现在扮演 {{char}} 完成终审测试问卷。你必须以角色第一视角回答。",
+        `你现在扮演 ${characterName} 完成终审测试问卷。你必须以角色第一视角回答。`,
         "所有内容必须使用简体中文，表达简单、直白、清晰，不追求文学性，不增加阅读成本。",
-        "必须保留 {{char}} 与 {{user}} 字面占位符，不要替换为具体姓名。",
+        `回答中角色使用真实姓名 ${characterName}，用户必须使用 {{user}}。`,
         "每道题都必须返回正式回复和内心独白。正式回复是角色会说出口的话；内心独白是没有说出口的真实想法。",
         "内心独白可以与正式回复有反差，但必须符合角色档案、角色信息、WorldInfo 和开场白，不要为了戏剧性而崩坏。",
         "riskSentences 只填写回答中可能 OOC、和关键事实冲突、或情绪推进过猛的句子；没有风险返回空数组。",
