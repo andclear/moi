@@ -105,6 +105,10 @@ function buildRequestBody(input: {
   return body;
 }
 
+function isUnsupportedResponseFormatError(errorText: string) {
+  return /response_format|json_schema|json_object/i.test(errorText);
+}
+
 function parsePayload(payload: CustomLlmPayload) {
   const apiBaseUrl = typeof payload.apiBaseUrl === "string" ? payload.apiBaseUrl.trim() : "";
   const apiKey = typeof payload.apiKey === "string" ? payload.apiKey.trim() : "";
@@ -141,14 +145,33 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
 
   try {
     const input = parsePayload(await readJsonBody<CustomLlmPayload>(request, {}));
-    const upstream = await fetch(`${normalizeBaseUrl(input.apiBaseUrl)}/chat/completions`, {
+    const upstreamUrl = `${normalizeBaseUrl(input.apiBaseUrl)}/chat/completions`;
+    const requestHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${input.apiKey}`,
+    };
+    let upstream = await fetch(upstreamUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${input.apiKey}`,
-      },
+      headers: requestHeaders,
       body: JSON.stringify(buildRequestBody(input)),
     });
+
+    if (!upstream.ok && input.responseFormat === "json_object") {
+      const errorText = await upstream.text().catch(() => "");
+      if (isUnsupportedResponseFormatError(errorText)) {
+        upstream = await fetch(upstreamUrl, {
+          method: "POST",
+          headers: requestHeaders,
+          body: JSON.stringify(buildRequestBody({ ...input, responseFormat: undefined })),
+        });
+      } else {
+        return sendJson(
+          { error: errorText || "自配模型请求失败。" },
+          { status: upstream.status },
+          response,
+        );
+      }
+    }
 
     if (!upstream.ok) {
       return sendJson(

@@ -46,7 +46,12 @@ import {
 import { withGlobalPrompt } from "@/prompts/globalPrompt";
 import { callOpenAiCompatible } from "@/features/llm/openaiCompatibleClient";
 import { parseLlmJson } from "@/features/llm/jsonResponse";
-import { LlmError, type LlmRequest, type LlmResponse } from "@/features/llm/llmTypes";
+import {
+  LlmError,
+  type LlmMessage,
+  type LlmRequest,
+  type LlmResponse,
+} from "@/features/llm/llmTypes";
 import {
   createGenerationRecord,
   markGenerationFailed,
@@ -69,6 +74,55 @@ import {
   trialRevisionResponseSchema,
   worldEntryResponseSchema,
 } from "@/schemas/llmResponseSchemas";
+
+const jsonResponseGuardMessage: LlmMessage = {
+  role: "system",
+  content: [
+    "结构化输出硬规则：本次回复必须是严格 JSON。",
+    "第一个可见字符必须是 { 或 [，最后一个可见字符必须是 } 或 ]。",
+    "不要输出 Markdown、代码块、解释、致歉、自检、思考过程、标题或 JSON 以外的任何文字。",
+    "所有字符串必须使用英文双引号；不得使用单引号、尾逗号、注释、undefined、NaN、Infinity。",
+    "如果无法满足内容要求，也必须返回符合原任务字段结构的 JSON，不允许返回纯文本说明。",
+  ].join("\n"),
+};
+
+function withJsonResponseGuard(request: LlmRequest): LlmRequest {
+  if (request.responseFormat !== "json_object") {
+    return request;
+  }
+
+  return {
+    ...request,
+    messages: [...request.messages, jsonResponseGuardMessage],
+  };
+}
+
+function buildJsonRetryMessages(messages: LlmMessage[], invalidContent: string): LlmMessage[] {
+  return [
+    ...messages,
+    {
+      role: "user",
+      content: [
+        "上一次输出没有被程序解析为可用 JSON。",
+        "请基于同一个任务重新生成结果，只输出严格 JSON。",
+        "不要解释原因，不要输出 Markdown，不要输出代码块，不要输出思考过程。",
+        "如果上一次输出里有可用信息，请保留并转换为原任务要求的 JSON 结构。",
+        "",
+        "上一次输出如下：",
+        invalidContent.trim() || "（空响应）",
+      ].join("\n"),
+    },
+  ];
+}
+
+function isJsonParseError(error: unknown) {
+  return (
+    error instanceof LlmError &&
+    (error.code === "json_not_found" ||
+      error.code === "json_parse_failed" ||
+      error.code === "json_schema_invalid")
+  );
+}
 
 async function callPresetGateway(request: LlmRequest): Promise<LlmResponse> {
   const activation = await activationRepository.getCurrent();
@@ -255,9 +309,10 @@ export async function callLlm(request: LlmRequest) {
       throw new LlmError("尚未配置可用模型。", "api_not_configured");
     }
 
+    const guardedRequest = withJsonResponseGuard(request);
     const normalizedRequest: LlmRequest = {
-      ...request,
-      messages: withGlobalPrompt(request.messages),
+      ...guardedRequest,
+      messages: withGlobalPrompt(guardedRequest.messages),
     };
 
     const response =
@@ -276,7 +331,7 @@ export async function callLlm(request: LlmRequest) {
       { content: response.content, raw: response.raw, requestMessages: normalizedRequest.messages },
       response.usage,
     );
-    return { taskId: task.id, task, response };
+    return { taskId: task.id, task, request, response };
   } catch (error) {
     await markGenerationFailed(task, error);
     throw error;
@@ -290,8 +345,40 @@ async function parseGeneratedJson<TSchema extends z.ZodType>(
   try {
     return parseLlmJson(result.response.content, schema);
   } catch (error) {
-    await markGenerationFailed(result.task, error);
-    throw error;
+    if (!isJsonParseError(error)) {
+      await markGenerationFailed(result.task, error);
+      throw error;
+    }
+
+    let retryResult: Awaited<ReturnType<typeof callLlm>> | null = null;
+    try {
+      retryResult = await callLlm({
+        ...result.request,
+        inputSummary: `${result.request.inputSummary}（JSON 重试）`,
+        messages: buildJsonRetryMessages(result.request.messages, result.response.content),
+        onDelta: undefined,
+        responseFormat: "json_object",
+      });
+      const data = parseLlmJson(retryResult.response.content, schema);
+      await markGenerationSucceeded(
+        result.task,
+        {
+          content: retryResult.response.content,
+          raw: retryResult.response.raw,
+          requestMessages: retryResult.request.messages,
+          repairedFrom: result.response.content,
+          repairTaskId: retryResult.taskId,
+        },
+        retryResult.response.usage,
+      );
+      return data;
+    } catch (retryError) {
+      await markGenerationFailed(result.task, retryError);
+      if (retryResult) {
+        await markGenerationFailed(retryResult.task, retryError);
+      }
+      throw retryError;
+    }
   }
 }
 

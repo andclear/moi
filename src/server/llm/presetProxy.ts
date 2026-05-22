@@ -11,6 +11,34 @@ type LlmMessage = {
   content: string;
 };
 
+function normalizeChatContent(content: unknown): string {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+        if (!item || typeof item !== "object") {
+          return "";
+        }
+
+        const part = item as { text?: unknown; content?: unknown };
+        return typeof part.text === "string"
+          ? part.text
+          : typeof part.content === "string"
+            ? part.content
+            : "";
+      })
+      .join("");
+  }
+
+  return "";
+}
+
 function normalizeBaseUrl(url: string) {
   return url.replace(/\/+$/, "");
 }
@@ -73,7 +101,7 @@ export async function proxyPresetLlm(input: {
   const { sql, session, apiBaseUrl, apiKey, model } = await resolvePresetConfig(input.sessionToken);
 
   const startedAt = Date.now();
-  const response = await fetch(`${normalizeBaseUrl(apiBaseUrl)}/chat/completions`, {
+  let response = await fetch(`${normalizeBaseUrl(apiBaseUrl)}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -88,12 +116,33 @@ export async function proxyPresetLlm(input: {
     ),
   });
 
+  if (!response.ok && input.responseFormat === "json_object") {
+    const errorText = await response.text().catch(() => "");
+    if (/response_format|json_schema|json_object/i.test(errorText)) {
+      response = await fetch(`${normalizeBaseUrl(apiBaseUrl)}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(
+          buildPresetRequestBody({
+            model,
+            messages: input.messages,
+          }),
+        ),
+      });
+    } else {
+      throw new Error(errorText);
+    }
+  }
+
   if (!response.ok) {
     throw new Error(await response.text());
   }
 
   const payload = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
+    choices?: Array<{ message?: { content?: unknown }; text?: unknown }>;
     usage?: {
       prompt_tokens?: number;
       completion_tokens?: number;
@@ -104,7 +153,9 @@ export async function proxyPresetLlm(input: {
   await incrementActivationUsage(session.id, sql);
 
   return {
-    content: payload.choices?.[0]?.message?.content ?? "",
+    content:
+      normalizeChatContent(payload.choices?.[0]?.message?.content) ||
+      normalizeChatContent(payload.choices?.[0]?.text),
     raw: payload,
     usage: {
       promptTokens: payload.usage?.prompt_tokens,

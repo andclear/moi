@@ -4,12 +4,52 @@ import { LlmError, type LlmMessage, type LlmResponse } from "@/features/llm/llmT
 import { readTextResponse } from "@/features/llm/streamParser";
 
 interface ChatCompletionResponse {
-  choices?: Array<{ message?: { content?: string }; text?: string }>;
+  choices?: Array<{ message?: { content?: unknown }; text?: unknown }>;
   usage?: {
     prompt_tokens?: number;
     completion_tokens?: number;
     total_tokens?: number;
   };
+}
+
+export function normalizeChatContent(content: unknown): string {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+        if (!item || typeof item !== "object") {
+          return "";
+        }
+
+        const part = item as { text?: unknown; content?: unknown };
+        if (typeof part.text === "string") {
+          return part.text;
+        }
+        if (typeof part.content === "string") {
+          return part.content;
+        }
+        return "";
+      })
+      .join("");
+  }
+
+  if (content && typeof content === "object") {
+    const part = content as { text?: unknown; content?: unknown };
+    if (typeof part.text === "string") {
+      return part.text;
+    }
+    if (typeof part.content === "string") {
+      return part.content;
+    }
+  }
+
+  return "";
 }
 
 export function normalizeOpenAiBaseUrl(url: string) {
@@ -99,7 +139,9 @@ export async function callOpenAiCompatible(
   }
 
   const payload = (await response.json()) as ChatCompletionResponse;
-  const content = payload.choices?.[0]?.message?.content ?? payload.choices?.[0]?.text ?? "";
+  const firstChoice = payload.choices?.[0];
+  const content =
+    normalizeChatContent(firstChoice?.message?.content) || normalizeChatContent(firstChoice?.text);
   if (content) {
     onDelta?.(content, content);
   }
