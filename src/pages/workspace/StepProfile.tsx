@@ -1,5 +1,4 @@
 import { BookOpenText, LockKeyhole, Scissors, UserRoundSearch } from "lucide-react";
-import { Select } from "animal-island-ui";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router";
@@ -182,31 +181,6 @@ function DiaryDecodePanel({
                   {selectedOption?.label ?? blank?.label ?? "点击破译"}
                 </button>
 
-                {blank && isOpen ? (
-                  <span className="absolute left-0 top-full z-30 mt-3 hidden w-[min(78vw,22rem)] gap-3 rounded-[var(--animal-radius)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_10px_22px_rgba(61,52,40,0.18)] sm:grid">
-                    <span className="text-sm font-black leading-6 text-[var(--animal-text)]">
-                      {blank.label}
-                    </span>
-                    <Select
-                      options={blank.options.map((option) => ({
-                        key: option.key,
-                        label: option.label,
-                      }))}
-                      value={selections[blank.key] ?? ""}
-                      onChange={(optionKey) => {
-                        onChange(blank.key, optionKey);
-                        setOpenedBlankKey("");
-                      }}
-                      placeholder="请选择"
-                      disabled={disabled}
-                    />
-                    {selectedOption ? (
-                      <span className="text-sm font-bold leading-6 text-[var(--animal-text-muted)]">
-                        {selectedOption.meaning}
-                      </span>
-                    ) : null}
-                  </span>
-                ) : null}
               </span>
             );
           })}
@@ -214,14 +188,14 @@ function DiaryDecodePanel({
       </div>
       {openedBlank && typeof document !== "undefined"
         ? createPortal(
-            <div className="fixed inset-0 z-50 sm:hidden">
+            <div className="fixed inset-0 z-50">
               <button
                 type="button"
                 aria-label="关闭破译选项"
                 className="absolute inset-0 bg-[rgba(61,52,40,0.34)]"
                 onClick={() => setOpenedBlankKey("")}
               />
-              <section className="absolute inset-x-3 bottom-0 grid max-h-[72vh] gap-3 overflow-auto rounded-t-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_-12px_28px_rgba(61,52,40,0.22)]">
+              <section className="absolute inset-x-3 bottom-0 grid max-h-[72vh] min-w-0 gap-3 overflow-auto rounded-t-[var(--animal-radius-lg)] border-2 border-[var(--animal-border)] bg-[var(--animal-bg-content)] p-4 text-left shadow-[0_-12px_28px_rgba(61,52,40,0.22)] sm:bottom-auto sm:left-1/2 sm:right-auto sm:top-1/2 sm:max-h-[min(78vh,34rem)] sm:w-[min(86vw,32rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[var(--animal-radius-lg)] sm:shadow-[0_14px_30px_rgba(61,52,40,0.22)]">
                 <p className="text-sm font-black leading-6 text-[var(--animal-text)]">
                   {openedBlank.label}
                 </p>
@@ -241,6 +215,7 @@ function DiaryDecodePanel({
                         }}
                         className={cn(
                           "w-full rounded-[var(--animal-radius)] border-2 px-4 py-3 text-left text-sm font-black leading-6 shadow-[0_3px_0_0_var(--animal-shadow-input)] transition-colors",
+                          "whitespace-normal break-words [overflow-wrap:anywhere]",
                           isSelected
                             ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--animal-text)]"
                             : "border-[var(--animal-border)] bg-[var(--animal-bg-content)] text-[var(--animal-text-body)]",

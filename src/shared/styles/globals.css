@@ -157,6 +157,15 @@ input[type="radio"]:focus {
   box-shadow: none !important;
 }
 
+.echo-diary-blank-trigger {
+  max-width: min(72vw, 22rem);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+  line-height: 1.55;
+}
+
 .echo-character-fields-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
@@ -535,7 +544,5 @@ code {
 
   .echo-diary-blank-trigger {
     max-width: min(78vw, 18rem);
-    white-space: normal;
-    text-align: left;
   }
 }
