@@ -10,13 +10,17 @@ export type ApiAvailability =
   | { available: true; label: string; model: string; mode: "custom" | "preset" };
 
 export const defaultApiSettings: Omit<ApiSettings, "id" | "updatedAt"> = {
-  mode: "none",
+  mode: "custom",
   apiBaseUrl: "",
   apiKey: "",
   model: "",
   temperature: 0.7,
   supportsSystemPrompt: true,
 };
+
+function normalizeApiSettings(settings: ApiSettings): ApiSettings {
+  return settings.mode === "none" ? { ...settings, mode: "custom" } : settings;
+}
 
 interface SettingsState {
   apiSettings: ApiSettings | null;
@@ -36,7 +40,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ status: "loading", errorMessage: null });
     try {
       const apiSettings = await settingsRepository.getApiSettings();
-      set({ apiSettings: apiSettings ?? null, status: "saved" });
+      set({ apiSettings: apiSettings ? normalizeApiSettings(apiSettings) : null, status: "saved" });
     } catch (error) {
       set({
         status: "error",

@@ -1,4 +1,4 @@
-import { KeyRound, ListChecks, RefreshCw, Save, Server, ToggleLeft, ToggleRight } from "lucide-react";
+import { CheckCircle2, KeyRound, ListChecks, RefreshCw, Save, Server, ToggleLeft, ToggleRight } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 import { useActivationStore } from "@/features/activation/activationStore";
@@ -31,7 +31,7 @@ export function SettingsPage() {
   useEffect(() => {
     if (apiSettings) {
       setForm({
-        mode: apiSettings.mode,
+        mode: apiSettings.mode === "none" ? "custom" : apiSettings.mode,
         apiBaseUrl: apiSettings.apiBaseUrl,
         apiKey: apiSettings.apiKey ?? "",
         model: apiSettings.model,
@@ -41,15 +41,15 @@ export function SettingsPage() {
     }
   }, [apiSettings]);
 
-  useEffect(() => {
-    if (!channel.presetEnabled && form.mode === "preset") {
-      setForm((current) => ({ ...current, mode: "none", model: "" }));
-    }
-  }, [channel.presetEnabled, form.mode]);
-
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await saveApiSettings(form);
+  }
+
+  async function handleSelectMode(mode: "custom" | "preset") {
+    const nextSettings = { ...form, mode };
+    setForm(nextSettings);
+    await saveApiSettings(nextSettings);
   }
 
   async function handleFetchModels() {
@@ -107,23 +107,55 @@ export function SettingsPage() {
         </p>
 
         <form className="mt-6 grid gap-5" onSubmit={handleSave}>
-          <label className="grid gap-2 font-mono text-sm text-[var(--echo-muted)]">
-            当前使用渠道
-            <select
-              value={form.mode}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  mode: event.target.value as typeof current.mode,
-                }))
-              }
-              className="h-11 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] px-3 text-[var(--echo-paper)] outline-none focus:border-[var(--echo-paper)]"
-            >
-              <option value="none">暂不连接</option>
-              <option value="custom">使用自配 OpenAI 兼容接口</option>
-              {channel.presetEnabled && <option value="preset">使用预置调用模式</option>}
-            </select>
-          </label>
+          <div className="grid gap-3 font-mono text-sm text-[var(--echo-muted)]">
+            <span>当前使用渠道</span>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                {
+                  mode: "custom" as const,
+                  title: "自定义API",
+                  description: "使用你配置的 OpenAI 兼容接口发起生成。",
+                },
+                {
+                  mode: "preset" as const,
+                  title: "激活码渠道",
+                  description: channel.presetEnabled
+                    ? "使用激活码开启的服务端预置模型渠道。"
+                    : "服务端暂未开启预置渠道，开启后可使用激活码。",
+                },
+              ].map((item) => {
+                const isSelected = form.mode === item.mode;
+                return (
+                  <button
+                    key={item.mode}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => void handleSelectMode(item.mode)}
+                    className={[
+                      "flex min-h-24 items-start justify-between gap-3 border-2 p-4 text-left transition-all",
+                      isSelected
+                        ? "border-[var(--animal-primary)] bg-[var(--animal-primary-bg)] text-[var(--echo-paper)] shadow-[0_4px_0_0_var(--animal-primary)]"
+                        : "border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] text-[var(--echo-muted)] hover:-translate-y-0.5 hover:border-[var(--animal-primary)]",
+                    ].join(" ")}
+                  >
+                    <span className="grid gap-2">
+                      <span className="font-display text-xl font-black text-[var(--echo-paper)]">
+                        {item.title}
+                      </span>
+                      <span className="text-xs font-bold leading-5">{item.description}</span>
+                    </span>
+                    {isSelected && (
+                      <CheckCircle2
+                        aria-hidden="true"
+                        size={22}
+                        className="shrink-0 text-[var(--animal-primary)]"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="grid gap-4 border border-[var(--echo-line)] bg-[rgba(255,255,255,0.24)] p-4">
             <div className="flex items-center gap-2 text-[var(--echo-paper)]">

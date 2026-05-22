@@ -60,6 +60,24 @@ describe("settingsStore", () => {
     });
   });
 
+  it("旧版暂不连接设置会按自定义渠道读取", async () => {
+    await settingsRepository.saveApiSettings({
+      ...defaultApiSettings,
+      mode: "none",
+    });
+
+    await useSettingsStore.getState().load();
+
+    expect(useSettingsStore.getState().apiSettings).toMatchObject({
+      mode: "custom",
+    });
+    expect(useSettingsStore.getState().getAvailability()).toMatchObject({
+      available: false,
+      mode: "custom",
+      reason: "自配 API 信息不完整",
+    });
+  });
+
   it("选择预置渠道时必须存在有效激活状态", async () => {
     await settingsRepository.saveApiSettings({
       ...defaultApiSettings,
