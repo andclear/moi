@@ -618,6 +618,7 @@ export async function generateCharacterProfileYaml(input: {
   projectId: string;
   characterProfile: string;
   previousCharacterInfo?: string;
+  confirmedWorldEntries?: WorldEntry[];
   signal?: AbortSignal;
 }) {
   const result = await callLlm({
@@ -626,6 +627,7 @@ export async function generateCharacterProfileYaml(input: {
     messages: buildCharacterProfileYamlMessages(
       input.characterProfile,
       input.previousCharacterInfo,
+      input.confirmedWorldEntries,
     ),
     inputSummary: "生成角色信息 YAML",
     signal: input.signal,

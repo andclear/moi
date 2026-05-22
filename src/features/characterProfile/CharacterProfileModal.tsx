@@ -328,7 +328,7 @@ export function CharacterProfileModal({
             className="w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] sm:min-w-44 sm:w-auto"
             onClick={() => void onRefresh()}
           >
-            {isRefreshing ? "更新中..." : "根据岛民档案更新"}
+            {isRefreshing ? "生成中..." : "通过角色档案生成"}
           </AnimalButton>
           <Button
             type="button"

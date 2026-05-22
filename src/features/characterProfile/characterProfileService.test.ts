@@ -85,6 +85,46 @@ describe("characterProfileService", () => {
     expect(updatedProject?.characterProfile?.yaml).not.toContain('姓名: "林雾"');
   });
 
+  it("生成角色信息时携带已确认世界书信息", async () => {
+    const project = await projectRepository.create({ title: "角色信息世界书测试" });
+    await projectRepository.update(project.id, {
+      worldEntries: [
+        {
+          id: "world_1",
+          projectId: project.id,
+          title: "旧图书馆",
+          content: "雨水会从东侧窗框渗入。",
+          keys: ["旧馆"],
+          constant: true,
+          position: 4,
+          depth: 4,
+          insertionOrder: 100,
+          enabled: true,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+        },
+      ],
+    });
+    mockedGenerateCharacterProfileYaml.mockResolvedValueOnce({
+      taskId: "generation_world",
+      yaml: '姓名: "林雾"',
+      response: { content: '姓名: "林雾"' },
+    });
+
+    await generateAndSaveCharacterProfile(project.id, "## 核心人格\n\n沉默");
+
+    expect(mockedGenerateCharacterProfileYaml).toHaveBeenCalledWith(
+      expect.objectContaining({
+        confirmedWorldEntries: [
+          expect.objectContaining({
+            title: "旧图书馆",
+            content: "雨水会从东侧窗框渗入。",
+          }),
+        ],
+      }),
+    );
+  });
+
   it("重新生成角色信息时保留用户已保存的性别和年龄", async () => {
     const project = await projectRepository.create({ title: "角色信息基础字段测试" });
     await projectRepository.update(project.id, {

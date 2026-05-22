@@ -1,6 +1,7 @@
 import { projectRepository } from "@/db/repositories/projectRepository";
 import type { CharacterProfileDocument } from "@/db/types";
 import { generateCharacterProfileYaml } from "@/features/llm/llmClient";
+import { collectPromptWorldEntries } from "@/features/world/worldPromptContext";
 import { nowIso } from "@/shared/lib/date";
 
 const MAX_RETRY_COUNT = 3;
@@ -121,6 +122,7 @@ export async function generateAndSaveCharacterProfile(
 ) {
   const existingProject = await projectRepository.getById(projectId);
   const previousYaml = existingProject?.characterProfile?.yaml ?? "";
+  const confirmedWorldEntries = existingProject ? collectPromptWorldEntries(existingProject) : [];
 
   await updateCharacterProfile(projectId, createGeneratingState(0, previousYaml));
 
@@ -133,6 +135,7 @@ export async function generateAndSaveCharacterProfile(
         projectId,
         characterProfile: dossierMarkdown,
         previousCharacterInfo: previousYaml,
+        confirmedWorldEntries,
       });
       return updateCharacterProfile(projectId, {
         yaml: preserveSavedIdentity(result.yaml, previousYaml),

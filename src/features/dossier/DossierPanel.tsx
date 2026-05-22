@@ -81,7 +81,7 @@ export function DossierPanel() {
       return;
     }
 
-    if (characterProfile?.status === "succeeded" && characterProfile.yaml) {
+    if (isCharacterProfileGenerating || (characterProfile?.status === "succeeded" && characterProfile.yaml)) {
       setIsCharacterModalOpen(true);
       return;
     }
@@ -144,11 +144,15 @@ export function DossierPanel() {
               htmlType="button"
               type="text"
               size="small"
-              loading={isCharacterProfileGenerating}
-              disabled={isCharacterProfileGenerating}
               danger={characterProfile?.status === "failed"}
               className="echo-character-link-button"
-              icon={<IdCard aria-hidden="true" size={16} />}
+              icon={
+                isCharacterProfileGenerating ? (
+                  <Clock3 aria-hidden="true" size={16} />
+                ) : (
+                  <IdCard aria-hidden="true" size={16} />
+                )
+              }
               onClick={() => void handleCharacterProfileClick()}
             >
               {characterButtonText}
@@ -202,7 +206,7 @@ export function DossierPanel() {
       <CharacterProfileModal
         open={isCharacterModalOpen}
         yaml={characterProfile?.yaml ?? ""}
-        isRefreshing={isRefreshingCharacterProfile}
+        isRefreshing={isRefreshingCharacterProfile || isCharacterProfileGenerating}
         onClose={() => setIsCharacterModalOpen(false)}
         onRefresh={handleRefreshCharacterProfile}
         onSave={handleSaveCharacterProfile}

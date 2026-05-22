@@ -1,4 +1,6 @@
 import type { LlmMessage } from "@/features/llm/llmTypes";
+import type { WorldEntry } from "@/db/types";
+import { formatWorldEntriesJson } from "@/prompts/worldPrompts";
 
 const CHARACTER_PROFILE_PROMPT_LINES = [
   "你是一位精通叙事心理学和创意写作的资深角色设计师。你的任务是根据用户的核心要求，创建一个深刻、立体且逻辑自洽的角色档案。",
@@ -77,6 +79,7 @@ const CHARACTER_PROFILE_PROMPT = CHARACTER_PROFILE_PROMPT_LINES.join("\n");
 export function buildCharacterProfileYamlMessages(
   characterProfile: string,
   previousCharacterInfo = "",
+  confirmedWorldEntries: WorldEntry[] = [],
 ): LlmMessage[] {
   return [
     {
@@ -87,10 +90,14 @@ export function buildCharacterProfileYamlMessages(
         "当前已有的角色信息 YAML：",
         previousCharacterInfo || "尚未生成",
         "",
+        "已确认的 WorldInfo：",
+        formatWorldEntriesJson(confirmedWorldEntries),
+        "",
         "重要保持规则：如果“当前已有的角色信息 YAML”中已经存在 姓名 字段，新的 YAML 必须原样保留这个姓名，不得改名、换名、扩写、翻译或重新取名。用户手动保存过的姓名是最高优先级事实。",
         "如果已有 YAML 中存在性别、年龄字段，新的 YAML 必须原样保留这些字段，不得根据角色档案重新推断或改写。",
         "如果已有 YAML 中存在别名、生日、身份等用户明确保存过的基础字段，也必须优先保留，除非当前角色档案明确给出用户更新后的同一字段。",
         "本次更新应主要根据新的角色档案修正心理、背景、关系、世界观适配、言谈举止等内容；不要因为档案扩写而改变角色的基础身份事实。",
+        "WorldInfo 是世界书信息；如果其中有会影响角色身份、处境、能力、关系或行为边界的事实，必须在角色信息 YAML 中提炼体现，但不要逐条搬运世界书原文。",
         "必须保持输出为合法 YAML，保留清晰的层级结构和键值关系；可以根据新的角色档案新增、修改或补全字段和值，但不要破坏原有 YAML 的主体结构。",
       ].join("\n"),
     },

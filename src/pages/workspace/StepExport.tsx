@@ -1,10 +1,12 @@
 import {
   Archive,
+  AlertTriangle,
   CheckCircle2,
   Copy,
   Download,
   ExternalLink,
   FileJson,
+  IdCard,
   ImageUp,
   Sparkles,
   Upload,
@@ -14,6 +16,12 @@ import { useParams } from "react-router";
 
 import { projectService } from "@/db/services/projectService";
 import type { Project } from "@/db/types";
+import { CharacterProfileModal } from "@/features/characterProfile/CharacterProfileModal";
+import { hasUsableCharacterProfile } from "@/features/characterProfile/characterProfileGuards";
+import {
+  generateAndSaveCharacterProfile,
+  saveCharacterProfileYaml,
+} from "@/features/characterProfile/characterProfileService";
 import { useExportStore } from "@/features/export/exportStore";
 import { useFlowStore } from "@/features/flow/flowStore";
 import { generateExportCardCompletion, generateExportImagePrompt } from "@/features/llm/llmClient";
@@ -34,6 +42,8 @@ export function StepExport() {
   const [pageError, setPageError] = useState("");
   const [completionStatus, setCompletionStatus] = useState<"idle" | "running" | "succeeded" | "failed">("idle");
   const [imagePromptStatus, setImagePromptStatus] = useState<"idle" | "running" | "succeeded" | "failed">("idle");
+  const [characterProfileStatus, setCharacterProfileStatus] = useState<"idle" | "running" | "succeeded" | "failed">("idle");
+  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -103,9 +113,19 @@ export function StepExport() {
   const isBuilding = status === "building";
   const isCompleting = completionStatus === "running";
   const isGeneratingImagePrompt = imagePromptStatus === "running";
+  const isGeneratingCharacterProfile =
+    characterProfileStatus === "running" || project?.characterProfile?.status === "generating";
   const cardCompletion = project?.exportDraft?.cardCompletion;
   const imagePrompt = project?.exportDraft?.imagePrompt?.prompt;
-  const canExport = Boolean(project && cardName.trim() && cardCompletion && !isBuilding && !isCompleting);
+  const hasValidCharacterProfile = hasUsableCharacterProfile(project?.characterProfile);
+  const canExport = Boolean(
+    project &&
+      cardName.trim() &&
+      cardCompletion &&
+      hasValidCharacterProfile &&
+      !isBuilding &&
+      !isCompleting,
+  );
 
   async function persistExportDraft(nextProject: Project) {
     const { id, createdAt, ...patch } = nextProject;
@@ -119,6 +139,10 @@ export function StepExport() {
 
   async function handleCompleteCard() {
     if (!project || isCompleting) {
+      return;
+    }
+    if (!hasValidCharacterProfile) {
+      setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息，再补全角色卡信息。");
       return;
     }
 
@@ -154,8 +178,76 @@ export function StepExport() {
     }
   }
 
+  async function clearStaleExportCompletion(nextProject: Project) {
+    if (!nextProject.exportDraft?.cardCompletion && !nextProject.exportDraft?.imagePrompt) {
+      setProject(nextProject);
+      return nextProject;
+    }
+
+    const { cardCompletion: _cardCompletion, imagePrompt: _imagePrompt, ...restDraft } = nextProject.exportDraft;
+    void _cardCompletion;
+    void _imagePrompt;
+    const updatedAt = nowIso();
+    const saved = await projectService.updateProject(nextProject.id, {
+      exportDraft: {
+        ...restDraft,
+        updatedAt,
+      },
+      updatedAt,
+    });
+    setProject(saved ?? nextProject);
+    return saved ?? nextProject;
+  }
+
+  async function handleGenerateCharacterProfile() {
+    if (!project || isGeneratingCharacterProfile) {
+      return;
+    }
+
+    setCharacterProfileStatus("running");
+    setPageError("");
+    setProject({
+      ...project,
+      characterProfile: {
+        yaml: project.characterProfile?.yaml ?? "",
+        status: "generating",
+        retryCount: project.characterProfile?.retryCount ?? 0,
+        updatedAt: nowIso(),
+      },
+    });
+
+    try {
+      const updatedProject = await generateAndSaveCharacterProfile(project.id, project.dossier.markdown);
+      if (!updatedProject) {
+        throw new Error("角色信息生成失败，未找到当前项目。");
+      }
+      await clearStaleExportCompletion(updatedProject);
+      setCharacterProfileStatus(updatedProject.characterProfile?.status === "succeeded" ? "succeeded" : "failed");
+      if (updatedProject.characterProfile?.status !== "succeeded") {
+        setPageError(updatedProject.characterProfile?.errorMessage ?? "角色信息生成失败。");
+      }
+    } catch (profileError) {
+      setCharacterProfileStatus("failed");
+      setPageError(profileError instanceof Error ? profileError.message : "角色信息生成失败。");
+    }
+  }
+
+  async function handleSaveCharacterProfile(nextYaml: string) {
+    if (!project) {
+      return;
+    }
+    const updatedProject = await saveCharacterProfileYaml(project.id, nextYaml);
+    if (updatedProject) {
+      await clearStaleExportCompletion(updatedProject);
+    }
+  }
+
   async function handleGenerateImagePrompt() {
     if (!project || isGeneratingImagePrompt) {
+      return;
+    }
+    if (!hasValidCharacterProfile) {
+      setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息，再生成文生图提示词。");
       return;
     }
 
@@ -207,6 +299,10 @@ export function StepExport() {
     if (!project) {
       return;
     }
+    if (!hasValidCharacterProfile) {
+      setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息。");
+      return;
+    }
     if (!cardCompletion) {
       setPageError("请先使用 AI 补全角色卡信息。");
       return;
@@ -219,6 +315,10 @@ export function StepExport() {
   async function handlePngExport() {
     if (!project || !imageFile) {
       setPageError("请先上传一张 JPG、PNG 或 WebP 图片作为载体。");
+      return;
+    }
+    if (!hasValidCharacterProfile) {
+      setPageError("角色信息尚未成功生成。请先通过角色档案生成角色信息。");
       return;
     }
     if (!cardCompletion) {
@@ -288,6 +388,46 @@ export function StepExport() {
               </div>
 
               <div className="grid gap-4">
+                {!hasValidCharacterProfile ? (
+                  <section className="rounded-[var(--animal-radius)] border-2 border-[var(--echo-stamp)] bg-[rgba(120,40,34,0.18)] p-5 max-sm:p-4">
+                    <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <AlertTriangle aria-hidden="true" size={24} className="mt-1 shrink-0 text-[var(--echo-paper)]" />
+                        <div className="min-w-0">
+                          <h2 className="font-display text-2xl font-black text-[var(--echo-paper)]">
+                            角色信息尚未成功生成
+                          </h2>
+                          <p className="mt-2 font-mono text-sm leading-6 text-[var(--echo-paper)]">
+                            当前导出缺少角色信息 YAML，可能导致角色设定变成“暂未明确”。请先通过角色档案生成角色信息，再补全导出字段。
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-3 sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          disabled={!project}
+                          onClick={() => setIsCharacterModalOpen(true)}
+                          className="w-full sm:w-fit"
+                        >
+                          <IdCard aria-hidden="true" size={17} />
+                          打开角色信息
+                        </Button>
+                        <Button
+                          type="button"
+                          loading={isGeneratingCharacterProfile}
+                          disabled={!project}
+                          onClick={() => void handleGenerateCharacterProfile()}
+                          className="w-full border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)] hover:bg-[var(--animal-primary-hover)] hover:shadow-[0_6px_0_0_var(--animal-primary-active)] sm:w-fit"
+                        >
+                          {isGeneratingCharacterProfile ? null : <Sparkles aria-hidden="true" size={17} />}
+                          {isGeneratingCharacterProfile ? "生成中" : "通过角色档案生成"}
+                        </Button>
+                      </div>
+                    </div>
+                  </section>
+                ) : null}
+
                 <section className={`rounded-[var(--animal-radius)] border border-[var(--echo-line)] bg-[rgba(255,255,255,0.42)] p-5 max-sm:p-4 ${isCompleting ? "animate-pulse" : ""}`}>
                   <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
                     <div className="flex min-w-0 items-start gap-3">
@@ -308,7 +448,7 @@ export function StepExport() {
                     <Button
                       type="button"
                       loading={isCompleting}
-                      disabled={!project}
+                      disabled={!project || !hasValidCharacterProfile}
                       onClick={() => void handleCompleteCard()}
                       className={`w-full sm:w-fit ${isCompleting ? "animate-pulse border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)]" : ""}`}
                     >
@@ -404,7 +544,7 @@ export function StepExport() {
                             type="button"
                             variant="secondary"
                             loading={isGeneratingImagePrompt}
-                            disabled={!project}
+                            disabled={!project || !hasValidCharacterProfile}
                             onClick={() => void handleGenerateImagePrompt()}
                             className={isGeneratingImagePrompt ? "animate-pulse border-[var(--animal-primary-active)] bg-[var(--animal-primary)] text-white shadow-[0_5px_0_0_var(--animal-primary-active)]" : ""}
                           >
@@ -456,6 +596,16 @@ export function StepExport() {
 
         {project && <ProfileReportPanel project={project} />}
       </div>
+      {project ? (
+        <CharacterProfileModal
+          open={isCharacterModalOpen}
+          yaml={project.characterProfile?.yaml ?? ""}
+          isRefreshing={isGeneratingCharacterProfile}
+          onClose={() => setIsCharacterModalOpen(false)}
+          onRefresh={handleGenerateCharacterProfile}
+          onSave={handleSaveCharacterProfile}
+        />
+      ) : null}
     </section>
   );
 }
