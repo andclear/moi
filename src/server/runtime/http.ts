@@ -8,6 +8,7 @@ type NodeLikeRequest = AsyncIterable<Buffer | string> & {
 type NodeLikeResponse = {
   status?: (statusCode: number) => NodeLikeResponse;
   setHeader?: (name: string, value: string) => void;
+  write?: (chunk: Uint8Array | string) => void;
   json?: (body: unknown) => void;
   end?: (body?: string) => void;
 };
@@ -75,4 +76,43 @@ export function sendJson(body: unknown, init?: { status?: number }, response?: A
   }
 
   return Response.json(body, { status });
+}
+
+export async function sendStream(upstream: Response, response?: ApiResponse) {
+  const contentType = upstream.headers.get("content-type") ?? "text/event-stream";
+  const cacheControl = upstream.headers.get("cache-control") ?? "no-cache";
+
+  if (!response) {
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": cacheControl,
+      },
+    });
+  }
+
+  response.status?.(upstream.status);
+  response.setHeader?.("Content-Type", contentType);
+  response.setHeader?.("Cache-Control", cacheControl);
+
+  if (!upstream.body) {
+    response.end?.();
+    return;
+  }
+
+  if (!response.write) {
+    response.end?.(await upstream.text());
+    return;
+  }
+
+  const reader = upstream.body.getReader();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) {
+      break;
+    }
+    response.write(value);
+  }
+  response.end?.();
 }

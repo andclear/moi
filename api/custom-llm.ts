@@ -2,6 +2,7 @@ import {
   getRequestMethod,
   readJsonBody,
   sendJson,
+  sendStream,
   type ApiRequest,
   type ApiResponse,
 } from "../src/server/runtime/http.js";
@@ -181,14 +182,8 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
       );
     }
 
-    if (input.stream && !response) {
-      return new Response(upstream.body, {
-        status: upstream.status,
-        headers: {
-          "Content-Type": upstream.headers.get("content-type") ?? "text/event-stream",
-          "Cache-Control": "no-cache",
-        },
-      });
+    if (input.stream) {
+      return sendStream(upstream, response);
     }
 
     return sendJson(await upstream.json(), undefined, response);
