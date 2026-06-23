@@ -110,6 +110,10 @@ function isUnsupportedResponseFormatError(errorText: string) {
   return /response_format|json_schema|json_object/i.test(errorText);
 }
 
+function isUnsupportedStreamError(errorText: string) {
+  return /stream|streaming|unsupported|not support|not supported|不支持|不兼容/i.test(errorText);
+}
+
 function parsePayload(payload: CustomLlmPayload) {
   const apiBaseUrl = typeof payload.apiBaseUrl === "string" ? payload.apiBaseUrl.trim() : "";
   const apiKey = typeof payload.apiKey === "string" ? payload.apiKey.trim() : "";
@@ -151,6 +155,14 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
       "Content-Type": "application/json",
       Authorization: `Bearer ${input.apiKey}`,
     };
+    const requestUpstream = (override: Partial<Pick<typeof input, "stream" | "responseFormat">>) =>
+      fetch(upstreamUrl, {
+        method: "POST",
+        headers: requestHeaders,
+        body: JSON.stringify(buildRequestBody({ ...input, ...override })),
+      });
+
+    let activeStream = input.stream;
     let upstream = await fetch(upstreamUrl, {
       method: "POST",
       headers: requestHeaders,
@@ -174,6 +186,20 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
       }
     }
 
+    if (!upstream.ok && activeStream) {
+      const errorText = await upstream.text().catch(() => "");
+      if (isUnsupportedStreamError(errorText)) {
+        activeStream = false;
+        upstream = await requestUpstream({ stream: false });
+      } else {
+        return sendJson(
+          { error: errorText || "自配模型请求失败。" },
+          { status: upstream.status },
+          response,
+        );
+      }
+    }
+
     if (!upstream.ok) {
       return sendJson(
         { error: (await upstream.text().catch(() => "")) || "自配模型请求失败。" },
@@ -182,7 +208,7 @@ export default async function handler(request: ApiRequest, response?: ApiRespons
       );
     }
 
-    if (input.stream) {
+    if (activeStream) {
       return sendStream(upstream, response);
     }
 
